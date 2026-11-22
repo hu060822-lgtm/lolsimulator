@@ -25,6 +25,8 @@ var draft_familiarity: float = 40.0  ## BP 演練熟悉度
 var training_plan: Dictionary = {}
 var history: Array = []              ## [{year, league_id, position, playoff_result, titles}]
 var titles: int = 0
+var world_titles: int = 0
+var opinion: float = 0.0             ## 外界評價 -100..100（見 Media）
 var streak: int = 0                  ## 連勝（正）/ 連敗（負）
 var finance_log: Array = []          ## 歷年帳本 [{year, income, expense, cash_end}]
 var ledger: Dictionary = {"income": {}, "expense": {}}  ## 本季帳本
@@ -43,6 +45,7 @@ static func from_dict(d: Dictionary) -> Club:
 	c.wage_budget = int(c.wage_budget)
 	c.fanbase = int(c.fanbase)
 	c.titles = int(c.titles)
+	c.world_titles = int(c.world_titles)
 	c.streak = int(c.streak)
 	if c.short_name.strip_edges() == "":
 		c.short_name = make_short_name(c.name)
@@ -68,6 +71,6 @@ func to_dict() -> Dictionary:
 		"reputation": reputation, "fanbase": fanbase, "philosophy": philosophy,
 		"roster": roster, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
-		"training_plan": training_plan, "history": history, "titles": titles, "streak": streak,
+		"training_plan": training_plan, "history": history, "titles": titles, "world_titles": world_titles, "opinion": opinion, "streak": streak,
 		"finance_log": finance_log, "scout_knowledge": scout_knowledge,
 		"ledger": ledger, "staff": staff, "sponsors": sponsors, "sponsor_offers": sponsor_offers}

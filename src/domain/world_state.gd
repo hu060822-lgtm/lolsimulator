@@ -6,6 +6,7 @@ extends RefCounted
 const PHASE_PRESEASON := "preseason"
 const PHASE_REGULAR := "regular"
 const PHASE_PLAYOFFS := "playoffs"
+const PHASE_INTERNATIONAL := "international"
 const PHASE_OFFSEASON := "offseason"
 
 var module_id: String = ""
@@ -18,7 +19,10 @@ var human_club_id: String = ""
 
 var champions: Dictionary = {}    ## id -> Champion
 var patch: PatchState = PatchState.new()
-var leagues: Dictionary = {}      ## id -> League
+var leagues: Dictionary = {}      ## id -> League（國內聯賽，含次級聯賽）
+var international: League = null  ## 世界賽（tier 0），參賽隊伍每季決定
+var event_defs: Array = []        ## 隨機事件定義（來自資料模組，隨存檔保存）
+var news: Array = []              ## 媒體新聞（見 Media）
 var clubs: Dictionary = {}        ## id -> Club
 var players: Dictionary = {}      ## id -> Player（含退役）
 var staff: Dictionary = {}        ## id -> Staff
@@ -61,6 +65,7 @@ func to_dict() -> Dictionary:
 		"clubs": clubs.values().map(func(c): return c.to_dict()),
 		"players": players.values().map(func(p): return p.to_dict()),
 		"staff": staff.values().map(func(s): return s.to_dict()),
+		"international": international.to_dict() if international else {}, "news": news, "event_defs": event_defs,
 		"free_agents": free_agents, "names": names, "history": history, "inbox": inbox, "relations": relations,
 		"log": log.to_array(), "rng": rng.get_state(), "next_id": next_id,
 	}
@@ -83,6 +88,11 @@ static func from_dict(d: Dictionary) -> WorldState:
 	for l in d.get("leagues", []):
 		var lg = League.from_dict(l)
 		w.leagues[lg.id] = lg
+	var intl: Dictionary = d.get("international", {})
+	if not intl.is_empty():
+		w.international = League.from_dict(intl)
+	w.news = d.get("news", [])
+	w.event_defs = d.get("event_defs", [])
 	for c in d.get("clubs", []):
 		var cl = Club.from_dict(c)
 		w.clubs[cl.id] = cl

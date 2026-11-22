@@ -16,7 +16,8 @@ func refresh() -> void:
 	var ww = w()
 	var lg: League = ww.leagues[c.league_id]
 	body.add_child(UIKit.title(UIKit.club_label(c)))
-	body.add_child(UIKit.muted("%s・聲望 %.0f・粉絲 %d・經營方向 %s" % [lg.name, c.reputation, c.fanbase, UIKit.philosophy_name(c.philosophy)]))
+	body.add_child(UIKit.muted("%s%s・聲望 %.0f・粉絲 %d・經營方向 %s・外界評價 %s（%+d）" % [lg.name, "（次級聯賽）" if lg.tier >= 2 else "", c.reputation, c.fanbase,
+		UIKit.philosophy_name(c.philosophy), Media.label(c.opinion), int(c.opinion)]))
 	var row := UIKit.hbox(12)
 	body.add_child(row)
 	# 卡片：下一場比賽
@@ -27,7 +28,11 @@ func refresh() -> void:
 		if not f.is_empty():
 			var fx: Dictionary = f["fixture"]
 			var opp: String = fx["away"] if fx["home"] == c.id else fx["home"]
-			nm = "第 %d 天 對 %s\n%s・%s" % [next_day, UIKit.club_label(ww.clubs[opp]), UIKit.bo_text(int(fx["best_of"])), "例行賽" if fx["stage"] == "regular" else "季後賽"]
+			var comp: League = f["league"]
+			var stage = {"regular": "例行賽", "playoffs": "季後賽", "final": "決賽"}.get(fx["stage"], fx["stage"])
+			if comp.tier == 0:
+				stage = comp.name + ("小組賽" if fx["stage"] == "regular" else ("決賽" if fx["stage"] == "final" else "淘汰賽"))
+			nm = "第 %d 天 對 %s\n%s・%s" % [next_day, UIKit.club_label(ww.clubs[opp]), UIKit.bo_text(int(fx["best_of"])), stage]
 	row.add_child(_card("下一場比賽", nm))
 	var st: Dictionary = lg.standings.get(c.id, {"w": 0, "l": 0})
 	var pos = LeagueEngine.sorted_standings(lg).find(c.id) + 1
@@ -69,12 +74,24 @@ func refresh() -> void:
 	inbox.add_child(UIKit.label("收件匣", 17))
 	var msgs = session.open_messages()
 	for m in msgs.slice(0, 5):
-		inbox.add_child(UIKit.label("• " + m["text"], 14, UIKit.WARN))
+		var ml = UIKit.label("• " + m["text"], 14, UIKit.WARN)
+		ml.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		inbox.add_child(ml)
 	if msgs.is_empty():
 		inbox.add_child(UIKit.muted("沒有待處理事項"))
 	else:
 		inbox.add_child(UIKit.button("前往收件匣", func(): shell.open("inbox")))
 	row2.add_child(UIKit.panel(inbox))
+	var news := UIKit.vbox(4)
+	news.add_child(UIKit.label("媒體報導", 17))
+	var items = Media.club_news(ww, c.id, 5)
+	for n in items:
+		var nl = UIKit.label("• " + n["text"], 14, UIKit.GOOD if float(n["tone"]) > 0.3 else (UIKit.BAD if float(n["tone"]) < -0.3 else UIKit.TEXT))
+		nl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		news.add_child(nl)
+	if items.is_empty():
+		news.add_child(UIKit.muted("還沒有關於球隊的報導"))
+	row2.add_child(UIKit.panel(news))
 	for ch in row2.get_children():
 		ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 

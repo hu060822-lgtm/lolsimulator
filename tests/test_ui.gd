@@ -17,7 +17,7 @@ func test_new_game_screen_builds() -> void:
 	var s := GameSession.new()
 	var scr := NewGameScreen.new()
 	scr.setup(s, null)
-	check(scr.list.get_root().get_child_count() == 16, "lists all clubs")
+	check(scr.list.get_root().get_child_count() == GameSession.list_clubs(TestCase.MODULE_DIR).size(), "lists all clubs")
 	scr.free()
 
 

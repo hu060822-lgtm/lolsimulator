@@ -11,6 +11,7 @@
   "clubs": "clubs.json",
   "names": "names.json",
   "players": "players.json",
-  "rules": "rules.json"
+  "rules": "rules.json",
+  "events": "events.json"
  }
 }

@@ -59,7 +59,7 @@ static func apply_series(w: WorldState, series: Dictionary, stakes: float) -> vo
 				q.confidence = clampf(q.confidence - 1.0, 0.0, 100.0)
 				Relationships.change_coach(w, q, -0.5)
 			# 大賽經驗：季後賽累積，降低之後的大賽壓力
-			if stakes >= 1.5:
+			if stakes >= 1.4:
 				q.career["big_games"] = int(q.career.get("big_games", 0)) + 1
 		for pid in club.roster:
 			var p: Player = w.players[pid]

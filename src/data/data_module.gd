@@ -12,6 +12,7 @@ var names: Dictionary = {}
 var players: Array = []     ## 可選：模組直接提供的選手
 var staff: Array = []
 var rules: Dictionary = {}
+var events: Array = []      ## 可選：隨機事件定義（見 RandomEvents）
 var errors: Array = []
 
 
@@ -29,6 +30,7 @@ static func load_from_dir(dir_path: String) -> DataModule:
 	m.clubs = _read_list(dir_path, files.get("clubs", ""), m.errors)
 	m.players = _read_list(dir_path, files.get("players", ""), m.errors, true)
 	m.staff = _read_list(dir_path, files.get("staff", ""), m.errors, true)
+	m.events = _read_list(dir_path, files.get("events", ""), m.errors, true)
 	var n = _read_json(dir_path.path_join(files.get("names", "names.json")))
 	m.names = n if n is Dictionary else {}
 	var r = _read_json(dir_path.path_join(files.get("rules", "rules.json")))

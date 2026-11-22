@@ -29,7 +29,7 @@ func refresh() -> void:
 				"、".join(p.goals.map(func(g): return UIKit.GOAL_NAMES.get(g, g))), p.happiness, int(p.trust_in_management)]))
 		var row := UIKit.hbox()
 		for opt in m.get("options", ["acknowledge"]):
-			row.add_child(UIKit.button(UIKit.RESPONSE_NAMES.get(opt, opt), _respond.bind(m["id"], opt)))
+			row.add_child(UIKit.button(m.get("option_labels", {}).get(opt, UIKit.RESPONSE_NAMES.get(opt, opt)), _respond.bind(m["id"], opt)))
 		v.add_child(row)
 		list.add_child(UIKit.panel(v))
 	var log := UIKit.vbox(2)

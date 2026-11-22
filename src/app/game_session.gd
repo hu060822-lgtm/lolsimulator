@@ -36,7 +36,7 @@ static func list_clubs(module_dir: String) -> Array:
 
 static func list_leagues(module_dir: String) -> Array:
 	var m = DataModule.load_from_dir(module_dir)
-	return m.leagues
+	return m.leagues.filter(func(l): return int(l.get("tier", 1)) >= 1)  # 國際賽事不能選
 
 
 # ---------------------------------------------------------------- 時間推進
@@ -186,6 +186,8 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 			return {"note": "已讀"}
 		"mediate", "back_first", "ignore":
 			return Relationships.resolve_conflict(world, msg, option)
+	if option.begins_with("ev:"):
+		return RandomEvents.resolve(world, msg, option)
 	var r = respond_to_player(msg["player_id"], option)
 	msg["resolved"] = true
 	return r

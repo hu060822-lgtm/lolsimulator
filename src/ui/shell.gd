@@ -4,7 +4,7 @@ extends VBoxContainer
 
 const PAGES := [
 	["dashboard", "總覽"], ["roster", "名單"], ["tactics", "戰術與陣容"], ["training", "訓練"],
-	["transfers", "轉會中心"], ["staff", "教練團"], ["finance", "財務"], ["competition", "賽事"], ["inbox", "收件匣"], ["history", "歷史"], ["saves", "存檔"],
+	["transfers", "轉會中心"], ["staff", "教練團"], ["finance", "財務"], ["competition", "賽事"], ["news", "媒體"], ["inbox", "收件匣"], ["history", "歷史"], ["saves", "存檔"],
 ]
 
 var session: GameSession
@@ -84,6 +84,7 @@ func open(id: String) -> void:
 		"staff": scr = StaffScreen.new()
 		"finance": scr = FinanceScreen.new()
 		"inbox": scr = InboxScreen.new()
+		"news": scr = NewsScreen.new()
 		"history": scr = HistoryScreen.new()
 		"saves": scr = SavesScreen.new()
 		_: scr = DashboardScreen.new()

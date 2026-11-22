@@ -35,7 +35,7 @@ func _run() -> void:
 	var sh: Shell = app.current
 	# 先推進到第一場比賽前
 	sh._on_continue()
-	for id in ["roster", "tactics", "training", "transfers", "staff", "finance", "competition", "inbox"]:
+	for id in ["roster", "tactics", "training", "transfers", "staff", "finance", "competition", "news", "inbox"]:
 		sh.open(id)
 		if id == "roster":
 			var t: Tree = sh.page.table
@@ -54,4 +54,26 @@ func _run() -> void:
 	d._play()
 	d._reveal_all()
 	await _shot("06_match")
+	# 推進到世界賽與賽季結束
+	app.session.manual_draft = false
+	var w: WorldState = app.session.world
+	var guard := 0
+	while w.phase != WorldState.PHASE_INTERNATIONAL and guard < 300:
+		WorldSimulator.advance_day(w)
+		guard += 1
+	WorldSimulator.advance_days(w, 9)
+	sh.open("competition")
+	var cs: CompetitionScreen = sh.page
+	cs.league_opt.select(cs.ids.find("worlds"))
+	cs.refresh()
+	await _shot("07_worlds")
+	sh.open("news")
+	await _shot("08_news")
+	while w.phase != WorldState.PHASE_OFFSEASON and guard < 400:
+		WorldSimulator.advance_day(w)
+		guard += 1
+	sh.open("history")
+	await _shot("09_history")
+	sh.open("dashboard")
+	await _shot("10_dashboard_offseason")
 	quit()

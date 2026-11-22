@@ -7,9 +7,9 @@ class_name Finance
 extends RefCounted
 
 const INCOME_NAMES := {"league_share": "聯賽分潤", "sponsors": "贊助", "merch": "周邊商品", "media": "直播與媒體",
-	"prize": "獎金", "sponsor_bonus": "贊助績效獎金", "transfer_in": "轉會收入"}
+	"prize": "獎金", "sponsor_bonus": "贊助績效獎金", "transfer_in": "轉會收入", "events": "活動與事件"}
 const EXPENSE_NAMES := {"player_wages": "選手薪資", "staff_wages": "員工薪資", "transfer_out": "轉會支出",
-	"staff_severance": "員工解約補償", "scouting": "球探費用", "operations": "營運成本", "dividends": "投資方分紅"}
+	"staff_severance": "員工解約補償", "scouting": "球探費用", "operations": "營運成本", "dividends": "投資方分紅", "events": "事件支出"}
 const SPONSOR_KINDS := {"main": "主贊助", "apparel": "服裝贊助", "partner": "合作夥伴"}
 const DEFAULT_SPONSOR_NAMES := ["Nova Energy", "Quantum Peripherals", "Skyline Telecom", "Aurora Drinks", "Vertex Motors",
 	"Pixelforge", "Lumen Bank", "Harbor Logistics", "Crest Apparel", "Zenith Cloud", "Echo Audio", "Summit Snacks"]
@@ -35,8 +35,9 @@ static func league_share(lg: League) -> int:
 	return int(lg.format.get("revenue_share", 250000)) if lg else 250000
 
 
+## 周邊商品：粉絲數 × 外界評價（評價好時周邊賣得更好）。
 static func merch_per_year(club: Club) -> int:
-	return int(club.fanbase * 0.5)
+	return int(club.fanbase * 0.5 * (1.0 + club.opinion / 400.0))
 
 
 static func media_per_year(club: Club) -> int:

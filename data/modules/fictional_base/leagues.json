@@ -38,5 +38,72 @@
    },
    "wage_cap": 2000000
   }
+ },
+ {
+  "id": "ecl_c",
+  "name": "Eastern Challengers League",
+  "region": "EAST",
+  "tier": 2,
+  "prize_pool": 150000,
+  "format": {
+   "regular": {
+    "type": "double_round_robin",
+    "best_of": 1,
+    "days_between_rounds": 3
+   },
+   "playoffs": {
+    "type": "single_elimination",
+    "teams": 4,
+    "best_of": 3
+   },
+   "wage_cap": 900000,
+   "revenue_share": 90000
+  }
+ },
+ {
+  "id": "wvl_c",
+  "name": "Western Challengers League",
+  "region": "WEST",
+  "tier": 2,
+  "prize_pool": 120000,
+  "format": {
+   "regular": {
+    "type": "double_round_robin",
+    "best_of": 1,
+    "days_between_rounds": 2
+   },
+   "playoffs": {
+    "type": "single_elimination",
+    "teams": 4,
+    "best_of": 3
+   },
+   "wage_cap": 800000,
+   "revenue_share": 80000
+  }
+ },
+ {
+  "id": "worlds",
+  "name": "World Championship",
+  "region": "INTL",
+  "tier": 0,
+  "prize_pool": 3000000,
+  "format": {
+   "qualify_per_league": 4,
+   "regular": {
+    "type": "single_round_robin",
+    "best_of": 1,
+    "days_between_rounds": 1
+   },
+   "playoffs": {
+    "type": "single_elimination",
+    "teams": 4,
+    "best_of": 5
+   },
+   "stakes": {
+    "regular": 1.4,
+    "playoffs": 1.7,
+    "final": 2.0
+   }
+  }
  }
 ]
