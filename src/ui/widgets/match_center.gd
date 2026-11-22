@@ -259,10 +259,10 @@ func _render_feed(minute: int) -> void:
 ## 精簡事件列：[時間] 標籤 文字；原因收進滑鼠提示。
 func event_line(e: Dictionary) -> String:
 	var side: String = e["sides"][0] if e["sides"].size() > 0 else ""
-	var col = "#4f8cff" if side == "blue" else ("#ff6b6b" if side == "red" else "#8a90a0")
+	var col = "#3d9bff" if side == "blue" else ("#ff5a6a" if side == "red" else "#8c95a4")
 	var tag: String = TAGS.get(e["type"], "")
 	var big = e["type"] in BIG
-	var txt = "[color=#6b7280]%02d'[/color] [bgcolor=%s][color=#0f1115] %s [/color][/bgcolor] %s%s%s" % [int(e["minute"]), col, tag, "[b]" if big else "", e["text"], "[/b]" if big else ""]
+	var txt = "[color=#6b7280]%02d'[/color] [bgcolor=%s33][color=%s] %s [/color][/bgcolor] %s%s%s" % [int(e["minute"]), col, col, tag, "[b]" if big else "", e["text"], "[/b]" if big else ""]
 	if e["causes"].size() > 0:
 		txt = "[hint=%s]%s[/hint]" % ["、".join(e["causes"]).replace("]", ")").replace("[", "("), txt]
 	return txt

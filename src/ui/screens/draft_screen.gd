@@ -28,9 +28,53 @@ func build() -> void:
 	if series == null:
 		add_child(UIKit.label("今天沒有比賽。"))
 		return
-	header = UIKit.label("", 20)
-	add_child(header)
+	add_child(_build_header())
 	_new_game()
+
+
+## 系列賽計分列：雙方隊徽、名稱與大比分；下方一行小字是局數與狀態。
+var score_label: Label
+
+func _build_header() -> PanelContainer:
+	var p := PanelContainer.new()
+	var sb := UIKit._card(Color(UIKit.BG_2, 0.92), 10)
+	sb.border_color = Color(UIKit.GOLD_DIM, 0.8)
+	sb.border_width_bottom = 2
+	sb.content_margin_top = 10
+	sb.content_margin_bottom = 10
+	p.add_theme_stylebox_override("panel", sb)
+	var v := UIKit.vbox(2)
+	p.add_child(v)
+	var row := UIKit.hbox(14)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_child(row)
+	var na := UIKit.label(series.a.name, 20, UIKit.BLUE_SIDE.lightened(0.25))
+	na.add_theme_font_override("font", UIKit.head_font())
+	na.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	na.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	na.clip_text = true
+	row.add_child(na)
+	row.add_child(Badge.club(session.world.clubs.get(series.a.club_id), 46))
+	score_label = UIKit.label("0 : 0", 30, UIKit.GOLD_LIGHT)
+	score_label.add_theme_font_override("font", UIKit.head_font())
+	score_label.custom_minimum_size = Vector2(110, 0)
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	row.add_child(score_label)
+	row.add_child(Badge.club(session.world.clubs.get(series.b.club_id), 46))
+	var nb := UIKit.label(series.b.name, 20, UIKit.RED_SIDE.lightened(0.25))
+	nb.add_theme_font_override("font", UIKit.head_font())
+	nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nb.clip_text = true
+	row.add_child(nb)
+	header = UIKit.label("", 13, UIKit.GOLD)
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(header)
+	return p
+
+
+func _set_header(game_no: int, state: String) -> void:
+	score_label.text = "%d : %d" % [int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id])]
+	header.text = "第 %d 局・%s・%s" % [game_no, UIKit.bo_text(series.best_of), state]
 
 
 func _new_game() -> void:
@@ -86,7 +130,7 @@ func _advance_ai() -> void:
 func refresh() -> void:
 	if series == null or ds == null:
 		return
-	header.text = "第 %d 局　%s %d - %d %s　（%s）" % [series.games.size() + 1, UIKit.club_label(series.a), int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id]), UIKit.club_label(series.b), UIKit.bo_text(series.best_of)]
+	_set_header(series.games.size() + 1, "BP 階段")
 	_team_col(blue_col, "blue")
 	_team_col(red_col, "red")
 	UIKit.clear(center)
@@ -363,7 +407,7 @@ func _open_center() -> void:
 	for c in get_children().slice(1):
 		remove_child(c)
 		c.queue_free()
-	header.text = "第 %d 局　%s %d - %d %s" % [series.games.size() + (0 if live_snap.is_empty() else 1), UIKit.club_label(series.a), int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id]), UIKit.club_label(series.b)]
+	_set_header(series.games.size() + (0 if live_snap.is_empty() else 1), "比賽中")
 	mc = MatchCenter.new().setup(session, hs)
 	mc.custom_minimum_size = Vector2(0, 560)
 	mc.reached_end.connect(_on_center_end)
@@ -382,7 +426,7 @@ func _on_center_end() -> void:
 func _play_live() -> void:
 	live_snap = {"pending": true}
 	_open_center()
-	header.text += "　・即時指揮"
+	header.text += "・即時指揮"
 	_apply_live(session.start_live_game(ds))
 
 

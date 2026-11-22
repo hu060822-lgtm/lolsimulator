@@ -5,22 +5,31 @@ const MODULE := "res://data/modules/lol_world"
 
 var session := GameSession.new()
 var current: Control
+var art: TextureRect
 
 
 func _ready() -> void:
 	theme = UIKit.make_theme()
-	var bg := ColorRect.new()
-	bg.color = UIKit.BG
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	add_child(UIKit.backdrop())
+	# 開局畫面背後淡淡的峽谷地圖
+	art = TextureRect.new()
+	art.texture = RiftMap.background()
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.set_anchors_preset(Control.PRESET_FULL_RECT)
+	art.modulate = Color(0.55, 0.6, 0.75, 0.16)
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(art)
 	show_new_game()
 
 
 func show_new_game() -> void:
+	art.visible = true
 	_swap(NewGameScreen.new().setup(session, self))
 
 
 func start_game() -> void:
+	art.visible = false
 	var sh := Shell.new()
 	sh.setup(session, self)
 	_swap(sh)
