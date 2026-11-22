@@ -1,0 +1,16 @@
+{
+ "id": "fictional_base",
+ "name": "虛構世界：基礎資料庫",
+ "kind": "fictional",
+ "version": "0.1.0",
+ "start_year": 2027,
+ "description": "全虛構的俱樂部、聯賽與英雄。選手由世界生成器依 names.json 生成，可另外提供 players.json 覆蓋。",
+ "files": {
+  "champions": "champions.json",
+  "leagues": "leagues.json",
+  "clubs": "clubs.json",
+  "names": "names.json",
+  "players": "players.json",
+  "rules": "rules.json"
+ }
+}

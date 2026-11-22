@@ -1,0 +1,999 @@
+[
+ {
+  "id": "ironwarden",
+  "name": "Ironwarden",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "frontline": 3,
+   "engage": 2,
+   "teamfight": 2,
+   "peel": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "ashblade",
+  "name": "Ashblade",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 8,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "burst": 1,
+   "mobility": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "thornmother",
+  "name": "Thornmother",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "frontline": 3,
+   "teamfight": 3,
+   "engage": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "duskfang",
+  "name": "Duskfang",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 6,
+   "late": 4
+  },
+  "lane": 8,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 2,
+   "burst": 2,
+   "pick": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "stonecaller",
+  "name": "Stonecaller",
+  "roles": [
+   "TOP",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "engage": 3,
+   "frontline": 2,
+   "teamfight": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "galeduelist",
+  "name": "Galeduelist",
+  "roles": [
+   "TOP",
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "dps": 2,
+   "mobility": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "mirewalker",
+  "name": "Mirewalker",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 6,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "poke": 2,
+   "siege": 2,
+   "waveclear": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "bulwark",
+  "name": "Bulwark",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 3,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 3,
+  "damage": "AD",
+  "tags": {
+   "frontline": 3,
+   "disengage": 2,
+   "peel": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "redmane",
+  "name": "Redmane",
+  "roles": [
+   "TOP",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 6,
+   "late": 5
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "engage": 2,
+   "frontline": 2,
+   "burst": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "hollowking",
+  "name": "Hollowking",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "dps": 3
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "nightprowl",
+  "name": "Nightprowl",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 6,
+   "late": 4
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "pick": 3,
+   "burst": 2,
+   "mobility": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "emberhound",
+  "name": "Emberhound",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "teamfight": 2,
+   "burst": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "vinewraith",
+  "name": "Vinewraith",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "frontline": 2,
+   "engage": 2,
+   "teamfight": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "skyreaver",
+  "name": "Skyreaver",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "engage": 3,
+   "pick": 1,
+   "mobility": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "grimtusk",
+  "name": "Grimtusk",
+  "roles": [
+   "JUNGLE",
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "frontline": 3,
+   "engage": 2,
+   "disengage": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "ghostlark",
+  "name": "Ghostlark",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "splitpush": 1,
+   "mobility": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "frostmaw",
+  "name": "Frostmaw",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "frontline": 2,
+   "engage": 3,
+   "teamfight": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "quickthorn",
+  "name": "Quickthorn",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 5,
+   "late": 4
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "pick": 2,
+   "burst": 2,
+   "mobility": 3
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "moonhusk",
+  "name": "Moonhusk",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "dps": 2,
+   "teamfight": 2,
+   "frontline": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "rustgolem",
+  "name": "Rustgolem",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 6
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "frontline": 3,
+   "peel": 2,
+   "disengage": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "starweaver",
+  "name": "Starweaver",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "teamfight": 3,
+   "waveclear": 3,
+   "poke": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "voidscribe",
+  "name": "Voidscribe",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "poke": 3,
+   "siege": 2,
+   "waveclear": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "silkdagger",
+  "name": "Silkdagger",
+  "roles": [
+   "MID",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 8,
+   "late": 5
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "burst": 3,
+   "pick": 2,
+   "mobility": 3
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "pyrelord",
+  "name": "Pyrelord",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "burst": 2,
+   "waveclear": 2,
+   "teamfight": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "mirrormage",
+  "name": "Mirrormage",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "dps": 2,
+   "teamfight": 2,
+   "disengage": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "tidecantor",
+  "name": "Tidecantor",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "teamfight": 2,
+   "peel": 2,
+   "waveclear": 2,
+   "disengage": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "stormlancer",
+  "name": "Stormlancer",
+  "roles": [
+   "MID",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "burst": 2,
+   "mobility": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "rimeseer",
+  "name": "Rimeseer",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "dps": 3,
+   "waveclear": 2,
+   "teamfight": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "fangwhisper",
+  "name": "Fangwhisper",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 7,
+   "late": 4
+  },
+  "lane": 8,
+  "damage": "AP",
+  "tags": {
+   "burst": 3,
+   "pick": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "glassarcher",
+  "name": "Glassarcher",
+  "roles": [
+   "MID",
+   "ADC"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "poke": 3,
+   "siege": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "brightshot",
+  "name": "Brightshot",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "dps": 3,
+   "siege": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "cinderbolt",
+  "name": "Cinderbolt",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "burst": 1,
+   "poke": 2,
+   "siege": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "swiftwing",
+  "name": "Swiftwing",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "dps": 3,
+   "mobility": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "longsight",
+  "name": "Longsight",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "poke": 3,
+   "siege": 3
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "duskhunter",
+  "name": "Duskhunter",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "mobility": 2,
+   "pick": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "hexgunner",
+  "name": "Hexgunner",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "MIX",
+  "tags": {
+   "dps": 2,
+   "teamfight": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "rainmaker",
+  "name": "Rainmaker",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 4,
+  "damage": "AD",
+  "tags": {
+   "dps": 3,
+   "teamfight": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "shardqueen",
+  "name": "Shardqueen",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "engage": 1,
+   "dps": 2,
+   "pick": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "flarelock",
+  "name": "Flarelock",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 6,
+   "late": 5
+  },
+  "lane": 8,
+  "damage": "AD",
+  "tags": {
+   "burst": 2,
+   "poke": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "windrunner",
+  "name": "Windrunner",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "waveclear": 2,
+   "teamfight": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "chainbreaker",
+  "name": "Chainbreaker",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "engage": 3,
+   "frontline": 2,
+   "pick": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "lumenmaid",
+  "name": "Lumenmaid",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "peel": 3,
+   "disengage": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "hookwyrm",
+  "name": "Hookwyrm",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 6,
+   "late": 5
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "pick": 3,
+   "engage": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "bellwarden",
+  "name": "Bellwarden",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "frontline": 3,
+   "teamfight": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "songbinder",
+  "name": "Songbinder",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "peel": 3,
+   "disengage": 2,
+   "teamfight": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "thornseer",
+  "name": "Thornseer",
+  "roles": [
+   "SUPPORT",
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AP",
+  "tags": {
+   "poke": 3,
+   "siege": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "gravetide",
+  "name": "Gravetide",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "engage": 3,
+   "teamfight": 2,
+   "frontline": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "mistcharm",
+  "name": "Mistcharm",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 6,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "pick": 2,
+   "peel": 1,
+   "poke": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "shieldbearer",
+  "name": "Shieldbearer",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "frontline": 2,
+   "peel": 2,
+   "disengage": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "starfinch",
+  "name": "Starfinch",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "peel": 2,
+   "poke": 2
+  },
+  "difficulty": 5
+ }
+]

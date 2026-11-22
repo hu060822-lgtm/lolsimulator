@@ -1,3 +1,60 @@
 # ESPORT: LOL Simulator
 
-英雄聯盟電競俱樂部經營模擬器（Godot 4.3）。
+Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）。
+
+> **Build a Legacy. Not Just a Team.**
+
+## 現況
+
+本倉庫目前是 **Phase 1（Playable Foundation）的系統骨架與核心模擬規則**：
+
+- 可無頭執行、可測試的模擬核心（與 UI 完全分離）
+- 事件驅動比賽引擎：BP、對線、打野路線、物件爭奪與資源交換、分推、抓單、團戰、失誤、戰術調整
+- 選手自主行為：職業目標、每週自我評估、要求談話、要求離隊、拒絕續約、退役
+- 成長／衰退、英雄池、訓練與疲勞、基本轉會與合約、聯賽與季後賽、AI 俱樂部
+- 多年世界模擬：世代交替、新人、新版本、新英雄、歷史紀錄
+- 可決定性存讀檔
+- 資料模組與引擎分離（附全虛構資料模組 `fictional_base`）
+
+## 文件
+
+| 文件 | 內容 |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | 系統架構、分層、資料流、如何擴充 |
+| [docs/rules/01-player-model.md](docs/rules/01-player-model.md) | 選手能力、潛力、成長曲線、英雄池 |
+| [docs/rules/02-player-agency.md](docs/rules/02-player-agency.md) | 選手自主行為與職業目標 |
+| [docs/rules/03-match-engine.md](docs/rules/03-match-engine.md) | 事件驅動比賽引擎 |
+| [docs/rules/04-draft.md](docs/rules/04-draft.md) | BP 與陣容分析 |
+| [docs/rules/05-world-simulation.md](docs/rules/05-world-simulation.md) | 年度循環、AI 俱樂部、世代交替 |
+| [docs/rules/06-transfers-contracts.md](docs/rules/06-transfers-contracts.md) | 轉會與合約 |
+| [docs/rules/07-training-season-finance.md](docs/rules/07-training-season-finance.md) | 訓練、比賽影響、基本財務 |
+| [docs/data-modules.md](docs/data-modules.md) | 資料模組格式（真實／虛構／自訂資料庫） |
+| [docs/roadmap.md](docs/roadmap.md) | 開發路線圖 |
+
+## 執行
+
+```bash
+godot --headless --path . --import                       # 第一次：建立 class 快取
+godot --headless --path . -s tests/run_tests.gd          # 全部測試
+godot --headless --path . -s tools/calibrate.gd -- --games=500        # 比賽引擎統計
+godot --headless --path . -s tools/simulate_world.gd -- --years=10    # 多年世界報告
+godot --path .                                           # 原型 UI
+```
+
+## 目錄
+
+```
+src/core      可決定性 RNG、事件紀錄、平衡參數
+src/domain    純資料：世界、選手、俱樂部、聯賽、英雄、合約
+src/data      資料模組載入、世界建立、選手生成
+src/systems   規則：match / player / league / transfer / training / world
+src/ai        AI 俱樂部經營
+src/save      存檔
+src/app       GameSession（UI 唯一入口）
+src/ui        Godot 場景
+data/modules  資料模組
+tests         headless 測試
+tools         校準與長期模擬工具
+```
+
+所有範例資料（俱樂部、選手、英雄、聯賽）皆為虛構。
