@@ -27,6 +27,7 @@ var history: Array = []              ## [{year, league_id, position, playoff_res
 var titles: int = 0
 var world_titles: int = 0
 var msi_titles: int = 0
+var intl_titles: Dictionary = {}   ## 其他國際賽事 id -> 冠軍次數（例：First Stand）
 var board_confidence: float = 60.0    ## 董事會信心 0..100（見 Organization）
 var brand: float = 40.0               ## 品牌價值 0..100（見 Organization）
 var crisis_flags: Dictionary = {}     ## 本季已觸發的危機（避免重複）
@@ -76,6 +77,6 @@ func to_dict() -> Dictionary:
 		"reputation": reputation, "fanbase": fanbase, "philosophy": philosophy,
 		"roster": roster, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
-		"training_plan": training_plan, "history": history, "titles": titles, "world_titles": world_titles, "msi_titles": msi_titles, "opinion": opinion, "board_confidence": board_confidence, "brand": brand, "crisis_flags": crisis_flags, "streak": streak,
+		"training_plan": training_plan, "history": history, "titles": titles, "world_titles": world_titles, "msi_titles": msi_titles, "intl_titles": intl_titles, "opinion": opinion, "board_confidence": board_confidence, "brand": brand, "crisis_flags": crisis_flags, "streak": streak,
 		"finance_log": finance_log, "scout_knowledge": scout_knowledge,
 		"ledger": ledger, "staff": staff, "sponsors": sponsors, "sponsor_offers": sponsor_offers}

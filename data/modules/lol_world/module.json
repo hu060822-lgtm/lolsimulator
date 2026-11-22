@@ -1,0 +1,17 @@
+{
+ "id": "lol_world",
+ "name": "英雄聯盟電競世界（致敬版）",
+ "kind": "homage",
+ "version": "0.1.0",
+ "start_year": 2026,
+ "description": "對標真實電競：LCK、LPL、LEC、LTA、LCP 五大賽區與 LCK CL、LDL 次級聯賽，季中 First Stand、MSI，年底世界賽（瑞士輪）。俱樂部與知名選手採致敬名（以 2025 年陣容為基準），其餘選手由生成器補齊；可用真名名單覆蓋（見 docs/data-modules.md）。",
+ "files": {
+  "champions": "../fictional_base/champions.json",
+  "leagues": "leagues.json",
+  "clubs": "clubs.json",
+  "names": "names.json",
+  "players": "players.json",
+  "rules": "../fictional_base/rules.json",
+  "events": "../fictional_base/events.json"
+ }
+}

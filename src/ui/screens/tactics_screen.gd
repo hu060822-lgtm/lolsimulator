@@ -7,6 +7,12 @@ var aggr: HSlider
 var aggr_label: Label
 var lineup_box: VBoxContainer
 var plans: Array = UIKit.PLAN_NAMES.keys()
+var plan_btns: Array = []
+const PLAN_INFO := {
+	"flexible": ["FLEX", "依陣容決定打法"], "early_aggression": ["EARLY", "前期 Gank 壓制"], "late_scaling": ["SCALE", "穩定發育拚後期"],
+	"split_push": ["SPLIT", "邊路牽制拉扯"], "teamfight": ["FIGHT", "五人集團作戰"], "pick": ["PICK", "視野抓落單"],
+	"poke_siege": ["SIEGE", "消耗後推塔"], "protect": ["PROTECT", "保護核心輸出"],
+}
 
 
 func build() -> void:
@@ -18,7 +24,19 @@ func build() -> void:
 	var c = session.club()
 	plan_opt = UIKit.option(plans.map(func(p): return UIKit.PLAN_NAMES[p]), plans.find(c.tactics.get("plan", "flexible")))
 	plan_opt.item_selected.connect(func(_i): _save())
+	plan_opt.visible = false
 	v.add_child(plan_opt)
+	var grid := HFlowContainer.new()
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	for i in plans.size():
+		var info: Array = PLAN_INFO.get(plans[i], ["", ""])
+		var b := UIKit.tile(info[0], UIKit.PLAN_NAMES[plans[i]].split("（")[0], info[1], _pick_plan.bind(i), UIKit.ACCENT, 140)
+		b.toggle_mode = true
+		b.button_pressed = i == plan_opt.selected
+		plan_btns.append(b)
+		grid.add_child(b)
+	v.add_child(grid)
 	var ar := UIKit.hbox()
 	ar.add_child(UIKit.label("侵略性"))
 	aggr = HSlider.new()
@@ -62,6 +80,13 @@ func refresh() -> void:
 		o.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(o)
 		lineup_box.add_child(row)
+
+
+func _pick_plan(i: int) -> void:
+	plan_opt.select(i)
+	for k in plan_btns.size():
+		plan_btns[k].button_pressed = k == i
+	_save()
 
 
 func _save() -> void:

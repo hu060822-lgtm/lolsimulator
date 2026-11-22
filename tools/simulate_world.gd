@@ -1,16 +1,19 @@
-## 多年世界模擬報告：godot --headless --path . -s tools/simulate_world.gd -- --years=10 --seed=7
+## 多年世界模擬報告：godot --headless --path . -s tools/simulate_world.gd -- --years=10 --seed=7 [--module=fictional_base]
 extends SceneTree
 
 
 func _init() -> void:
 	var years := 10
 	var world_seed := 7
+	var module := "res://data/modules/lol_world"
 	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--module="):
+			module = "res://data/modules/" + a.substr(9)
 		if a.begins_with("--years="):
 			years = int(a.substr(8))
 		elif a.begins_with("--seed="):
 			world_seed = int(a.substr(7))
-	var w = WorldBuilder.build(DataModule.load_from_dir("res://data/modules/fictional_base"), world_seed)
+	var w = WorldBuilder.build(DataModule.load_from_dir(module), world_seed)
 	var start: int = w.year
 	var t0 = Time.get_ticks_msec()
 	WorldSimulator.advance_to_year(w, start + years)
@@ -21,6 +24,9 @@ func _init() -> void:
 			var L: Dictionary = s["leagues"][lid]
 			var mvp: String = w.players[L["mvp"]].handle if L["mvp"] != "" else "-"
 			line += "%s %-4s " % [lid.to_upper(), w.clubs[L["champion"]].short_name]
+		var F: Dictionary = s.get("first_stand", {})
+		if not F.is_empty():
+			line += "｜FS %s" % w.clubs[F["champion"]].short_name
 		var M: Dictionary = s.get("midseason", {})
 		if not M.is_empty():
 			line += "｜MSI %s" % w.clubs[M["champion"]].short_name
@@ -30,6 +36,23 @@ func _init() -> void:
 		for mv in s.get("movements", []):
 			line += "｜↑%s ↓%s" % [w.clubs[mv["up"]].short_name, w.clubs[mv["down"]].short_name]
 		print(line)
+	print("\n各聯賽先發平均能力／外援人數：")
+	for lg in w.leagues.values():
+		if lg.tier == 0:
+			continue
+		var tot := 0.0
+		var n := 0
+		var imp := 0
+		for c in w.clubs.values():
+			if c.league_id != lg.id:
+				continue
+			for role in c.lineup:
+				var sp: Player = w.players[c.lineup[role]]
+				tot += sp.current_ability(role)
+				n += 1
+				if sp.home_region != c.region:
+					imp += 1
+		print("  %-7s 能力 %.1f  外援先發 %d/%d" % [lg.id, tot / maxf(n, 1), imp, n])
 	print("\n俱樂部冠軍數：")
 	var clubs: Array = w.clubs.values()
 	clubs.sort_custom(func(a, b): return a.titles + a.world_titles * 3 > b.titles + b.world_titles * 3)

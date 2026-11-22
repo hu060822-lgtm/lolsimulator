@@ -42,6 +42,11 @@ var herald_taken: bool = false
 var lane_tilt: Dictionary = {}    ## side -> lane -> 暫時性對線修正（例：被 Gank 交出閃現）
 var events: Array = []
 var winner: String = ""
+## 戰況地圖：每分鐘一格，記錄十名選手位置、擊殺／物件／推塔標記與建築狀態（只在 detail 模式）。
+var frames: Array = []
+var _where: String = ""           ## 目前事件發生的地點（lane:top、obj:dragon、jungle:blue…）
+var _involved: Dictionary = {}    ## "blue0" -> 地點，本分鐘參與事件的選手
+var _marks: Array = []
 
 
 func _init(blue_ctx: TeamContext, red_ctx: TeamContext, draft_result: Dictionary, champs: Dictionary, r: SimRng, keep_detail: bool = true, stakes_level: float = 1.0) -> void:
@@ -79,6 +84,7 @@ const SHOTCALL_MINUTES := [14, 20, 26, 32, 38, 44, 50, 56]
 func begin() -> void:
 	_setup()
 	minute = 0
+	_record_frame()
 
 
 func is_over() -> bool:
@@ -90,6 +96,7 @@ func run_until(stop_minute: int) -> bool:
 	while not is_over() and minute < mini(stop_minute, MAX_MINUTE):
 		minute += 1
 		_tick()
+		_record_frame()
 	return is_over()
 
 
@@ -113,7 +120,8 @@ func snapshot() -> Dictionary:
 		"dragons": dragons.duplicate(), "barons": barons.duplicate(), "grubs": grubs.duplicate(),
 		"towers_destroyed": {"blue": _structures_lost("red"), "red": _structures_lost("blue")},
 		"stances": stance.duplicate(), "events": events, "blue_club": blue.club_id, "red_club": red.club_id,
-		"comp_late": {"blue": comp["blue"]["late"], "red": comp["red"]["late"]}, "over": is_over()}
+		"comp_late": {"blue": comp["blue"]["late"], "red": comp["red"]["late"]}, "over": is_over(),
+		"frames": frames, "champs": _champ_ids(), "structures": {"blue": structures["blue"].duplicate(), "red": structures["red"].duplicate()}}
 
 
 func finish() -> Dictionary:
@@ -138,6 +146,7 @@ func _setup() -> void:
 				"mastery": (p.mastery(cid) / 100.0 if p and p.mastery(cid) > 0 else 0.25),
 				"form": _day_form(p), "gold": 500.0, "kills": 0, "deaths": 0, "assists": 0,
 				"dead_until": 0, "mistakes": 0, "impact": 0.0, "debuff": 0.0,
+				"side": side, "idx": list.size(),
 			})
 		units[side] = list
 		comp[side] = draft["comp"][side]
@@ -258,6 +267,7 @@ func _lane_power(side: String, lane: String) -> float:
 
 func _laning() -> void:
 	for lane in LANES:
+		_where = "lane:" + lane
 		var pb = _lane_power("blue", lane)
 		var pr = _lane_power("red", lane)
 		var edge = clampf((pb - pr) / ((pb + pr) / 2.0) * 1.5, -1.0, 1.0)
@@ -297,6 +307,7 @@ func _laning() -> void:
 				continue
 			if _maybe_mistake(u, 0.12):
 				var lane = _lane_of(u["role"])
+				_where = "lane:" + lane
 				var opp = _pick_lane_unit(other(side), lane)
 				if opp and opp["dead_until"] <= minute and rng.chance(0.55):
 					_kill(other(side), opp, u, [], "punished_mistake", "%s 的 %s 失誤被懲罰，%s 拿下擊殺" % [team(side).short_name, _h(u), _h(opp)], ["%s 失誤（穩定性 %d）" % [_h(u), int(u["player"].skill("consistency")) if u["player"] else 0]])
@@ -387,7 +398,10 @@ func _resolve_gank(side: String, lane: String, countered: bool) -> void:
 	var target = _pick_lane_unit(other(side), lane)
 	if target == null or target["dead_until"] > minute:
 		return
+	_where = "lane:" + lane
+	_involve(jg)
 	if countered:
+		_involve(units[other(side)][1])
 		# 反蹲：雙方打野同時出現，演變成 2v2 / 3v3 小規模戰鬥
 		var p_side := 0.0
 		var p_enemy := 0.0
@@ -434,6 +448,8 @@ func _resolve_gank(side: String, lane: String, countered: bool) -> void:
 func _resolve_invade(side: String, enemy_plan: String) -> void:
 	var jg: Dictionary = units[side][1]
 	var ejg: Dictionary = units[other(side)][1]
+	_where = "jungle:" + other(side)
+	_involve(jg)
 	var mine = _fight_perf(jg) * (1.0 + priority[side]["mid"] * 0.5)
 	var theirs = _fight_perf(ejg) * (1.0 + priority[other(side)]["mid"] * 0.5)
 	if enemy_plan.begins_with("gank_") or ejg["dead_until"] > minute:
@@ -478,6 +494,7 @@ func _objectives() -> void:
 
 
 func _contest(obj: String, near_lanes: Array) -> void:
+	_where = "obj:" + obj
 	var want := {}
 	var pb = _team_power("blue")
 	var pr = _team_power("red")
@@ -537,6 +554,9 @@ func _contest(obj: String, near_lanes: Array) -> void:
 ## 資源交換：放棄物件的一方在地圖另一側換取資源（塔、鍍層、野區）。
 func _trade(side: String, given_up: String, near_lanes: Array) -> void:
 	var far := "top" if "bot" in near_lanes else "bot"
+	_where = "lane:" + far
+	for u in _alive(side):
+		_involve(u)
 	if minute >= 14:
 		siege[side][far] += 0.8
 		if detail:
@@ -551,6 +571,10 @@ func _trade(side: String, given_up: String, near_lanes: Array) -> void:
 
 
 func _award_objective(side: String, obj: String, causes: Array) -> void:
+	if detail:
+		for u in _alive(side):
+			_involve(u, "obj:" + obj)
+		_marks.append({"t": obj, "side": side, "p": _loc_point("obj:" + obj)})
 	match obj:
 		"dragon":
 			dragons[side] += 1
@@ -656,6 +680,7 @@ func _macro() -> void:
 			if killers.is_empty():
 				continue
 			var killer: Dictionary = rng.pick(killers)
+			_where = "jungle:" + other(side)
 			var causes: Array = ["%s 站位/地圖意識不足" % _h(victim)]
 			if vision[side] > vision[other(side)] + 0.1:
 				causes.append("視野控制優勢")
@@ -684,6 +709,7 @@ func _macro() -> void:
 	if minute >= 45:
 		fight_p += 0.3
 	if rng.chance(clampf(fight_p, 0.02, 0.9)):
+		_where = "lane:mid"
 		var f = _teamfight("中路/野區", initiator)
 		if f["margin"] >= 2:
 			var w: String = f["winner"]
@@ -704,6 +730,8 @@ func _split_push(side: String) -> void:
 	if splitter["dead_until"] > minute:
 		return
 	var lane := "top" if best_i <= 1 else "bot"
+	_where = "lane:" + lane
+	_involve(splitter)
 	var enemy = other(side)
 	var q = team(enemy).shotcall_quality()
 	# 對手回應：派人守邊 / 以多打少強開 / 無視
@@ -727,8 +755,10 @@ func _split_push(side: String) -> void:
 		# 單挑打不贏 → 以多打少強開
 		_event("force_4v5", "%s 趁 %s 分推時在中路以五打四開戰" % [team(enemy).short_name, _h(splitter)], [enemy], ["%s 守邊單挑不利，選擇以多打少" % team(enemy).short_name])
 		splitter["dead_until"] = minute + 1  # 暫時不在團戰中（並非死亡）
+		_where = "lane:mid"
 		var f = _teamfight("中路", enemy)
 		splitter["dead_until"] = 0
+		_where = "lane:" + lane
 		siege[side][lane] += 0.6
 		if f["winner"] == enemy and f["margin"] >= 2:
 			_push(enemy, f["margin"] - 1, "以多打少獲勝")
@@ -769,6 +799,8 @@ func _teamfight(where: String, initiator: String) -> Dictionary:
 	var participants := {}
 	for side in SIDES:
 		participants[side] = _alive(side)
+		for u in participants[side]:
+			_involve(u)
 	# 一方無人可戰（全員陣亡或回城）：不構成團戰
 	if participants["blue"].is_empty() or participants["red"].is_empty():
 		var only = "blue" if participants["red"].is_empty() else "red"
@@ -919,6 +951,11 @@ func _destroy_structure(side: String, lane: String, reason: String) -> void:
 	var any_inhib = s["top"] >= 4 or s["mid"] >= 4 or s["bot"] >= 4
 	if s[lane] < 4:
 		s[lane] += 1
+		if detail:
+			_marks.append({"t": "tower", "side": side, "p": RiftGeometry.tower_point(enemy, lane, s[lane] - 1)})
+			for u in _alive(side):
+				if not _involved.has(side + str(u["idx"])) or not _involved[side + str(u["idx"])].begins_with("tower:"):
+					_involve(u, "tower:%s:%s:%d" % [enemy, lane, s[lane] - 1])
 		for u in units[side]:
 			u["gold"] += 60.0
 		var names = ["一塔", "二塔", "高地塔", "兵營"]
@@ -928,9 +965,15 @@ func _destroy_structure(side: String, lane: String, reason: String) -> void:
 		if s["nexus_towers"] < 2:
 			s["nexus_towers"] += 1
 			if detail:
+				_marks.append({"t": "tower", "side": side, "p": RiftGeometry.NEXUS_TOWERS[enemy][s["nexus_towers"] - 1]})
+			if detail:
 				_event("structure", "%s 摧毀主堡塔" % team(side).short_name, [side], [reason])
 		else:
 			winner = side
+			if detail:
+				_marks.append({"t": "nexus", "side": side, "p": RiftGeometry.NEXUS[enemy]})
+				for u in _alive(side):
+					_involve(u, "nexus:" + enemy)
 			_event("end", "%s 摧毀主堡，贏得比賽！（%d 分鐘）" % [team(side).short_name, minute], [side], [reason])
 
 
@@ -967,6 +1010,14 @@ func _kill(side: String, killer: Dictionary, victim: Dictionary, assists: Array,
 	victim["impact"] -= 0.7
 	var respawn = 0 if minute < 18 else (1 if minute < 32 else 2)
 	victim["dead_until"] = minute + respawn + 1 if respawn > 0 else minute + 1
+	if detail:
+		_involve(killer)
+		_involve(victim)
+		for a in assists:
+			_involve(a)
+		var vc: Champion = victim.get("champ")
+		_marks.append({"t": "kill", "side": side, "p": _loc_point(_where if _where != "" else "lane:mid") + RiftGeometry.spread(int(victim.get("idx", 0)), 5, 0.015),
+			"victim": vc.id if vc else ""})
 	for a in assists:
 		if a != killer:
 			a["assists"] += 1
@@ -1092,6 +1143,102 @@ func _build_result() -> Dictionary:
 		"dragons": dragons.duplicate(), "barons": barons.duplicate(),
 		"towers_destroyed": {"blue": _structures_lost("red"), "red": _structures_lost("blue")},
 		"stances": stance.duplicate(), "events": events, "players": stats, "mvp": mvp,
+		"frames": frames, "champs": _champ_ids(),
 		"draft": {"bans": draft["bans"], "picks": draft["picks"], "log": draft["log"] if detail else [], "plan": draft["plan"],
 			"primary": {"blue": comp["blue"]["primary"], "red": comp["red"]["primary"]}},
 	}
+
+
+# ---------------------------------------------------------------- 戰況地圖（不使用亂數，不影響比賽結果）
+
+func _champ_ids() -> Dictionary:
+	var out := {}
+	for side in SIDES:
+		out[side] = units[side].map(func(u): return u["champ"].id if u["champ"] else "")
+	return out
+
+
+func _involve(u: Dictionary, loc: String = "") -> void:
+	if not detail or not u.has("side"):
+		return
+	var l = loc if loc != "" else _where
+	if l != "":
+		_involved[u["side"] + str(u["idx"])] = l
+
+
+func _front(lane: String) -> float:
+	var pr: float = priority["blue"].get(lane, 0.0)
+	return RiftGeometry.lane_front(lane, pr, structures["blue"][lane], structures["red"][lane])
+
+
+func _loc_point(loc: String) -> Vector2:
+	if loc.begins_with("lane:"):
+		var lane = loc.substr(5)
+		return RiftGeometry.lane_point(lane, _front(lane))
+	if loc.begins_with("obj:"):
+		return RiftGeometry.DRAGON_PIT if loc.substr(4) in ["dragon", "elder"] else RiftGeometry.BARON_PIT
+	if loc.begins_with("jungle:"):
+		var camps: Array = RiftGeometry.CAMPS[loc.substr(7)]
+		return camps[minute % camps.size()]
+	if loc.begins_with("tower:"):
+		var parts = loc.split(":")
+		var tp = RiftGeometry.tower_point(parts[1], parts[2], int(parts[3]))
+		# 站在塔前（進攻方那一側）
+		return tp + (RiftGeometry.NEXUS[parts[1]] - tp).normalized() * -0.03
+	if loc.begins_with("nexus:"):
+		var side = loc.substr(6)
+		return RiftGeometry.NEXUS[side] + (Vector2(0.5, 0.5) - RiftGeometry.NEXUS[side]).normalized() * 0.04
+	if loc.begins_with("base:"):
+		return RiftGeometry.FOUNTAIN[loc.substr(5)]
+	return Vector2(0.5, 0.5)
+
+
+## 沒有參與事件的選手：依時期與戰術姿態站在合理的位置。
+func _default_loc(side: String, u: Dictionary) -> Vector2:
+	var role: String = u["role"]
+	var lane = _lane_of(role)
+	var back = -0.018 if side == "blue" else 0.018
+	if minute == 0:
+		return RiftGeometry.FOUNTAIN[side]
+	if role == "JUNGLE":
+		var camps: Array = RiftGeometry.CAMPS[side]
+		return camps[(minute + (0 if side == "blue" else 2)) % camps.size()]
+	if minute <= 14:
+		return RiftGeometry.lane_point(lane, _front(lane) + back)
+	# 中後期：上路守邊（或分推），其餘集結中路；後期全隊集結
+	if role == "TOP" and (minute < 26 or stance[side] == "split"):
+		return RiftGeometry.lane_point("top", _front("top") + back)
+	if role in ["ADC", "SUPPORT"] and minute < 20:
+		return RiftGeometry.lane_point("bot", _front("bot") + back)
+	return RiftGeometry.lane_point("mid", _front("mid") + back * 2.0)
+
+
+func _record_frame() -> void:
+	if not detail:
+		return
+	var pos := {}
+	for side in SIDES:
+		var list: Array = []
+		for u in units[side]:
+			var key = side + str(u["idx"])
+			var alive: bool = u["dead_until"] <= minute
+			var p: Vector2
+			if not alive:
+				p = RiftGeometry.FOUNTAIN[side] + RiftGeometry.spread(u["idx"], 5, 0.02)
+			elif _involved.has(key):
+				p = _loc_point(_involved[key]) + RiftGeometry.spread(u["idx"] + (5 if side == "red" else 0), 10, 0.035)
+			else:
+				p = _default_loc(side, u) + RiftGeometry.spread(u["idx"], 5, 0.012)
+			list.append([snappedf(p.x, 0.001), snappedf(p.y, 0.001), 1 if alive else 0])
+		pos[side] = list
+	for mk in _marks:
+		if mk["p"] is Vector2:
+			mk["p"] = [snappedf(mk["p"].x, 0.001), snappedf(mk["p"].y, 0.001)]
+	var kda := {}
+	for side in SIDES:
+		kda[side] = units[side].map(func(u): return [u["kills"], u["deaths"], u["assists"]])
+	frames.append({"m": minute, "pos": pos, "marks": _marks, "kda": kda, "st": {"blue": structures["blue"].duplicate(), "red": structures["red"].duplicate()},
+		"gd": int(_team_gold("blue") - _team_gold("red"))})
+	_marks = []
+	_involved = {}
+	_where = ""

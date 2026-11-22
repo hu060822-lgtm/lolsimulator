@@ -6,6 +6,13 @@ const PAGES := [
 	["dashboard", "總覽"], ["roster", "名單"], ["tactics", "戰術與陣容"], ["training", "訓練"],
 	["transfers", "轉會中心"], ["staff", "教練團"], ["finance", "財務"], ["competition", "賽事"], ["news", "媒體"], ["inbox", "收件匣"], ["history", "歷史"], ["saves", "存檔"],
 ]
+## 側欄分組：[標題, [頁面 id…]]
+const GROUPS := [
+	["俱樂部", ["dashboard", "roster", "tactics", "training"]],
+	["營運", ["transfers", "staff", "finance"]],
+	["賽事與媒體", ["competition", "news", "inbox", "history"]],
+	["系統", ["saves"]],
+]
 
 var session: GameSession
 var app: Node
@@ -49,12 +56,23 @@ func setup(s: GameSession, a: Node) -> Shell:
 	var nv := UIKit.vbox(4)
 	side.add_child(nv)
 	body.add_child(side)
+	var names := {}
 	for p in PAGES:
-		var b := UIKit.button(p[1], open.bind(p[0]))
-		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.toggle_mode = true
-		nv.add_child(b)
-		nav[p[0]] = b
+		names[p[0]] = p[1]
+	for g in GROUPS:
+		var gl := UIKit.label(g[0], 11, UIKit.MUTED)
+		gl.add_theme_constant_override("line_spacing", 0)
+		nv.add_child(gl)
+		for id in g[1]:
+			var b := UIKit.button(names[id], open.bind(id))
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.toggle_mode = true
+			_style_nav(b)
+			nv.add_child(b)
+			nav[id] = b
+		var gap := Control.new()
+		gap.custom_minimum_size = Vector2(0, 6)
+		nv.add_child(gap)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -148,3 +166,29 @@ func open_match() -> void:
 
 func after_match() -> void:
 	open("competition")
+
+
+## 側欄按鈕：未選取時透明，選取時左側亮條 + 淡底色。
+func _style_nav(b: Button) -> void:
+	var off := StyleBoxFlat.new()
+	off.bg_color = Color(0, 0, 0, 0)
+	off.content_margin_left = 14
+	off.content_margin_top = 7
+	off.content_margin_bottom = 7
+	var hover = off.duplicate()
+	hover.bg_color = Color("1e222b")
+	var on := StyleBoxFlat.new()
+	on.bg_color = UIKit.ACCENT.darkened(0.6)
+	on.border_color = UIKit.ACCENT
+	on.border_width_left = 3
+	on.set_corner_radius_all(4)
+	on.content_margin_left = 11
+	on.content_margin_top = 7
+	on.content_margin_bottom = 7
+	b.add_theme_stylebox_override("normal", off)
+	b.add_theme_stylebox_override("hover", hover)
+	b.add_theme_stylebox_override("pressed", on)
+	b.add_theme_stylebox_override("hover_pressed", on)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.add_theme_color_override("font_pressed_color", Color.WHITE)
+	b.add_theme_color_override("font_color", UIKit.TEXT.darkened(0.15))

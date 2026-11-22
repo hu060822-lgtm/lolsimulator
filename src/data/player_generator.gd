@@ -5,10 +5,13 @@ extends RefCounted
 
 
 ## quality: 0..1，大致決定目前能力水準；young=true 時生成低 CA、高變異潛力的新人。
-static func generate(w: WorldState, rng: SimRng, region: String, role: String, quality: float, young: bool = false) -> Player:
+## 賽區人才水準（names.json 的 regions.<賽區>.talent，預設 1.0）會乘上 quality，形成 LCK／LPL 較強的生態。
+static func generate(w: WorldState, rng: SimRng, region: String, role: String, quality: float, young: bool = false, apply_talent: bool = true) -> Player:
 	var p := Player.new()
 	p.id = w.new_id("p")
 	var pools: Dictionary = w.names.get("regions", {}).get(region, {})
+	if apply_talent:
+		quality *= float(pools.get("talent", 1.0))
 	p.nationality = str(rng.pick(pools.get("nationalities", ["Unknown"])))
 	p.home_region = region
 	p.real_name = "%s %s" % [rng.pick(pools.get("given", ["Alex"])), rng.pick(pools.get("family", ["Doe"]))]
@@ -26,7 +29,9 @@ static func generate(w: WorldState, rng: SimRng, region: String, role: String, q
 	# 潛力：年輕選手潛力變異較大
 	var base = 35.0 + quality * 50.0
 	if young:
-		p.potential = clampf(rng.normal(62.0 + quality * 18.0, 13.0), 40.0, 98.0)
+		# 賽區人才水準也影響新秀的潛力：LCK／LPL 青訓產出的天花板較高
+		var talent_shift = (float(pools.get("talent", 1.0)) - 1.0) * 40.0 if apply_talent else 0.0
+		p.potential = clampf(rng.normal(62.0 + quality * 18.0, 13.0) + talent_shift, 40.0, 98.0)
 	else:
 		p.potential = clampf(base + absf(rng.normal(0.0, 7.0)) + maxf(0.0, (p.peak_age - age)) * 2.0, 40.0, 98.0)
 

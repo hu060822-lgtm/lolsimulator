@@ -29,7 +29,7 @@ func _run() -> void:
 	root.add_child(app)
 	await _frames(3)
 	await _shot("01_new_game")
-	app.session.new_game("res://data/modules/fictional_base", 2027, "harbor_lights")
+	app.session.new_game("res://data/modules/lol_world", 2026, "ctbc_flying_oystar")
 	app.start_game()
 	await _shot("02_dashboard")
 	var sh: Shell = app.current
@@ -54,9 +54,13 @@ func _run() -> void:
 	d._auto_draft()
 	await _shot("05_draft_done")
 	d._play_live()
-	d._live_order("control")
+	d.mc.skip_to_end()
 	await _shot("06_live_tactics")
+	d._live_order("control")
+	d.mc.skip_to_end()
+	await _shot("06_live_map")
 	d._live_skip()
+	d.mc.skip_to_end()
 	await _shot("06_match")
 	# 推進到世界賽與賽季結束
 	app.session.manual_draft = false
@@ -69,6 +73,7 @@ func _run() -> void:
 	sh.open("competition")
 	var cs: CompetitionScreen = sh.page
 	cs.league_opt.select(cs.ids.find("worlds"))
+	cs._sync_chips()
 	cs.refresh()
 	await _shot("07_worlds")
 	sh.open("news")

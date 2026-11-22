@@ -91,6 +91,29 @@ static func offer_contract(w: WorldState, club: Club, p: Player, salary: int, ye
 	return {"accepted": accepted, "reason": reason, "utility": u}
 
 
+## 外援名額：聯賽 format.import_limit（未設定＝不限）。非本賽區出身的選手算外援。
+static func import_limit(w: WorldState, club: Club) -> int:
+	var lg: League = w.leagues.get(club.league_id)
+	if lg == null:
+		return -1
+	return int(lg.format.get("import_limit", -1))
+
+
+static func import_count(w: WorldState, club: Club) -> int:
+	var n := 0
+	for pid in club.roster:
+		if w.players[pid].home_region != club.region:
+			n += 1
+	return n
+
+
+static func import_blocked(w: WorldState, club: Club, p: Player) -> bool:
+	if p.home_region == club.region or p.club_id == club.id:
+		return false
+	var lim := import_limit(w, club)
+	return lim >= 0 and import_count(w, club) >= lim
+
+
 static func asking_price(w: WorldState, seller: Club, p: Player) -> int:
 	var v := float(market_value(w, p))
 	if seller.lineup.values().has(p.id):
@@ -104,6 +127,8 @@ static func asking_price(w: WorldState, seller: Club, p: Player) -> int:
 
 ## 轉會報價：賣方評估轉會費 → 選手評估合約 → 完成轉會。
 static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int, salary: int, years: int, role_promise: String) -> Dictionary:
+	if import_blocked(w, buyer, p):
+		return {"accepted": false, "reason": "外援名額已滿"}
 	if p.club_id == "":
 		var r = offer_contract(w, buyer, p, salary, years, role_promise)
 		if r["accepted"]:

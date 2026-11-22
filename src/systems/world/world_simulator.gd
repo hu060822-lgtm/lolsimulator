@@ -92,7 +92,10 @@ static func _finance_week(w: WorldState, club: Club) -> void:
 static func end_season(w: WorldState) -> void:
 	var season = {"year": w.year, "patch": w.patch.version, "leagues": {}}
 	var worlds_result = _close_international(w, season)
-	var msi_result = _close_international(w, season, w.intl("midseason"))
+	var mid_results := {}
+	for it in LeagueEngine.midseason_events(w):
+		mid_results[it.id] = _close_international(w, season, it)
+	var msi_result: Dictionary = mid_results.get("msi", {})
 	for lg in w.leagues.values():
 		var order = LeagueEngine.sorted_standings(lg)
 		var awards = _awards(w, lg)
@@ -125,7 +128,8 @@ static func end_season(w: WorldState) -> void:
 			var target = 350000.0 + club.reputation * 20000.0 + club.fanbase * 0.2 + maxf(club.cash, 0.0) * 0.08  # 有存款的俱樂部可以加碼
 			club.wage_budget = clampi(int(club.wage_budget * 0.6 + target * 0.4), 300000, cap)
 			club.history.append({"year": w.year, "league_id": lg.id, "tier": lg.tier, "position": i + 1, "champion": is_champ,
-				"worlds": worlds_result.get(club.id, ""), "msi": msi_result.get(club.id, "")})
+				"worlds": worlds_result.get(club.id, ""), "msi": msi_result.get(club.id, ""),
+				"intl": _club_intl(mid_results, club.id)})
 			if not club.is_human:
 				ClubAI.review_coach(w, club, i + 1, n)
 			Finance.close_season(w, club)
@@ -139,6 +143,14 @@ static func end_season(w: WorldState) -> void:
 	Media.on_season_end(w, season)
 	w.phase = WorldState.PHASE_OFFSEASON
 	w.phase_day = w.day
+
+
+static func _club_intl(results: Dictionary, club_id: String) -> Dictionary:
+	var out := {}
+	for k in results:
+		if results[k].has(club_id):
+			out[k] = results[k][club_id]
+	return out
 
 
 ## 聲望變化：越接近頂點，成績帶來的聲望越少（頂級豪門只能「維持」，不會無限累積光環）。
@@ -157,13 +169,19 @@ static func _close_international(w: WorldState, season: Dictionary, it: League =
 	if it == null or it.club_ids.is_empty() or it.champion_id == "":
 		return out
 	var worlds = str(it.format.get("timing", "end")) == "end"
-	var scale = 1.0 if worlds else 0.6  # 季中賽事的份量較輕
+	var scale = float(it.format.get("scale", 1.0 if worlds else 0.6))  # 季中賽事的份量較輕
 	var final_fx = it.fixtures.filter(func(f): return f["stage"] == "final")
 	var runner_up := ""
 	if not final_fx.is_empty():
 		var f: Dictionary = final_fx[0]
 		runner_up = f["home"] if f["result"]["winner"] == f["away"] else f["away"]
-	var semis: Array = it.playoff_bracket[0] if not it.playoff_bracket.is_empty() else []
+	var semis: Array = []
+	var quarters: Array = []
+	for b in it.playoff_bracket:
+		if b.size() == 4:
+			semis = b
+		elif b.size() == 8:
+			quarters = b
 	var n = it.club_ids.size()
 	for cid in it.club_ids:
 		var club: Club = w.clubs[cid]
@@ -182,6 +200,10 @@ static func _close_international(w: WorldState, season: Dictionary, it: League =
 			res = "semis"
 			share = 0.05
 			rep_gain = 2.0
+		elif quarters.has(cid):
+			res = "quarters"
+			share = 0.03
+			rep_gain = 1.0
 		out[cid] = res
 		rep_gain *= scale
 		Finance.earn(club, "prize", int(it.prize_pool * share))
@@ -189,7 +211,7 @@ static func _close_international(w: WorldState, season: Dictionary, it: League =
 		club.fanbase = int(club.fanbase * (1.0 + rep_gain / 100.0))
 		for pid in club.lineup.values():
 			var p: Player = w.players[pid]
-			var k = "worlds" if worlds else "msi"
+			var k = "worlds" if worlds else ("msi" if it.id == "msi" else it.id)
 			p.career[k] = int(p.career.get(k, 0)) + 1
 			if res == "champion":
 				p.career[k + "_titles" if not worlds else "world_titles"] = int(p.career.get(k + "_titles" if not worlds else "world_titles", 0)) + 1
@@ -197,10 +219,12 @@ static func _close_international(w: WorldState, season: Dictionary, it: League =
 	var champ: Club = w.clubs[it.champion_id]
 	if worlds:
 		champ.world_titles += 1
-	else:
+	elif it.id == "msi":
 		champ.msi_titles += 1
+	else:
+		champ.intl_titles[it.id] = int(champ.intl_titles.get(it.id, 0)) + 1
 	var awards = _awards(w, it)
-	season["international" if worlds else "midseason"] = {"id": it.id, "name": it.name, "champion": it.champion_id, "runner_up": runner_up,
+	season["international" if worlds else ("midseason" if it.id == "msi" else it.id)] = {"id": it.id, "name": it.name, "champion": it.champion_id, "runner_up": runner_up,
 		"teams": it.club_ids.duplicate(), "mvp": awards["mvp"]}
 	w.log.add("intl_champion", w.day, [champ.id], {"year": w.year, "event": it.id, "runner_up": runner_up}, [])
 	return out

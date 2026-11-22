@@ -17,7 +17,12 @@ func test_new_game_screen_builds() -> void:
 	var s := GameSession.new()
 	var scr := NewGameScreen.new()
 	scr.setup(s, null)
-	check(scr.list.get_root().get_child_count() == GameSession.list_clubs(TestCase.MODULE_DIR).size(), "lists all clubs")
+	var total := 0
+	for l in scr.leagues:
+		scr._filter_league(str(l["id"]))
+		total += scr.cards.size()
+	check_eq(total, scr.clubs.size(), "every club is reachable from a league tab")
+	check(scr.module_dir.ends_with("lol_world"), "real-esports module is the default")
 	scr.free()
 
 
