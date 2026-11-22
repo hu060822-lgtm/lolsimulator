@@ -20,6 +20,10 @@ var forced_picks: Dictionary = {}  ## role -> champion_id
 var forced_bans: Array = []
 ## 即時戰術模式（第四階段）掛鉤：分鐘 -> 姿態
 var orders: Dictionary = {}
+## 指定目標：分鐘 -> "dragon" / "baron" / "top" / "mid" / "bot"（"" = 取消），從該分鐘起生效
+var focus: Dictionary = {}
+## 換線：前 14 分鐘下路雙人組與上路互換（避開不利對線）
+var lane_swap: bool = false
 
 
 static func from_club(w: WorldState, club: Club) -> TeamContext:

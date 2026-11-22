@@ -16,6 +16,7 @@ var role_filter: String = ""
 var search_text: String = ""
 var champ_grid: HFlowContainer
 var grid_act: String = ""
+var live_focus: String = "__keep"
 var pick_role: OptionButton
 var pre_order: int = 0
 var order_btns: Array = []
@@ -282,6 +283,10 @@ func _draft_summary() -> void:
 		orow.add_child(b)
 	center.add_child(orow)
 	center.add_child(UIKit.muted("指示會在 14、20、26… 分鐘的戰術調整時覆蓋選手的判斷。"))
+	var swap := UIKit.chip("換線：前 14 分鐘下路雙人組改走上路", func(): ds.teams[hs].lane_swap = not ds.teams[hs].lane_swap)
+	swap.button_pressed = ds.teams[hs].lane_swap
+	swap.tooltip_text = "避開不利的下路對線、搶上路塔；代價是早期小龍主導權較弱"
+	center.add_child(swap)
 	var brow := UIKit.hbox(8)
 	brow.add_child(UIKit.tile("WATCH", "觀戰", "看完整場比賽", _play, UIKit.ACCENT, 170))
 	brow.add_child(UIKit.tile("LIVE", "即時指揮", "每個戰術調整點暫停", _play_live, UIKit.WARN, 170))
@@ -382,7 +387,15 @@ func _play_live() -> void:
 
 
 func _live_order(order: String) -> void:
-	_apply_live(session.live_continue(order))
+	var f = live_focus
+	live_focus = "__keep"
+	_apply_live(session.live_continue(order, f))
+
+
+func _set_focus(f: String, btns: Array) -> void:
+	live_focus = f
+	for b in btns:
+		b.button_pressed = b.get_meta("focus") == f
 
 
 func _live_skip() -> void:
@@ -426,6 +439,22 @@ func _show_orders() -> void:
 	tags.add_child(UIKit.pill("目前：" + ORDER_INFO.get(snap["stances"][side], ["", snap["stances"][side]])[1], UIKit.ACCENT))
 	tags.add_child(UIKit.pill("分析師：" + _advice(gd, late_edge), UIKit.GOOD))
 	box.add_child(tags)
+	# 指定目標：選好後再點下方的打法
+	var cur_focus: String = str(snap.get("focus", {}).get(side, ""))
+	live_focus = "__keep"
+	var frow := HFlowContainer.new()
+	frow.add_theme_constant_override("h_separation", 6)
+	frow.add_child(UIKit.label("指定目標", 13, UIKit.MUTED))
+	var fbtns: Array = []
+	for f in ["", "dragon", "baron", "top", "mid", "bot"]:
+		var fb := UIKit.chip("不指定" if f == "" else MatchEngine.focus_name(f), func(): pass)
+		fb.set_meta("focus", f)
+		fb.button_pressed = f == cur_focus
+		fbtns.append(fb)
+		frow.add_child(fb)
+	for fb in fbtns:
+		fb.pressed.connect(_set_focus.bind(fb.get_meta("focus"), fbtns))
+	box.add_child(frow)
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 6)

@@ -170,14 +170,18 @@ func start_live_game(ds: DraftSession) -> Dictionary:
 
 ## 下達接下來這段時間的指示（"" = 交給指揮自行判斷），推進到下一個調整點。
 ## 比賽結束時回傳 {"done": true, "game": 結果}。
-func live_continue(order: String) -> Dictionary:
+## focus_target：指定目標（"dragon"／"baron"／"top"／"mid"／"bot"，"" = 取消，"__keep" = 不變）。
+func live_continue(order: String, focus_target: String = "__keep") -> Dictionary:
 	if live == null:
 		return {}
 	var at = live.next_shotcall()
 	var t: TeamContext = live.team(live_side)
 	t.orders = {}
+	t.focus = {}
 	if order != "" and at != -1:
 		t.orders[str(at)] = order
+	if focus_target != "__keep" and at != -1:
+		t.focus[str(at)] = focus_target
 	if at != -1:
 		live.run_until(at)  # 先打過這個調整點（指示在此生效），再停在下一個調整點前
 	return _live_pause()
@@ -282,6 +286,10 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 			return Agents.resolve_raise(world, msg, false)
 		"mediate", "back_first", "ignore":
 			return Relationships.resolve_conflict(world, msg, option)
+	if option.begins_with("press:"):
+		return PressConference.answer(world, msg, option.trim_prefix("press:"))
+	if option.begins_with("duo:") or option.begins_with("bond:") or option.begins_with("mentor:"):
+		return TeammateTalks.resolve(world, msg, option)
 	if option.begins_with("ev:"):
 		return RandomEvents.resolve(world, msg, option)
 	if option.begins_with("crisis:"):

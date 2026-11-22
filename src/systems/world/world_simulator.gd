@@ -73,6 +73,7 @@ static func weekly(w: WorldState) -> void:
 			Media.weekly(w, club)
 			RandomEvents.weekly(w, club)
 			Agents.weekly(w, club)
+			TeammateTalks.weekly(w, club)
 		if not club.is_human:
 			ClubAI.weekly(w, club)
 		_finance_week(w, club)
