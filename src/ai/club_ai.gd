@@ -56,6 +56,10 @@ static func _needs(w: WorldState, club: Club) -> Array:
 	var needs: Array = []
 	var league: League = w.leagues.get(club.league_id)
 	var avg = _league_starter_avg(w, league)
+	# 期待與聲望相稱：豪門以聯賽頂尖為目標，小隊只求不墊底
+	if league:
+		var reps: Array = league.club_ids.map(func(c): return w.clubs[c].reputation)
+		avg += (club.reputation - MathX.mean(reps)) * 0.2
 	for role in Attr.ROLES:
 		var best := 0.0
 		for pid in club.roster:
@@ -89,21 +93,26 @@ static func _recruit(w: WorldState, club: Club) -> void:
 	var wage_room = club.wage_budget - TransferMarket.wage_bill(w, club)
 	for need in needs.slice(0, 2):
 		var role: String = need["role"]
-		var best: Player = null
-		var best_score := -INF
+		var scored: Array = []
 		var candidates: Array = w.free_agents.map(func(pid): return w.players[pid])
+		var my_lg: League = w.leagues.get(club.league_id)
+		var my_tier = my_lg.tier if my_lg else 1
 		for c in w.clubs.values():
 			if c.id == club.id:
 				continue
+			var c_lg: League = w.leagues.get(c.league_id)
+			var lower_tier = c_lg != null and c_lg.tier > my_tier  # 次級聯賽的先發可以被一級隊伍買走
 			for pid in c.roster:
 				var o: Player = w.players[pid]
 				# 挖角對手先發：只在缺口夠大時考慮合約將到期者
 				var poachable = o.contract and o.contract.years_left(w.year) <= 1 and need["gap"] >= 6.0
-				if o.transfer_requested or poachable or not c.lineup.values().has(pid):
+				if o.transfer_requested or poachable or lower_tier or not c.lineup.values().has(pid):
 					candidates.append(o)
 		for p in candidates:
 			if p.retired or p.primary_role != role:
 				continue
+			if p.club_id != "" and int(p.career.get("last_move_year", -1)) == w.year:
+				continue  # 剛轉會的選手不會再走
 			var ca = p.current_ability(role)
 			if ca <= need["current"] + 1.0:
 				continue
@@ -119,15 +128,19 @@ static func _recruit(w: WorldState, club: Club) -> void:
 					score -= (cost / 20000.0 + fee / 60000.0)
 				"win_now":
 					score += ca * 0.1
-			if score > best_score:
-				best_score = score
-				best = p
-		if best:
+			scored.append([score, p])
+		# 依評分嘗試前三名：第一人選拒絕時找下一位
+		scored.sort_custom(func(a, b): return a[0] > b[0])
+		for pair in scored.slice(0, 3):
+			var best: Player = pair[1]
 			var fee = 0 if best.club_id == "" else TransferMarket.asking_price(w, w.clubs[best.club_id], best)
 			var salary := int(TransferMarket.wage_demand(w, best) * w.rng.range_f(1.0, 1.2))
+			if salary > wage_room:
+				continue
 			var r = TransferMarket.make_transfer_offer(w, club, best, fee, salary, w.rng.range_i(1, 3), "starter")
 			if r.get("accepted", false):
 				wage_room -= salary
+				break
 	fill_roster(w, club)
 
 

@@ -15,13 +15,17 @@ static func build(module: DataModule, world_seed: int, human_club_id: String = "
 	w.rng = SimRng.new(world_seed)
 	w.year = module.start_year()
 	w.names = module.names
+	w.event_defs = module.events.duplicate(true)
 	for c in module.champions:
 		var ch = Champion.from_dict(c)
 		w.champions[ch.id] = ch
 	w.patch = generate_patch(w, w.rng, "%d.1" % (w.year % 100))
 	for l in module.leagues:
 		var lg = League.from_dict(l)
-		w.leagues[lg.id] = lg
+		if lg.tier == 0:
+			w.international = lg  # 國際賽事：參賽隊伍每季由各一級聯賽成績決定
+		else:
+			w.leagues[lg.id] = lg
 	var club_defs: Array = module.clubs.duplicate(true)
 	if not custom_club.is_empty():
 		club_defs = club_defs.filter(func(c): return c.get("id") != custom_club.get("replace", ""))

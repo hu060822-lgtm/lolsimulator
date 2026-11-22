@@ -10,14 +10,63 @@ static func start_season(w: WorldState) -> void:
 	w.phase = WorldState.PHASE_PRESEASON
 	w.phase_day = w.day
 	for lg in w.leagues.values():
-		lg.fixtures = []
-		lg.standings = {}
-		lg.playoff_bracket = []
-		lg.champion_id = ""
-		lg.season_complete = false
-		for cid in lg.club_ids:
-			lg.standings[cid] = {"w": 0, "l": 0, "gw": 0, "gl": 0, "h2h": {}}
+		_reset(lg)
 		_generate_regular(w, lg, w.day + PRESEASON_DAYS)
+	if w.international:
+		w.international.club_ids = []
+		_reset(w.international)
+
+
+static func _reset(lg: League) -> void:
+	lg.fixtures = []
+	lg.standings = {}
+	lg.playoff_bracket = []
+	lg.champion_id = ""
+	lg.season_complete = false
+	for cid in lg.club_ids:
+		lg.standings[cid] = {"w": 0, "l": 0, "gw": 0, "gl": 0, "h2h": {}}
+
+
+## 所有進行中的賽事：國內聯賽 + 已開打的世界賽。
+static func all_competitions(w: WorldState) -> Array:
+	var out: Array = w.leagues.values()
+	if w.international and not w.international.club_ids.is_empty():
+		out.append(w.international)
+	return out
+
+
+## 世界賽資格：每個一級聯賽的冠軍，再依例行賽排名補足名額。
+static func qualifiers(w: WorldState) -> Array:
+	var it: League = w.international
+	if it == null:
+		return []
+	var per := int(it.format.get("qualify_per_league", 4))
+	var out: Array = []
+	for lg in w.leagues.values():
+		if lg.tier != 1:
+			continue
+		var seeds: Array = []
+		if lg.champion_id != "":
+			seeds.append(lg.champion_id)
+		for cid in sorted_standings(lg):
+			if not seeds.has(cid):
+				seeds.append(cid)
+		out.append_array(seeds.slice(0, per))
+	return out
+
+
+## 國內賽季全部結束後開打世界賽：小組單循環 Bo1 → 前 4 名淘汰賽。回傳是否開打。
+static func start_international(w: WorldState) -> bool:
+	var q = qualifiers(w)
+	if q.size() < 4:
+		return false
+	var it: League = w.international
+	it.club_ids = q
+	_reset(it)
+	_generate_regular(w, it, w.day + 5)
+	for cid in q:
+		w.log.add("worlds_qualified", w.day, [cid], {"year": w.year}, [])
+	return true
 
 
 ## 雙循環（circle method）
@@ -49,9 +98,17 @@ static func _generate_regular(w: WorldState, lg: League, start_day: int) -> void
 			for pr in pairs:
 				var home: String = pr[0] if leg == 0 else pr[1]
 				var away: String = pr[1] if leg == 0 else pr[0]
-				lg.fixtures.append({"id": "%s_%d_r%d_%s_%s" % [lg.id, w.year, rn, home, away], "day": day, "stage": "regular",
-					"round": rn, "home": home, "away": away, "best_of": bo, "played": false, "result": {}})
+				lg.fixtures.append(_with_stakes(lg, {"id": "%s_%d_r%d_%s_%s" % [lg.id, w.year, rn, home, away], "day": day, "stage": "regular",
+					"round": rn, "home": home, "away": away, "best_of": bo, "played": false, "result": {}}))
 			day += gap
+
+
+## 賽事可在 format.stakes 依階段指定比賽重要性（影響壓力、大賽經驗、成長）。
+static func _with_stakes(lg: League, fx: Dictionary) -> Dictionary:
+	var st: Dictionary = lg.format.get("stakes", {})
+	if st.has(fx["stage"]):
+		fx["stakes"] = float(st[fx["stage"]])
+	return fx
 
 
 static func regular_done(lg: League) -> bool:
@@ -60,12 +117,12 @@ static func regular_done(lg: League) -> bool:
 
 static func play_day(w: WorldState) -> Array:
 	var results: Array = []
-	for lg in w.leagues.values():
+	for lg in all_competitions(w):
 		for fx in lg.fixtures:
 			if fx["played"] or int(fx["day"]) != w.day:
 				continue
 			results.append(play_fixture(w, lg, fx))
-		if w.phase == WorldState.PHASE_PLAYOFFS and not lg.season_complete:
+		if not lg.playoff_bracket.is_empty() and not lg.season_complete:
 			_advance_playoffs(w, lg)
 	return results
 
@@ -80,6 +137,8 @@ static func play_fixture(w: WorldState, lg: League, fx: Dictionary) -> Dictionar
 
 
 static func stakes_of(fx: Dictionary) -> float:
+	if fx.has("stakes"):
+		return float(fx["stakes"])
 	return 1.0 if fx["stage"] == "regular" else (1.6 if fx["stage"] == "final" else 1.3)
 
 
@@ -107,6 +166,7 @@ static func complete_fixture(w: WorldState, lg: League, fx: Dictionary, series: 
 	MatchEffects.apply_series(w, series, stakes_of(fx))
 	if fx["stage"] == "regular":
 		_record(lg, series)
+	Media.on_match(w, lg, fx, series)
 	var winner: Club = w.clubs[series["winner"]]
 	w.log.add("match", w.day, [home.id, away.id], {"fixture": fx["id"], "winner": winner.id,
 		"score": "%d-%d" % [series["score"][home.id], series["score"][away.id]], "stage": fx["stage"]}, [])
@@ -114,7 +174,7 @@ static func complete_fixture(w: WorldState, lg: League, fx: Dictionary, series: 
 
 
 static func find_fixture(w: WorldState, club_id: String, day: int) -> Dictionary:
-	for lg in w.leagues.values():
+	for lg in all_competitions(w):
 		for fx in lg.fixtures:
 			if not fx["played"] and int(fx["day"]) == day and (fx["home"] == club_id or fx["away"] == club_id):
 				return {"league": lg, "fixture": fx}
@@ -170,8 +230,8 @@ static func _schedule_round(w: WorldState, lg: League, teams: Array, day: int) -
 	for i in teams.size() / 2:
 		var hi: String = teams[i]
 		var lo: String = teams[teams.size() - 1 - i]
-		lg.fixtures.append({"id": "%s_%d_po%d_%s_%s" % [lg.id, w.year, rnd, hi, lo], "day": day, "stage": stage,
-			"round": rnd, "home": hi, "away": lo, "best_of": bo, "played": false, "result": {}})
+		lg.fixtures.append(_with_stakes(lg, {"id": "%s_%d_po%d_%s_%s" % [lg.id, w.year, rnd, hi, lo], "day": day, "stage": stage,
+			"round": rnd, "home": hi, "away": lo, "best_of": bo, "played": false, "result": {}}))
 
 
 static func _advance_playoffs(w: WorldState, lg: League) -> void:
@@ -190,7 +250,7 @@ static func _advance_playoffs(w: WorldState, lg: League) -> void:
 
 static func next_match_day(w: WorldState, club_id: String) -> int:
 	var best := -1
-	for lg in w.leagues.values():
+	for lg in all_competitions(w):
 		for fx in lg.fixtures:
 			if not fx["played"] and (fx["home"] == club_id or fx["away"] == club_id):
 				if best == -1 or int(fx["day"]) < best:

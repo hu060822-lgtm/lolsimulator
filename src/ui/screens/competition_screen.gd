@@ -11,9 +11,9 @@ var ids: Array = []
 
 func build() -> void:
 	add_child(UIKit.title("賽事"))
-	ids = w().leagues.keys()
+	ids = LeagueEngine.all_competitions(w()).map(func(l): return l.id)
 	var c = session.club()
-	league_opt = UIKit.option(ids.map(func(i): return w().leagues[i].name), ids.find(c.league_id))
+	league_opt = UIKit.option(ids.map(func(i): return _comp(i).name + ("（次級）" if _comp(i).tier >= 2 else "")), ids.find(c.league_id))
 	league_opt.item_selected.connect(func(_i): refresh())
 	add_child(league_opt)
 	var row := UIKit.hbox(12)
@@ -29,7 +29,7 @@ func build() -> void:
 
 func refresh() -> void:
 	var ww = w()
-	var lg: League = ww.leagues[ids[league_opt.selected]]
+	var lg: League = _comp(ids[league_opt.selected])
 	UIKit.clear_table(standings)
 	var i := 1
 	for cid in LeagueEngine.sorted_standings(lg):
@@ -40,7 +40,7 @@ func refresh() -> void:
 				it.set_custom_color(col, UIKit.ACCENT)
 		i += 1
 	UIKit.clear_table(fixtures)
-	var stage_names = {"regular": "例行賽", "playoffs": "季後賽", "final": "決賽"}
+	var stage_names = {"regular": "小組賽" if lg.tier == 0 else "例行賽", "playoffs": "淘汰賽" if lg.tier == 0 else "季後賽", "final": "決賽"}
 	for fx in lg.fixtures:
 		var res := ""
 		if fx["played"]:
@@ -52,15 +52,23 @@ func refresh() -> void:
 	if lg.champion_id != "":
 		UIKit.clear(review)
 		review.add_child(UIKit.label("🏆 本季冠軍：%s" % ww.clubs[lg.champion_id].name, 18, UIKit.WARN))
-	elif review.get_child_count() == 0:
+	else:
+		UIKit.clear(review)
 		review.add_child(UIKit.muted("點選有結果的玩家比賽，查看逐局回顧。"))
+
+
+func _comp(id: String) -> League:
+	var ww = w()
+	if ww.leagues.has(id):
+		return ww.leagues[id]
+	return ww.international
 
 
 func _on_fixture() -> void:
 	var it = fixtures.get_selected()
 	if it == null:
 		return
-	var lg: League = w().leagues[ids[league_opt.selected]]
+	var lg: League = _comp(ids[league_opt.selected])
 	for fx in lg.fixtures:
 		if fx["id"] == it.get_metadata(0) and fx["played"]:
 			UIKit.clear(review)

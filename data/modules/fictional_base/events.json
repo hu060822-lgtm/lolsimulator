@@ -1,0 +1,362 @@
+[
+ {
+  "id": "stream_controversy",
+  "weight": 3,
+  "target": "player",
+  "condition": {
+   "trait_below": {
+    "temperament": 60
+   }
+  },
+  "text": "{player} 在直播中與觀眾嗆聲，片段在社群瘋傳",
+  "headline": "{player}（{club}）直播失言引發論戰",
+  "options": [
+   {
+    "id": "fine",
+    "label": "罰款並要求公開道歉",
+    "effects": {
+     "target": {
+      "morale": -8,
+      "trust": -6
+     },
+     "club": {
+      "opinion": 8,
+      "cash": 20000
+     }
+    }
+   },
+   {
+    "id": "defend",
+    "label": "公開力挺選手",
+    "effects": {
+     "target": {
+      "trust": 8,
+      "morale": 4
+     },
+     "club": {
+      "opinion": -10
+     }
+    }
+   },
+   {
+    "id": "ignore",
+    "label": "不回應",
+    "effects": {
+     "club": {
+      "opinion": -5
+     }
+    }
+   }
+  ],
+  "ai": "fine"
+ },
+ {
+  "id": "late_night",
+  "weight": 2,
+  "target": "player",
+  "condition": {
+   "trait_below": {
+    "professionalism": 55
+   }
+  },
+  "text": "{player} 被拍到比賽前一晚在夜店待到凌晨",
+  "headline": "{club} 選手 {player} 賽前夜店照曝光",
+  "options": [
+   {
+    "id": "punish",
+    "label": "禁賽一週並罰款",
+    "effects": {
+     "target": {
+      "morale": -10,
+      "trust": -8,
+      "fatigue": -10
+     },
+     "club": {
+      "opinion": 6,
+      "chemistry": 1
+     }
+    }
+   },
+   {
+    "id": "talk",
+    "label": "私下溝通",
+    "effects": {
+     "target": {
+      "morale": -2,
+      "stress": -3
+     },
+     "club": {
+      "opinion": -2
+     }
+    }
+   },
+   {
+    "id": "ignore",
+    "label": "不處理",
+    "effects": {
+     "club": {
+      "chemistry": -3,
+      "opinion": -6
+     }
+    }
+   }
+  ],
+  "ai": "talk"
+ },
+ {
+  "id": "sponsor_event",
+  "weight": 3,
+  "target": "club",
+  "text": "贊助商邀請全隊參加週末的線下品牌活動",
+  "options": [
+   {
+    "id": "accept",
+    "label": "參加（贊助商加碼 $60k）",
+    "effects": {
+     "club": {
+      "cash": 60000
+     },
+     "roster": {
+      "fatigue": 8
+     }
+    }
+   },
+   {
+    "id": "decline",
+    "label": "婉拒，專心訓練",
+    "effects": {
+     "roster": {
+      "fatigue": -2
+     }
+    }
+   }
+  ],
+  "ai": "accept"
+ },
+ {
+  "id": "fan_meet",
+  "weight": 3,
+  "target": "club",
+  "text": "粉絲團希望在下一場比賽後舉辦見面會",
+  "options": [
+   {
+    "id": "accept",
+    "label": "舉辦見面會",
+    "effects": {
+     "club": {
+      "fans_pct": 3,
+      "opinion": 5
+     },
+     "roster": {
+      "fatigue": 5,
+      "morale": 2
+     }
+    }
+   },
+   {
+    "id": "decline",
+    "label": "以賽程為由婉拒",
+    "effects": {
+     "club": {
+      "opinion": -3
+     }
+    }
+   }
+  ],
+  "ai": "accept"
+ },
+ {
+  "id": "streamer_collab",
+  "weight": 2,
+  "target": "player",
+  "condition": {
+   "min_reputation": 45
+  },
+  "text": "知名實況主邀請 {player} 合作直播 Solo Queue",
+  "options": [
+   {
+    "id": "allow",
+    "label": "同意（分潤 $30k）",
+    "effects": {
+     "target": {
+      "stress": 5,
+      "morale": 4
+     },
+     "club": {
+      "fans_pct": 2,
+      "cash": 30000
+     }
+    }
+   },
+   {
+    "id": "refuse",
+    "label": "拒絕，避免分心",
+    "effects": {
+     "target": {
+      "morale": -5
+     }
+    }
+   }
+  ],
+  "ai": "allow"
+ },
+ {
+  "id": "equipment_failure",
+  "weight": 2,
+  "target": "club",
+  "text": "訓練室的電腦與網路設備故障",
+  "options": [
+   {
+    "id": "repair",
+    "label": "立即更換設備（$80k）",
+    "effects": {
+     "club": {
+      "cash": -80000
+     }
+    }
+   },
+   {
+    "id": "delay",
+    "label": "先將就使用",
+    "effects": {
+     "club": {
+      "chemistry": -3,
+      "draft_familiarity": -4
+     },
+     "roster": {
+      "morale": -3
+     }
+    }
+   }
+  ],
+  "ai": "repair"
+ },
+ {
+  "id": "illness",
+  "weight": 2,
+  "target": "player",
+  "text": "{player} 身體不適，本週需要休息",
+  "headline": "{club} 的 {player} 身體不適，出賽成疑",
+  "options": [
+   {
+    "id": "ok",
+    "label": "知道了",
+    "effects": {
+     "target": {
+      "fatigue": 35,
+      "morale": -2
+     }
+    }
+   }
+  ],
+  "ai": "ok"
+ },
+ {
+  "id": "ladder_rank1",
+  "weight": 2,
+  "target": "player",
+  "condition": {
+   "min_ability": 60
+  },
+  "text": "{player} 登上 Solo Queue 天梯第一",
+  "headline": "{player}（{club}）登頂 Solo Queue 天梯",
+  "options": [
+   {
+    "id": "ok",
+    "label": "太好了",
+    "effects": {
+     "target": {
+      "confidence": 8,
+      "reputation": 3
+     },
+     "club": {
+      "opinion": 3
+     }
+    }
+   }
+  ],
+  "ai": "ok"
+ },
+ {
+  "id": "scrim_leak",
+  "weight": 2,
+  "target": "club",
+  "text": "內部 Scrims 的 BP 內容疑似遭到外流",
+  "options": [
+   {
+    "id": "investigate",
+    "label": "徹查並更換合作隊伍（$30k）",
+    "effects": {
+     "club": {
+      "cash": -30000,
+      "chemistry": 1
+     }
+    }
+   },
+   {
+    "id": "ignore",
+    "label": "不追究",
+    "effects": {
+     "club": {
+      "chemistry": -2,
+      "draft_familiarity": -6
+     }
+    }
+   }
+  ],
+  "ai": "investigate"
+ },
+ {
+  "id": "team_dinner",
+  "weight": 2,
+  "target": "club",
+  "text": "選手們自發組織了一次團隊聚餐",
+  "options": [
+   {
+    "id": "ok",
+    "label": "很好",
+    "effects": {
+     "team_relations": 4,
+     "club": {
+      "chemistry": 2
+     }
+    }
+   }
+  ],
+  "ai": "ok"
+ },
+ {
+  "id": "family_leave",
+  "weight": 1,
+  "target": "player",
+  "text": "{player} 家中有事，希望請假回家幾天",
+  "options": [
+   {
+    "id": "grant",
+    "label": "准假",
+    "effects": {
+     "target": {
+      "morale": 6,
+      "fatigue": -20,
+      "trust": 5
+     },
+     "club": {
+      "chemistry": -1
+     }
+    }
+   },
+   {
+    "id": "deny",
+    "label": "賽季關鍵期，不准假",
+    "effects": {
+     "target": {
+      "morale": -10,
+      "trust": -10,
+      "stress": 6
+     }
+    }
+   }
+  ],
+  "ai": "grant"
+ }
+]

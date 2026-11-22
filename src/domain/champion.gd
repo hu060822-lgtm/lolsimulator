@@ -7,6 +7,8 @@ const TAGS := ["engage", "disengage", "poke", "pick", "splitpush", "teamfight", 
 
 var id: String
 var name: String
+var name_en: String = ""
+var class_type: String = "fighter"  ## tank / fighter / assassin / mage / marksman / enchanter
 var roles: Array = []
 var tags: Dictionary = {}
 var early: float = 5.0  ## 1–10 前期強度
@@ -21,6 +23,8 @@ static func from_dict(d: Dictionary) -> Champion:
 	var c := Champion.new()
 	c.id = d["id"]
 	c.name = d.get("name", c.id)
+	c.name_en = d.get("name_en", "")
+	c.class_type = d.get("class", "fighter")
 	c.roles = d.get("roles", [])
 	c.tags = d.get("tags", {})
 	var curve: Dictionary = d.get("curve", {})
@@ -34,7 +38,7 @@ static func from_dict(d: Dictionary) -> Champion:
 
 
 func to_dict() -> Dictionary:
-	return {"id": id, "name": name, "roles": roles, "tags": tags,
+	return {"id": id, "name": name, "name_en": name_en, "class": class_type, "roles": roles, "tags": tags,
 		"curve": {"early": early, "mid": mid, "late": late}, "lane": lane,
 		"damage": damage, "difficulty": difficulty}
 

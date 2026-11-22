@@ -43,6 +43,14 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 		mid.add_child(UIKit.label("滿意度 %+.2f　對管理層信任 %d" % [p.happiness, int(p.trust_in_management)], 14))
 		if p.transfer_requested:
 			mid.add_child(UIKit.label("已要求離隊", 14, UIKit.BAD))
+		if p.club_id != "":
+			var rel = Relationships.summary(ww, p)
+			mid.add_child(UIKit.label("人際關係", 16))
+			mid.add_child(UIKit.label("與隊友平均 %+d（%s）　與主教練 %+d（%s）" % [int(rel["avg"]), Relationships.label(rel["avg"]), int(rel["coach"]), Relationships.label(rel["coach"])], 14))
+			if rel["best"] != "":
+				mid.add_child(UIKit.label("最要好：%s（%+d）" % [ww.players[rel["best"]].handle, int(rel["best_v"])], 14, UIKit.GOOD if rel["best_v"] >= Relationships.FRIEND else UIKit.TEXT))
+				mid.add_child(UIKit.label("最不合：%s（%+d）" % [ww.players[rel["worst"]].handle, int(rel["worst_v"])], 14, UIKit.BAD if rel["worst_v"] <= Relationships.RIVAL else UIKit.TEXT))
+			mid.add_child(UIKit.label("大賽經驗 %d 場" % int(p.career.get("big_games", 0)), 14, UIKit.MUTED))
 	cols.add_child(mid)
 	var right := UIKit.vbox(2)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -51,7 +59,11 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 		var ch: Champion = ww.champions.get(cid)
 		var m = p.mastery(cid)
 		var meta = ww.patch.meta(cid)
-		right.add_child(UIKit.label("%-12s %d %s" % [ch.name if ch else cid, int(m) if (own or knowledge > 0.4) else int(round(m / 10.0) * 10), "▲" if meta >= 1 else ("▼" if meta <= -1 else "")], 14, UIKit.skill_color(m)))
+		var l2 := UIKit.label("%-12s %d %s" % [ch.name if ch else cid, int(m) if (own or knowledge > 0.4) else int(round(m / 10.0) * 10), "▲" if meta >= 1 else ("▼" if meta <= -1 else "")], 14, UIKit.skill_color(m))
+		l2.mouse_filter = Control.MOUSE_FILTER_PASS
+		if ch:
+			l2.tooltip_text = UIKit.champion_info(ch)
+		right.add_child(l2)
 	right.add_child(UIKit.label("合約與生涯", 16))
 	if p.contract:
 		right.add_child(UIKit.label("年薪 %s・到 %d 年・%s" % [UIKit.money(p.contract.salary), p.contract.end_year, p.contract.role_promise], 14))

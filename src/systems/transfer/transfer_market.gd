@@ -32,6 +32,10 @@ static func contract_utility(w: WorldState, p: Player, club: Club, salary: int, 
 	var parts := {}
 	parts["money"] = clampf((float(salary) / maxf(wage_demand(w, p), 1.0) - 1.0) * 2.5, -1.5, 1.0)
 	parts["competitive"] = (club.reputation - 50.0) / 50.0
+	# 次級聯賽的舞台較小：除了想要上場時間的新人，選手不太願意去
+	var lg: League = w.leagues.get(club.league_id)
+	if lg and lg.tier >= 2:
+		parts["competitive"] -= 0.7 * (0.5 if p.age(w.year) <= 19 else 1.0)
 	parts["playing"] = {"starter": 0.8, "rotation": 0.0, "backup": -0.6, "prospect": -0.2 if p.age(w.year) <= 19 else -0.6}.get(role_promise, 0.0)
 	parts["loyalty"] = (p.trait_value("loyalty") / 100.0) if club.id == p.club_id else 0.0
 	parts["home"] = 0.25 if club.region == p.home_region else (-0.1 if "GO_ABROAD" in p.goals else -0.3)
@@ -103,6 +107,8 @@ static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int,
 			_move(w, p, null, buyer, 0)
 		return r
 	var seller: Club = w.clubs[p.club_id]
+	if int(p.career.get("last_move_year", -1)) == w.year and p.club_id != "":
+		return {"accepted": false, "reason": "選手剛轉會，不考慮再次離隊"}
 	if seller.is_human:
 		var dup = w.inbox.any(func(m): return m.get("kind") == "transfer_offer" and m.get("player_id") == p.id and m.get("from_club") == buyer.id and not m.get("resolved", false))
 		if dup:
@@ -140,8 +146,12 @@ static func _move(w: WorldState, p: Player, from: Club, to: Club, fee: int) -> v
 	p.happiness = 0.3
 	p.trust_in_management = 55.0
 	p.promises.clear()
+	if from:
+		p.career["last_move_year"] = w.year
+	Relationships.on_leave(w, p.id)
 	var rec = {"year": w.year, "day": w.day, "player_id": p.id, "handle": p.handle, "from": from.id if from else "", "to": to.id, "fee": fee}
 	w.history["transfers"].append(rec)
+	Media.on_transfer(w, p, from, to, fee)
 	w.log.add("transfer", w.day, [p.id, to.id] + ([from.id] if from else []), rec, [])
 
 

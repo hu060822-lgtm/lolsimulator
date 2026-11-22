@@ -14,6 +14,7 @@ data/modules/<module_id>/
   players.json     可選：直接提供選手（未提供的位置由生成器補足）
   staff.json       可選：直接提供教練
   rules.json       可選：覆寫 Tuning 平衡參數
+  events.json      可選：隨機事件
 ```
 
 ## module.json
@@ -26,7 +27,7 @@ data/modules/<module_id>/
   "version": "0.1.0",
   "start_year": 2027,
   "files": {"champions": "champions.json", "leagues": "leagues.json", "clubs": "clubs.json",
-            "names": "names.json", "players": "players.json", "rules": "rules.json"}
+            "names": "names.json", "players": "players.json", "rules": "rules.json", "events": "events.json"}
 }
 ```
 
@@ -48,6 +49,19 @@ data/modules/<module_id>/
 ```
 賽制完全由資料決定（GDD 10.1：不把某一年度的賽制寫死）。
 
+- `tier`：1 = 一級聯賽，2 = 次級聯賽。同 `region` 的一級最後一名與次級冠軍每季互換。
+- `format.wage_cap`：薪資預算上限；`format.revenue_share`：每季聯賽分潤（預設 250000）。
+- `tier: 0` 的項目是國際賽事（世界賽），不屬於任何俱樂部：
+
+```json
+{"id": "worlds", "name": "World Championship", "region": "INTL", "tier": 0, "prize_pool": 3000000,
+ "format": {"qualify_per_league": 4,
+            "regular": {"type": "single_round_robin", "best_of": 1, "days_between_rounds": 1},
+            "playoffs": {"type": "single_elimination", "teams": 4, "best_of": 5},
+            "stakes": {"regular": 1.4, "playoffs": 1.7, "final": 2.0}}}
+```
+`stakes` 可用在任何賽事，指定各階段比賽的重要性（影響壓力、大賽經驗）。
+
 ## clubs.json
 
 ```json
@@ -60,6 +74,20 @@ data/modules/<module_id>/
 任何 `Player.to_dict()` 欄位都可以提供；未提供的欄位使用預設值。
 `club_id` 留空 → 自由球員。真實資料模組可在此提供完整選手名單。
 
+## events.json（可選）
+
+```json
+{"id": "stream_controversy", "weight": 3, "target": "player",
+ "condition": {"trait_below": {"temperament": 60}},
+ "text": "{player} 在直播中與觀眾嗆聲", "headline": "{player}（{club}）直播失言引發論戰",
+ "options": [
+   {"id": "fine", "label": "罰款並要求公開道歉", "effects": {"target": {"morale": -8}, "club": {"opinion": 8}}},
+   {"id": "ignore", "label": "不回應", "effects": {"club": {"opinion": -5}}}],
+ "ai": "fine"}
+```
+`target`：`player` 或 `club`。條件：`trait_below`、`trait_above`、`min_reputation`、`min_ability`。
+效果欄位見 [rules/10](rules/10-world-competitions-media.md)。只有一個選項的事件會直接生效。
+
 ## rules.json（可選）
 
 覆寫 `src/core/tuning.gd` 中的任何參數，例如：
@@ -70,5 +98,5 @@ data/modules/<module_id>/
 
 ## 授權注意
 
-預設模組的俱樂部、選手、聯賽為虛構，英雄使用英雄聯盟實際英雄（112 隻，台服中文名，`name_en` 為英文名；roles / curve / tags 為本模擬的設計值）。以真實俱樂部、選手、聯賽為基礎的資料需要相關授權；
+預設模組的俱樂部、選手、聯賽為虛構，英雄使用英雄聯盟實際英雄（173 隻，台服中文名，`name_en` 為英文名；roles / curve / tags 為本模擬的設計值）。以真實俱樂部、選手、聯賽為基礎的資料需要相關授權；
 未取得授權時，應以獨立、明確標示為「非官方」的模組散佈，且不放入本倉庫。

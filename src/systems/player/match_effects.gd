@@ -42,6 +42,25 @@ static func apply_series(w: WorldState, series: Dictionary, stakes: float) -> vo
 	for cid in [series["winner"], series["loser"]]:
 		var club: Club = w.clubs[cid]
 		club.chemistry = clampf(club.chemistry + 0.4, 0.0, 100.0)
+		# 連勝 / 連敗：影響全隊自信與壓力
+		var won_series: bool = cid == series["winner"]
+		if won_series:
+			club.streak = maxi(club.streak, 0) + 1
+		else:
+			club.streak = mini(club.streak, 0) - 1
+		for pid in club.lineup.values():
+			if not w.players.has(pid):
+				continue
+			var q: Player = w.players[pid]
+			if club.streak >= 3:
+				q.confidence = clampf(q.confidence + 1.5, 0.0, 100.0)
+			elif club.streak <= -3:
+				q.stress = clampf(q.stress + 2.0 * (1.3 - q.trait_value("composure") / 100.0), 0.0, 100.0)
+				q.confidence = clampf(q.confidence - 1.0, 0.0, 100.0)
+				Relationships.change_coach(w, q, -0.5)
+			# 大賽經驗：季後賽累積，降低之後的大賽壓力
+			if stakes >= 1.4:
+				q.career["big_games"] = int(q.career.get("big_games", 0)) + 1
 		for pid in club.roster:
 			var p: Player = w.players[pid]
 			p.season_stats["team_games"] += 1

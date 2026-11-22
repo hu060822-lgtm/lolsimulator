@@ -48,6 +48,13 @@ static func evaluate(w: WorldState, p: Player) -> Dictionary:
 	var dev_rating = StaffSystem.rating(w, club, "development") if club else 40.0
 	sat["development"] = clampf((dev_rating - 50.0) / 50.0 + sat["playing"] * 0.5, -1.0, 1.0)
 	sat["loyalty"] = clampf(p.trait_value("loyalty") / 100.0, 0.0, 1.0)
+	# 人際：與隊友、主教練的關係；有交惡的隊友會特別難受
+	if club:
+		var rel = Relationships.summary(w, p)
+		var v = rel["avg"] / 60.0 + rel["coach"] / 120.0
+		if rel["worst_v"] < Relationships.RIVAL:
+			v -= 0.4
+		sat["relationships"] = clampf(v, -1.0, 1.0)
 	return sat
 
 
@@ -56,7 +63,7 @@ static func weekly(w: WorldState, p: Player) -> void:
 		return
 	var sat = evaluate(w, p)
 	p.satisfaction = sat
-	var weights = {"playing": 0.6, "salary": 0.5, "competitive": 0.4, "trust": 0.5, "development": 0.2, "loyalty": 0.2}
+	var weights = {"playing": 0.6, "salary": 0.5, "competitive": 0.4, "trust": 0.5, "development": 0.2, "loyalty": 0.2, "relationships": 0.35 + p.trait_value("teamwork") / 200.0}
 	for g in p.goals:
 		var gw: Dictionary = GOAL_WEIGHTS.get(g, {})
 		for k in gw:
@@ -193,9 +200,9 @@ static func _has_open_message(w: WorldState, pid: String) -> bool:
 
 
 static func _aspect_name(a: String) -> String:
-	return {"playing": "出場機會", "salary": "薪資", "competitive": "球隊競爭力", "trust": "對管理層的信任", "development": "個人發展"}.get(a, a)
+	return {"playing": "出場機會", "salary": "薪資", "competitive": "球隊競爭力", "trust": "對管理層的信任", "development": "個人發展", "relationships": "隊內人際關係"}.get(a, a)
 
 
 static func _concern_text(a: String) -> String:
 	return {"playing": "我需要更多上場時間。", "salary": "我覺得我的薪水配不上我的表現。", "competitive": "我不確定這支隊伍有爭冠的野心。",
-		"trust": "我對俱樂部的決定越來越沒有信心。", "development": "我覺得我在這裡沒有成長。"}.get(a, "我們需要談談。")
+		"trust": "我對俱樂部的決定越來越沒有信心。", "development": "我覺得我在這裡沒有成長。", "relationships": "我和隊上一些人相處得很不好。"}.get(a, "我們需要談談。")
