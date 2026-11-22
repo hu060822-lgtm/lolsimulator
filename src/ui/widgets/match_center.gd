@@ -211,7 +211,7 @@ func _on_minute(minute: int) -> void:
 	var frames: Array = data.get("frames", [])
 	if frames.is_empty():
 		return
-	var idx = clampi(int(map.head), 0, frames.size() - 1)
+	var idx = clampi(map.current_index(), 0, frames.size() - 1)
 	var f: Dictionary = frames[idx]
 	score["clock"].text = "%02d:00" % minute
 	var drag = {"blue": 0, "red": 0}

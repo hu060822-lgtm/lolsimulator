@@ -79,3 +79,52 @@ func test_post_game_stats() -> void:
 	check(pg.get_child_count() >= 2, "post-game panel builds")
 	pg.free()
 	sh.free()
+
+
+func test_series_score_hidden_until_game_ends() -> void:
+	var s := GameSession.new()
+	s.new_game(MODULE_DIR, 4, "iron_lotus")
+	var guard := 0
+	while s.advance_day() and guard < 60:
+		guard += 1
+	var sh := Shell.new()
+	sh.setup(s, null)
+	var d := DraftScreen.new()
+	sh.open_screen(d, "draft")
+	d._auto_draft()
+	d._play()  # 測試環境不在場景樹內，會直接跳到結果
+	check(d.score_label.text in ["1 : 0", "0 : 1"], "score updates when the game ends")
+	d._open_center()  # 播放中（本局已模擬完）的計分列
+	check_eq(d.score_label.text, "0 : 0", "score does not reveal the game being watched")
+	sh.free()
+
+
+func test_tokens_do_not_cross_map_for_trades() -> void:
+	# 交換資源時只有那一路的選手與打野移動，不會整隊在一分鐘內橫越地圖再回來
+	var s := GameSession.new()
+	s.new_game("res://data/modules/lol_world", 4, "t_one")
+	var guard := 0
+	while s.advance_day() and guard < 60:
+		guard += 1
+	var sh := Shell.new()
+	sh.setup(s, null)
+	var d := DraftScreen.new()
+	sh.open_screen(d, "draft")
+	d._auto_draft()
+	d._play()
+	var fr: Array = d.game["frames"]
+	var bounces := 0
+	for i in range(1, mini(fr.size() - 1, 14)):
+		for side in ["blue", "red"]:
+			for k in [0, 2, 3, 4]:  # 打野以外
+				var a = fr[i - 1]["pos"][side][k]
+				var b = fr[i]["pos"][side][k]
+				var c = fr[i + 1]["pos"][side][k]
+				if int(a[2]) + int(b[2]) + int(c[2]) < 3:
+					continue
+				var ab = Vector2(a[0], a[1]).distance_to(Vector2(b[0], b[1]))
+				var ac = Vector2(a[0], a[1]).distance_to(Vector2(c[0], c[1]))
+				if ab > 0.7 and ac < 0.2:
+					bounces += 1
+	check(bounces <= 2, "laners rarely bounce across the map and back (%d)" % bounces)
+	sh.free()
