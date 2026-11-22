@@ -38,9 +38,7 @@ static func weekly(w: WorldState) -> void:
 	if c == null:
 		return
 	var scouts_bonus := 0.0
-	var coach: Staff = w.staff.get(c.coach_id)
-	if coach:
-		scouts_bonus = coach.tactical / 100.0 * 0.01
+	scouts_bonus = StaffSystem.rating(w, c, "scouting") / 100.0 * 0.015
 	for p in w.active_players():
 		if p.club_id == c.id:
 			continue

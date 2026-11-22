@@ -68,12 +68,7 @@ static func weekly(w: WorldState) -> void:
 
 
 static func _finance_week(w: WorldState, club: Club) -> void:
-	var wages = TransferMarket.wage_bill(w, club) / 52
-	var coach: Staff = w.staff.get(club.coach_id)
-	if coach:
-		wages += coach.salary / 52
-	var income = int(club.wage_budget / 52.0 * (0.80 + club.reputation / 300.0))
-	club.cash += income - wages
+	Finance.weekly(w, club)
 
 
 # ---------------------------------------------------------------- 賽季結算
@@ -97,7 +92,9 @@ static func end_season(w: WorldState) -> void:
 			var club: Club = w.clubs[order[i]]
 			var is_champ = club.id == lg.champion_id
 			var prize = lg.prize_pool * (0.35 if is_champ else (0.65 / maxf(n - 1, 1)))
-			club.cash += int(prize)
+			Finance.earn(club, "prize", int(prize))
+			Finance.pay_bonuses(w, club, i + 1, is_champ, i < int(lg.format.get("playoffs", {}).get("teams", 4)))
+			Finance.update_fanbase(club, i + 1, n, is_champ)
 			var expected = (1.0 - club.reputation / 100.0) * n
 			club.reputation = clampf(club.reputation + (expected - i) * 0.8 + (4.0 if is_champ else 0.0), 5.0, 99.0)
 			# 聲望回歸平均：沒有成績支撐的光環會慢慢褪去
@@ -109,6 +106,7 @@ static func end_season(w: WorldState) -> void:
 			club.history.append({"year": w.year, "league_id": lg.id, "position": i + 1, "champion": is_champ})
 			if not club.is_human:
 				ClubAI.review_coach(w, club, i + 1, n)
+			Finance.close_season(w, club)
 		w.log.add("season_end", w.day, [lg.id], {"champion": lg.champion_id, "mvp": awards["mvp"]}, [])
 	for p in w.active_players():
 		var g: int = p.season_stats.get("games", 0)
@@ -145,12 +143,19 @@ static func _offseason_day(w: WorldState, d: int) -> void:
 		_retirements(w)
 		_new_patch(w)
 		_youth_intake(w)
+		StaffSystem.offseason(w)
+		for c in clubs:
+			Finance.offseason_sponsors(w, c)
 	elif d >= 2 and d <= 6:
 		for i in clubs.size():
 			if i % 5 == d - 2 and not clubs[i].is_human:
 				ClubAI.offseason_step(w, clubs[i], "renew")
 	elif d == 7:
 		_expire_contracts(w)
+		for c in clubs:
+			if not c.is_human:
+				StaffSystem.ai_fill(w, c)
+		StaffSystem.replenish(w)
 	elif d >= 8 and d <= 24:
 		for i in clubs.size():
 			if i % 2 == d % 2 and not clubs[i].is_human:
@@ -227,6 +232,11 @@ static func _expire_contracts(w: WorldState) -> void:
 
 static func _new_season(w: WorldState) -> void:
 	w.year += 1
+	var hc: Club = w.human_club()
+	if hc:
+		Finance.auto_sign_remaining(w, hc)
+		if hc.coach_id == "":
+			StaffSystem.ai_fill(w, hc)  # 沒有主教練無法開季：由董事會指派
 	for p in w.active_players():
 		p.reset_season_stats()
 		p.goals = PlayerGenerator.derive_goals(p, w.year)

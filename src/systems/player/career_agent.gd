@@ -45,8 +45,8 @@ static func evaluate(w: WorldState, p: Player) -> Dictionary:
 	var club_strength = club.reputation / 100.0 if club else 0.0
 	sat["competitive"] = clampf((club_strength - p.trait_value("ambition") / 100.0) * 2.0 + 0.2, -1.0, 1.0)
 	sat["trust"] = clampf((p.trust_in_management - 50.0) / 50.0, -1.0, 1.0)
-	var coach: Staff = w.staff.get(club.coach_id) if club else null
-	sat["development"] = clampf(((coach.development if coach else 40.0) - 50.0) / 50.0 + sat["playing"] * 0.5, -1.0, 1.0)
+	var dev_rating = StaffSystem.rating(w, club, "development") if club else 40.0
+	sat["development"] = clampf((dev_rating - 50.0) / 50.0 + sat["playing"] * 0.5, -1.0, 1.0)
 	sat["loyalty"] = clampf(p.trait_value("loyalty") / 100.0, 0.0, 1.0)
 	return sat
 

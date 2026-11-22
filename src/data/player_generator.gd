@@ -109,7 +109,13 @@ static func _make_handle(w: WorldState, rng: SimRng) -> String:
 
 
 static func generate_coach(w: WorldState, rng: SimRng, quality: float) -> Staff:
+	return generate_staff(w, rng, quality, "head_coach")
+
+
+## 生成員工：職位相關能力較高，其他能力偏低。
+static func generate_staff(w: WorldState, rng: SimRng, quality: float, role: String) -> Staff:
 	var s := Staff.new()
+	s.role = role
 	s.id = w.new_id("s")
 	s.name = "%s %s" % [rng.pick(w.names.get("coach_given", ["Coach"])), rng.pick(w.names.get("coach_family", ["Smith"]))]
 	s.birth_year = w.year - rng.range_i(27, 48)
@@ -119,7 +125,15 @@ static func generate_coach(w: WorldState, rng: SimRng, quality: float) -> Staff:
 	s.development = clampf(rng.normal(base, 9), 10, 99)
 	s.man_management = clampf(rng.normal(base, 9), 10, 99)
 	s.adaptability = clampf(rng.normal(base, 9), 10, 99)
+	s.scouting = clampf(rng.normal(base - 5.0, 9), 10, 99)
+	s.fitness = clampf(rng.normal(base - 5.0, 9), 10, 99)
+	var focus = {"assistant_coach": ["tactical", "development"], "analyst": ["drafting", "adaptability"],
+		"performance_coach": ["fitness", "man_management"], "scout": ["scouting"]}.get(role, [])
+	for k in focus:
+		s.set(k, clampf(float(s.get(k)) + 8.0, 10, 99))
 	s.style = str(rng.pick(Staff.STYLES))
-	s.salary = int(40000 + quality * 160000)
+	var pay_scale = 1.0 if role == "head_coach" else 0.35
+	s.salary = int((40000 + quality * 160000) * pay_scale)
 	s.reputation = base
+	s.contract_end = w.year + rng.range_i(1, 3)
 	return s

@@ -123,13 +123,15 @@ static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int,
 static func _move(w: WorldState, p: Player, from: Club, to: Club, fee: int) -> void:
 	if from:
 		from.roster.erase(p.id)
-		from.cash += fee
+		if fee > 0:
+			Finance.earn(from, "transfer_in", fee)
 		for role in from.lineup.keys():
 			if from.lineup[role] == p.id:
 				from.lineup.erase(role)
 	else:
 		w.free_agents.erase(p.id)
-	to.cash -= fee
+	if fee > 0:
+		Finance.spend(to, "transfer_out", fee)
 	to.roster.append(p.id)
 	p.club_id = to.id
 	p.squad_status = p.contract.role_promise if p.contract else "rotation"

@@ -35,7 +35,7 @@ func _run() -> void:
 	var sh: Shell = app.current
 	# 先推進到第一場比賽前
 	sh._on_continue()
-	for id in ["roster", "tactics", "training", "transfers", "competition", "inbox"]:
+	for id in ["roster", "tactics", "training", "transfers", "staff", "finance", "competition", "inbox"]:
 		sh.open(id)
 		if id == "roster":
 			var t: Tree = sh.page.table

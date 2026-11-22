@@ -25,7 +25,11 @@ var draft_familiarity: float = 40.0  ## 禁選演練熟悉度
 var training_plan: Dictionary = {}
 var history: Array = []              ## [{year, league_id, position, playoff_result, titles}]
 var titles: int = 0
-var finance_log: Array = []
+var finance_log: Array = []          ## 歷年帳本 [{year, income, expense, cash_end}]
+var ledger: Dictionary = {"income": {}, "expense": {}}  ## 本季帳本
+var staff: Dictionary = {}           ## 職位 -> staff_id（主教練仍用 coach_id）
+var sponsors: Array = []             ## 生效中的贊助合約
+var sponsor_offers: Array = []       ## 待選擇的贊助報價（玩家）
 var scout_knowledge: Dictionary = {}  ## player_id -> 0..1（僅玩家俱樂部使用）
 
 
@@ -63,4 +67,5 @@ func to_dict() -> Dictionary:
 		"roster": roster, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
 		"training_plan": training_plan, "history": history, "titles": titles,
-		"finance_log": finance_log, "scout_knowledge": scout_knowledge}
+		"finance_log": finance_log, "scout_knowledge": scout_knowledge,
+		"ledger": ledger, "staff": staff, "sponsors": sponsors, "sponsor_offers": sponsor_offers}

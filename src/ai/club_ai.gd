@@ -188,11 +188,7 @@ static func review_coach(w: WorldState, club: Club, position: int, teams: int) -
 	var expected = clampf(1.0 - club.reputation / 100.0, 0.0, 1.0) * teams
 	if position > expected + teams * 0.35 and w.rng.chance(0.6):
 		var old: Staff = w.staff.get(club.coach_id)
-		var q = clampf((club.reputation - 25.0) / 70.0 + w.rng.normal(0, 0.1), 0.05, 1.0)
-		var coach = PlayerGenerator.generate_coach(w, w.rng, q)
-		coach.club_id = club.id
-		w.staff[coach.id] = coach
-		club.coach_id = coach.id
-		if old:
-			old.club_id = ""
-		w.log.add("coach_fired", w.day, [club.id], {"old": old.name if old else "", "new": coach.name}, ["排名第 %d，低於預期" % position])
+		StaffSystem.dismiss(w, club, "head_coach")
+		StaffSystem.ai_fill(w, club)
+		var coach: Staff = w.staff.get(club.coach_id)
+		w.log.add("coach_fired", w.day, [club.id], {"old": old.name if old else "", "new": coach.name if coach else ""}, ["排名第 %d，低於預期" % position])

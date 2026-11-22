@@ -133,12 +133,10 @@ func _offer() -> void:
 
 
 func _scout() -> void:
-	var c = session.club()
-	var cost := 15000
-	if c.cash < cost:
-		result.text = "資金不足"
+	var r = session.scout_player(selected_id)
+	if not r["ok"]:
+		result.text = r["note"]
 		return
-	c.cash -= cost
-	Scouting.observe(w(), selected_id, 0.25)
 	_show_detail()
-	result.text = "球探報告已更新（費用 %s）" % UIKit.money(cost)
+	shell.refresh_status()
+	result.text = r["note"]

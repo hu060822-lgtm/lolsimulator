@@ -34,7 +34,8 @@ static func validate(plan: Dictionary) -> bool:
 ## 回傳 player_id -> {skill: 成長倍率}，並直接套用疲勞、心理、默契效果。
 static func weekly(w: WorldState, club: Club) -> Dictionary:
 	var plan: Dictionary = club.training_plan if not club.training_plan.is_empty() else default_plan()
-	var coach: Staff = w.staff.get(club.coach_id)
+	var drafting = StaffSystem.rating(w, club, "drafting")
+	var fitness = StaffSystem.rating(w, club, "fitness")
 	var load := 0.0
 	for k in plan:
 		load += TYPES[k]["load"] * int(plan[k])
@@ -43,13 +44,13 @@ static func weekly(w: WorldState, club: Club) -> Dictionary:
 	for pid in club.roster:
 		var p: Player = w.players[pid]
 		# 疲勞：負荷 - 恢復；職業態度高者自我管理較好
-		p.fatigue = clampf(p.fatigue + load * 1.1 - rest * 4.0 - 5.0, 0.0, 100.0)
+		p.fatigue = clampf(p.fatigue + load * 1.1 - rest * 4.0 - 5.0 - maxf(fitness - 40.0, 0.0) / 30.0, 0.0, 100.0)
 		var eff := 1.0
 		if p.fatigue > 70.0:
 			eff = 0.5
 			p.stress = clampf(p.stress + 3.0, 0.0, 100.0)
 			p.morale = clampf(p.morale - 2.0, 0.0, 100.0)
-		p.stress = clampf(p.stress - int(plan.get("mental_coaching", 0)) * 2.5 - int(plan.get("rest", 0)) * 0.8 - 1.0, 0.0, 100.0)
+		p.stress = clampf(p.stress - int(plan.get("mental_coaching", 0)) * 2.5 - int(plan.get("rest", 0)) * 0.8 - 1.0 - maxf(fitness - 40.0, 0.0) / 40.0, 0.0, 100.0)
 		p.confidence = lerpf(p.confidence, 60.0, 0.03)
 		p.morale = clampf(p.morale + int(plan.get("team_building", 0)) * 1.0, 0.0, 100.0)
 		var focus := {}
@@ -67,5 +68,5 @@ static func weekly(w: WorldState, club: Club) -> Dictionary:
 			for cid in p.top_champions(4):
 				p.champion_pool[cid] = minf(p.mastery(cid) + 0.35 * cp * eff, 100.0)
 	club.chemistry = clampf(club.chemistry + int(plan.get("scrims", 0)) * 0.25 + int(plan.get("team_building", 0)) * 0.6 - 0.6, 0.0, 100.0)
-	club.draft_familiarity = clampf(club.draft_familiarity + int(plan.get("draft_practice", 0)) * 0.5 * ((coach.drafting if coach else 40.0) / 60.0) - 0.4, 0.0, 100.0)
+	club.draft_familiarity = clampf(club.draft_familiarity + int(plan.get("draft_practice", 0)) * 0.5 * (drafting / 60.0) - 0.4, 0.0, 100.0)
 	return focus_all

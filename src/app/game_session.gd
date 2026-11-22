@@ -245,6 +245,80 @@ func search_players(role: String = "", free_only: bool = false, max_age: int = 9
 
 # ---------------------------------------------------------------- 存檔
 
+# ---------------------------------------------------------------- 球探
+
+const SCOUT_COST := 15000
+
+
+## 派球探觀察選手：費用固定，效果取決於球探能力。
+func scout_player(player_id: String) -> Dictionary:
+	var c = club()
+	if c.cash < SCOUT_COST:
+		return {"ok": false, "note": "資金不足"}
+	Finance.spend(c, "scouting", SCOUT_COST)
+	var amount = 0.15 + StaffSystem.rating(world, c, "scouting") / 100.0 * 0.2
+	Scouting.observe(world, player_id, amount)
+	return {"ok": true, "note": "球探報告已更新（費用 %s，認識程度 +%d%%）" % ["$%d" % SCOUT_COST, int(amount * 100)]}
+
+
+# ---------------------------------------------------------------- 教練團
+
+func staff_of(role: String) -> Staff:
+	return StaffSystem.get_staff(world, club(), role)
+
+
+func staff_market(role: String) -> Array:
+	return StaffSystem.free_staff(world, role)
+
+
+func staff_demand(staff_id: String) -> int:
+	var s: Staff = world.staff.get(staff_id)
+	if s == null:
+		return 0
+	return int(StaffSystem.wage_demand(s) * (1.0 + maxf(s.reputation - club().reputation - 10.0, 0.0) * 0.03)) + 1
+
+
+func hire_staff(staff_id: String, salary: int, years: int) -> Dictionary:
+	var s: Staff = world.staff.get(staff_id)
+	if s == null:
+		return {"ok": false, "note": "找不到此員工"}
+	var r = StaffSystem.hire(world, club(), s, salary, years)
+	inbox_changed.emit()
+	return r
+
+
+func dismiss_staff(role: String) -> Dictionary:
+	if role == "head_coach" and world.phase != WorldState.PHASE_OFFSEASON:
+		return {"ok": false, "note": "賽季中不能解雇主教練（只能在休賽季調整）"}
+	var s = staff_of(role)
+	if s == null:
+		return {"ok": false, "note": "此職位目前無人"}
+	var comp = StaffSystem.dismiss(world, club(), role)
+	return {"ok": true, "note": "已與 %s 解約，補償 $%d" % [s.name, comp]}
+
+
+# ---------------------------------------------------------------- 財務
+
+func sponsor_offers() -> Array:
+	return club().sponsor_offers
+
+
+func sign_sponsor(index: int) -> Dictionary:
+	var offers = club().sponsor_offers
+	if index < 0 or index >= offers.size():
+		return {"ok": false, "note": "報價不存在"}
+	var o = offers[index]
+	Finance.sign_sponsor(world, club(), o)
+	return {"ok": true, "note": "與 %s 簽下%s（%s）" % [o["name"], Finance.SPONSOR_KINDS[o["kind"]], Finance.style_name(o["style"])]}
+
+
+func finance_summary() -> Dictionary:
+	var c = club()
+	return {"ledger": c.ledger, "totals": Finance.totals(c.ledger), "history": c.finance_log,
+		"projected_income": Finance.projected_income(world, c), "player_wages": TransferMarket.wage_bill(world, c),
+		"staff_wages": StaffSystem.wage_bill(world, c), "wage_budget": c.wage_budget, "sponsors": c.sponsors}
+
+
 func save(path: String) -> Error:
 	return SaveSystem.save(world, path)
 

@@ -8,7 +8,10 @@ extends RefCounted
 
 static func weekly(w: WorldState, p: Player, focus: Dictionary, coach: Staff) -> void:
 	var a = p.age(w.year)
-	var coach_f = 0.7 + (coach.development if coach else 40.0) / 100.0 * 0.6
+	var dev_rating = coach.development if coach else 40.0
+	if p.club_id != "" and w.clubs.has(p.club_id):
+		dev_rating = StaffSystem.rating(w, w.clubs[p.club_id], "development")
+	var coach_f = 0.7 + dev_rating / 100.0 * 0.6
 	var pro_f = 0.6 + p.trait_value("professionalism") / 100.0 * 0.6
 	var morale_f = 0.8 + p.morale / 250.0
 	for s in Attr.SKILLS:

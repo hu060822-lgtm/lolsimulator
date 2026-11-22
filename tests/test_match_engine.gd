@@ -6,7 +6,25 @@ func _ctx(w: WorldState, club_id: String, tag: String) -> TeamContext:
 	var t = TeamContext.from_club(w, w.clubs[club_id])
 	t.club_id = tag
 	t.name = tag
+	t.short_name = tag
 	return t
+
+
+## 只比較選手實力：教練團、默契、禁選熟悉度設為相同
+func _neutral(t: TeamContext) -> TeamContext:
+	for k in ["tactical", "drafting", "adaptability", "man_management"]:
+		t.staff_ratings[k] = 55.0
+	t.chemistry = 50.0
+	t.draft_familiarity = 50.0
+	return t
+
+
+## 先發平均能力
+func _lineup_ca(w: WorldState, c: Club) -> float:
+	var total := 0.0
+	for r in Attr.ROLES:
+		total += w.players[c.lineup[r]].current_ability(r)
+	return total / 5.0
 
 
 ## 爛 BP：每個位置選一隻「不在英雄池、全物理、沒有前排與開戰」的英雄。
@@ -58,9 +76,22 @@ func test_identical_rosters_bad_draft_loses() -> void:
 
 func test_underdog_wins_through_draft() -> void:
 	var w = make_world()
-	# 先確認兩隊實力差距：強隊 CA 較高
-	var strong = _ctx(w, "crimson_tide_gaming", "STRONG")
-	var weak = _ctx(w, "harbor_lights", "WEAK")
+	# 找一組「明顯的強弱對戰」：強隊為先發能力最高者；弱隊從能力較低的隊伍中，
+	# 挑第一個在 80 場試算中勝率落在 10%–30% 的（不依賴特定隊名，世界生成改變時仍成立）
+	var clubs: Array = w.clubs.values()
+	clubs.sort_custom(func(a, b): return _lineup_ca(w, a) > _lineup_ca(w, b))
+	var strong = _neutral(_ctx(w, clubs[0].id, "STRONG"))
+	var weak: TeamContext = null
+	for c in clubs.slice(1):
+		var cand = _neutral(_ctx(w, c.id, "WEAK"))
+		var r = _win_rate(w, cand, strong, 80, 9000)
+		if r >= 0.10 and r <= 0.30:
+			weak = cand
+			print("  favourite %s CA %.1f vs underdog %s CA %.1f (trial %.0f%%)" % [clubs[0].short_name, _lineup_ca(w, clubs[0]), c.short_name, _lineup_ca(w, c), r * 100.0])
+			break
+	check(weak != null, "found a favourite/underdog pairing")
+	if weak == null:
+		return
 	var baseline = _win_rate(w, weak, strong, 150, 2000)
 	strong.forced_picks = _bad_picks(w, strong)
 	var with_draft_edge = _win_rate(w, weak, strong, 150, 2000)
