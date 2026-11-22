@@ -22,6 +22,10 @@ var unavailable: Dictionary = {} ## champ_id -> true（禁用/已選/系列賽 f
 var log: Array = []
 ## 系列賽中對手的「威脅英雄」加權（敗方調整用）：side -> {champ_id: bonus}
 var ban_bias: Dictionary = {"blue": {}, "red": {}}
+var _by_role: Dictionary = {}    ## role -> [Champion]（保持 champions 的順序）
+
+const REASONED := 12  ## 只為排名前段的候選產生說明文字（效能）
+const SHORTLIST := 16 ## 每個位置先以熟練度與版本強度篩出候選，再做完整陣容評估（效能）
 
 
 func _init(blue: TeamContext, red: TeamContext, champs: Dictionary, patch_state: PatchState, r: SimRng, excluded: Array = []) -> void:
@@ -31,6 +35,12 @@ func _init(blue: TeamContext, red: TeamContext, champs: Dictionary, patch_state:
 	rng = r
 	for c in excluded:
 		unavailable[c] = true
+	for role in Attr.ROLES:
+		_by_role[role] = []
+	for c in champs.values():
+		for role in c.roles:
+			if _by_role.has(role):
+				_by_role[role].append(c)
 
 
 func is_done() -> bool:
@@ -145,18 +155,26 @@ func _rank_picks(side: String, r: SimRng) -> Array:
 	var noise_sd = 0.12 * (1.0 - q)
 	var enemy_comp = _comp_of(other(side))
 	var picks_made: int = picks[side].size()
+	var base = CompAnalyzer.accumulate(picks[side].values().map(func(cid): return champions[cid]))
+	var enemy_picked = picks[other(side)].size() > 0
 	var out: Array = []
 	for role in open_roles(side):
 		var lane_opp_id: String = picks[other(side)].get(role, "")
-		for c in champions.values():
-			if unavailable.has(c.id) or not (role in c.roles):
-				continue
+		var pre: Array = []
+		for c in _by_role[role]:
+			if not unavailable.has(c.id):
+				pre.append([0.44 * _mastery(team, role, c.id) + 0.18 * patch.meta(c.id) / 2.0, c])
+		if pre.size() > SHORTLIST:
+			pre.sort_custom(func(x, y): return x[0] > y[0])
+			pre = pre.slice(0, SHORTLIST)
+		for pair in pre:
+			var c: Champion = pair[1]
 			var m = _mastery(team, role, c.id)
 			var meta = patch.meta(c.id) / 2.0
-			var comp = _comp_of(side, c)
+			var comp = CompAnalyzer.analyze_acc(base, c)
 			var fit: float = CompAnalyzer.plan_fit(team.plan, comp) if team.plan != "flexible" else 0.5 + (comp["fit"] - 1.0) * 2.0
 			var counter := 0.0
-			if picks[other(side)].size() > 0:
+			if enemy_picked:
 				counter = CompAnalyzer.counter_score(comp, enemy_comp) * 2.0
 			var lane := 0.0
 			if lane_opp_id != "":
@@ -165,15 +183,16 @@ func _rank_picks(side: String, r: SimRng) -> Array:
 			var lateness = picks_made / 4.0
 			var score = 0.44 * m + 0.18 * meta + (0.14 + 0.10 * lateness) * fit + (0.06 + 0.08 * lateness) * counter + 0.08 * lane
 			score += r.normal(0.0, noise_sd)
-			if true:
-				var why: Array = []
-				if m >= 0.85: why.append("拿手英雄(熟練度 %d)" % int(m * 100))
-				if meta >= 0.5: why.append("版本強勢")
-				if counter > 0.1: why.append("剋制對手陣容")
-				if lane > 0.15: why.append("對線優勢")
-				if fit > 0.7: why.append("符合戰術方向")
-				out.append({"score": score, "champion": c.id, "role": role, "reason": "、".join(why) if why.size() > 0 else "綜合評估"})
+			out.append({"score": score, "champion": c.id, "role": role, "m": m, "meta": meta, "counter": counter, "lane": lane, "fit": fit})
 	out.sort_custom(func(x, y): return x["score"] > y["score"])
+	for e in out.slice(0, REASONED):
+		var why: Array = []
+		if e["m"] >= 0.85: why.append("拿手英雄(熟練度 %d)" % int(e["m"] * 100))
+		if e["meta"] >= 0.5: why.append("版本強勢")
+		if e["counter"] > 0.1: why.append("剋制對手陣容")
+		if e["lane"] > 0.15: why.append("對線優勢")
+		if e["fit"] > 0.7: why.append("符合戰術方向")
+		e["reason"] = "、".join(why) if why.size() > 0 else "綜合評估"
 	return out
 
 
@@ -186,6 +205,8 @@ func _rank_bans(side: String, r: SimRng) -> Array:
 	var enemy_open = open_roles(other(side))
 	var bias: Dictionary = ban_bias[side]
 	var out: Array = []
+	# 先找出每隻英雄對敵方空缺位置的威脅，篩出前段再做完整評估
+	var pre: Array = []
 	for c in champions.values():
 		if unavailable.has(c.id):
 			continue
@@ -198,22 +219,30 @@ func _rank_bans(side: String, r: SimRng) -> Array:
 			if t > threat:
 				threat = t
 				target_role = role
-		if target_role == "":
-			continue
+		if target_role != "":
+			pre.append([threat + float(bias.get(c.id, 0.0)), c, threat, target_role])
+	if pre.size() > SHORTLIST * 2:
+		pre.sort_custom(func(x, y): return x[0] > y[0])
+		pre = pre.slice(0, SHORTLIST * 2)
+	for item in pre:
+		var c: Champion = item[1]
+		var threat: float = item[2]
+		var target_role: String = item[3]
 		# 第二輪禁用：同時考慮「剋制我方陣容」的英雄
 		var anti := 0.0
 		if picks[side].size() > 0:
-			anti = -CompAnalyzer.counter_score(my_comp, CompAnalyzer.analyze([c])) * 0.5
+			anti = -CompAnalyzer.counter_score(my_comp, CompAnalyzer.analyze_single(c)) * 0.5
 		var score = threat + anti + float(bias.get(c.id, 0.0)) + r.normal(0.0, noise_sd)
-		if true:
-			var p: Player = enemy.players.get(target_role)
-			var reason = "針對 %s 的拿手英雄" % (p.handle if p else target_role)
-			if bias.get(c.id, 0.0) > 0.0:
-				reason = "上一局對手的關鍵英雄"
-			elif anti > 0.05:
-				reason = "剋制我方陣容"
-			out.append({"score": score, "champion": c.id, "reason": reason, "role": ""})
+		out.append({"score": score, "champion": c.id, "role": "", "target_role": target_role, "anti": anti})
 	out.sort_custom(func(x, y): return x["score"] > y["score"])
+	for e in out.slice(0, REASONED):
+		var p: Player = enemy.players.get(e["target_role"])
+		var reason = "針對 %s 的拿手英雄" % (p.handle if p else e["target_role"])
+		if bias.get(e["champion"], 0.0) > 0.0:
+			reason = "上一局對手的關鍵英雄"
+		elif e["anti"] > 0.05:
+			reason = "剋制我方陣容"
+		e["reason"] = reason
 	if out.is_empty():
 		for c in champions.values():
 			if not unavailable.has(c.id):

@@ -23,7 +23,7 @@ static func build(module: DataModule, world_seed: int, human_club_id: String = "
 	for l in module.leagues:
 		var lg = League.from_dict(l)
 		if lg.tier == 0:
-			w.international = lg  # 國際賽事：參賽隊伍每季由各一級聯賽成績決定
+			w.internationals[lg.id] = lg  # 國際賽事：參賽隊伍每季由各一級聯賽成績決定
 		else:
 			w.leagues[lg.id] = lg
 	var club_defs: Array = module.clubs.duplicate(true)
@@ -36,6 +36,9 @@ static func build(module: DataModule, world_seed: int, human_club_id: String = "
 		if w.leagues.has(cl.league_id):
 			w.leagues[cl.league_id].club_ids.append(cl.id)
 	for p in module.players:
+		if p.get("homage", false):
+			_add_homage(w, p)
+			continue
 		var pl = Player.from_dict(p)
 		if pl.id == "":
 			pl.id = w.new_id("p")
@@ -90,6 +93,34 @@ static func _fill_rosters(w: WorldState) -> void:
 		for i in w.rng.range_i(1, 2):
 			var role: String = w.rng.pick(Attr.ROLES)
 			_add(w, cl, PlayerGenerator.generate(w, w.rng, cl.region, role, quality * 0.6, true), "prospect")
+
+
+## 致敬選手：只給名字、位置、出生年與水準（quality 0..1），其餘能力由生成器依水準產生。
+static func _add_homage(w: WorldState, d: Dictionary) -> void:
+	var cl: Club = w.clubs.get(d.get("club_id", ""))
+	var role: String = d.get("primary_role", "MID")
+	var region: String = cl.region if cl else str(d.get("region", "KR"))
+	var p = PlayerGenerator.generate(w, w.rng, region, role, float(d.get("quality", 0.7)), false, false)
+	p.handle = str(d.get("handle", p.handle))
+	if d.has("real_name"):
+		p.real_name = str(d["real_name"])
+	if d.has("birth"):
+		p.birth_year = int(d["birth"])
+	var age = p.age(w.year)
+	# 老將：能力已接近上限
+	if age >= 24:
+		for s in Attr.SKILLS:
+			p.skills[s] = lerpf(p.skills[s], p.ceilings[s], clampf((age - 22) / 8.0, 0.0, 0.6))
+	for cid in d.get("signature", []):
+		if w.champions.has(cid):
+			p.champion_pool[cid] = maxf(float(p.champion_pool.get(cid, 0.0)), 95.0)
+	p.reputation = clampf(30.0 + float(d.get("quality", 0.7)) * 60.0, 1.0, 97.0)
+	p.goals = PlayerGenerator.derive_goals(p, w.year)
+	if cl:
+		_add(w, cl, p, "starter")
+	else:
+		w.players[p.id] = p
+		w.free_agents.append(p.id)
 
 
 static func _add(w: WorldState, cl: Club, p: Player, status: String) -> void:

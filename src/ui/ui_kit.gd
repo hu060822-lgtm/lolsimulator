@@ -17,6 +17,7 @@ const RED_SIDE := Color("ff6b6b")
 
 const CLASS_NAMES := {"tank": "坦克", "fighter": "戰士", "assassin": "刺客", "mage": "法師", "marksman": "射手", "enchanter": "輔助"}
 const TAG_NAMES := {"engage": "開戰", "disengage": "反開", "poke": "消耗", "pick": "抓單", "splitpush": "分推", "teamfight": "團戰", "peel": "保護", "frontline": "前排", "burst": "爆發", "dps": "持續輸出", "waveclear": "清線", "mobility": "機動", "siege": "攻城"}
+const ROLE_SHORT := {"TOP": "TOP", "JUNGLE": "JG", "MID": "MID", "ADC": "ADC", "SUPPORT": "SUP"}
 const ROLE_NAMES := {"TOP": "上路", "JUNGLE": "打野", "MID": "中路", "ADC": "下路", "SUPPORT": "輔助"}
 const PLAN_NAMES := {"flexible": "彈性（依陣容）", "early_aggression": "前期進攻", "late_scaling": "後期發育", "split_push": "分推", "teamfight": "團戰", "pick": "抓單", "poke_siege": "消耗圍塔", "protect": "保護後排"}
 const PHASE_NAMES := {"preseason": "季前賽", "regular": "例行賽", "playoffs": "季後賽", "international": "世界賽", "offseason": "休賽季（轉會期）"}
@@ -239,3 +240,93 @@ static func champion_info(c: Champion) -> String:
 	var parts = tags.map(func(t): return "%s %s" % [TAG_NAMES.get(t, t), "★".repeat(int(c.tags[t]))])
 	return "%s %s・%s・%s\n位置：%s\n強勢期：前 %d／中 %d／後 %d　對線 %d　難度 %d\n特性：%s" % [c.name, c.name_en, CLASS_NAMES.get(c.class_type, c.class_type), "物理" if c.damage == "AD" else "魔法",
 		"、".join(c.roles.map(func(r): return ROLE_NAMES.get(r, r))), int(c.early), int(c.mid), int(c.late), int(c.lane), int(c.difficulty), "、".join(parts)]
+
+
+## 切換式小按鈕（篩選、速度、分頁）。
+static func chip(text: String, cb: Callable) -> Button:
+	var b := button(text, cb)
+	b.toggle_mode = true
+	b.add_theme_font_size_override("font_size", 13)
+	var on = _box(ACCENT.darkened(0.35), ACCENT, 12)
+	var off = _box(PANEL_2, BORDER, 12)
+	for sb in [on, off]:
+		sb.content_margin_left = 10
+		sb.content_margin_right = 10
+		sb.content_margin_top = 3
+		sb.content_margin_bottom = 3
+	b.add_theme_stylebox_override("normal", off)
+	b.add_theme_stylebox_override("hover", _box(Color("262b36"), BORDER, 12))
+	b.add_theme_stylebox_override("pressed", on)
+	b.add_theme_stylebox_override("hover_pressed", on)
+	return b
+
+
+## 圓角標籤（狀態、分類、提示）。
+static func pill(text: String, color: Color = ACCENT) -> PanelContainer:
+	var p := PanelContainer.new()
+	var sb = _box(Color(color, 0.16), Color(color, 0.55), 10)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 10
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	p.add_theme_stylebox_override("panel", sb)
+	p.add_child(label(text, 13, color.lightened(0.25)))
+	return p
+
+
+## 大型選項按鈕：上方代號、中間名稱、下方一行說明。
+static func tile(code: String, name: String, desc: String, cb: Callable, color: Color = ACCENT, width: int = 150) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(width, 78)
+	b.pressed.connect(cb)
+	b.tooltip_text = desc
+	var v := vbox(2)
+	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.alignment = BoxContainer.ALIGNMENT_CENTER
+	for l in [label(code, 12, color), label(name, 16), label(desc, 12, MUTED)]:
+		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.clip_text = true
+		v.add_child(l)
+	b.add_child(v)
+	return b
+
+
+## 數值條：名稱 + 條 + 數字，取代「█░」文字條。
+static func stat_bar(name: String, v: float, max_v: float = 100.0, width: int = 120, color: Color = Color(0, 0, 0, 0), label_w: int = 72, value_text: String = "") -> HBoxContainer:
+	var h := hbox(6)
+	var l := label(name, 13, MUTED)
+	l.custom_minimum_size = Vector2(label_w, 0)
+	h.add_child(l)
+	var pb := ProgressBar.new()
+	pb.show_percentage = false
+	pb.max_value = max_v
+	pb.value = v
+	pb.custom_minimum_size = Vector2(width, 8)
+	pb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var c = color if color.a > 0 else skill_color(v / max_v * 100.0)
+	var bg = _box(Color("12151a"), BORDER, 3)
+	var fill = _box(c, c, 3)
+	for sb in [bg, fill]:
+		sb.content_margin_top = 0
+		sb.content_margin_bottom = 0
+		sb.content_margin_left = 0
+		sb.content_margin_right = 0
+	pb.add_theme_stylebox_override("background", bg)
+	pb.add_theme_stylebox_override("fill", fill)
+	h.add_child(pb)
+	h.add_child(label(value_text if value_text != "" else str(int(round(v))), 13, c))
+	return h
+
+
+## 資訊卡：小標題 + 大數字 + 一行補充。
+static func stat_card(title_text: String, big: String, small: String = "", color: Color = TEXT) -> PanelContainer:
+	var v := vbox(2)
+	v.add_child(label(title_text, 12, MUTED))
+	v.add_child(label(big, 20, color))
+	if small != "":
+		v.add_child(label(small, 12, MUTED))
+	var p := panel(v)
+	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return p

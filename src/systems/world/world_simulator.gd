@@ -21,6 +21,8 @@ static func advance_day(w: WorldState) -> Array:
 			results = LeagueEngine.play_day(w)
 		WorldState.PHASE_REGULAR, WorldState.PHASE_PLAYOFFS:
 			results = LeagueEngine.play_day(w)
+			LeagueEngine.maybe_start_midseason(w)
+			LeagueEngine.advance_internationals(w)
 			for lg in w.leagues.values():
 				if LeagueEngine.regular_done(lg) and lg.playoff_bracket.is_empty():
 					LeagueEngine.start_playoffs(w, lg)
@@ -29,15 +31,12 @@ static func advance_day(w: WorldState) -> Array:
 				if LeagueEngine.start_international(w):
 					w.phase = WorldState.PHASE_INTERNATIONAL
 					w.phase_day = w.day
-					Media.on_worlds_start(w)
 				else:
 					end_season(w)
 		WorldState.PHASE_INTERNATIONAL:
 			results = LeagueEngine.play_day(w)
-			var it: League = w.international
-			if LeagueEngine.regular_done(it) and it.playoff_bracket.is_empty():
-				LeagueEngine.start_playoffs(w, it)
-			if it.season_complete:
+			LeagueEngine.advance_internationals(w)
+			if w.international.season_complete:
 				end_season(w)
 		WorldState.PHASE_OFFSEASON:
 			_offseason_day(w, w.day - w.phase_day)
@@ -85,6 +84,7 @@ static func weekly(w: WorldState) -> void:
 
 static func _finance_week(w: WorldState, club: Club) -> void:
 	Finance.weekly(w, club)
+	Organization.weekly(w, club)
 
 
 # ---------------------------------------------------------------- 賽季結算
@@ -92,6 +92,10 @@ static func _finance_week(w: WorldState, club: Club) -> void:
 static func end_season(w: WorldState) -> void:
 	var season = {"year": w.year, "patch": w.patch.version, "leagues": {}}
 	var worlds_result = _close_international(w, season)
+	var mid_results := {}
+	for it in LeagueEngine.midseason_events(w):
+		mid_results[it.id] = _close_international(w, season, it)
+	var msi_result: Dictionary = mid_results.get("msi", {})
 	for lg in w.leagues.values():
 		var order = LeagueEngine.sorted_standings(lg)
 		var awards = _awards(w, lg)
@@ -101,6 +105,9 @@ static func end_season(w: WorldState) -> void:
 			champ.titles += 1
 			for pid in champ.lineup.values():
 				w.players[pid].career["titles"] = int(w.players[pid].career.get("titles", 0)) + 1
+				# 冠軍後的鬆懈：野心越小越容易滿足（連霸越來越難）
+				var pl: Player = w.players[pid]
+				pl.motivation = clampf(pl.motivation - (4.0 + 12.0 * (1.0 - pl.trait_value("ambition") / 100.0)), 0.0, 100.0)
 				w.players[pid].reputation = minf(w.players[pid].reputation + 6.0, 100.0)  # 冠軍選手身價上漲
 		if awards["mvp"] != "":
 			w.players[awards["mvp"]].career["mvps"] = int(w.players[awards["mvp"]].career.get("mvps", 0)) + 1
@@ -113,7 +120,7 @@ static func end_season(w: WorldState) -> void:
 			Finance.pay_bonuses(w, club, i + 1, is_champ, i < int(lg.format.get("playoffs", {}).get("teams", 4)))
 			Finance.update_fanbase(club, i + 1, n, is_champ)
 			var expected = (1.0 - club.reputation / 100.0) * n
-			club.reputation = clampf(club.reputation + (expected - i) * 0.8 + (4.0 if is_champ else 0.0), 5.0, 99.0)
+			club.reputation = rep_change(club.reputation, (expected - i) * 0.8 + (4.0 if is_champ else 0.0))
 			# 聲望回歸平均：沒有成績支撐的光環會慢慢褪去
 			club.reputation = lerpf(club.reputation, 55.0 if lg.tier <= 1 else 30.0, 0.08)
 			# 下季薪資預算：由聲望與粉絲決定，受聯賽薪資上限約束
@@ -121,7 +128,8 @@ static func end_season(w: WorldState) -> void:
 			var target = 350000.0 + club.reputation * 20000.0 + club.fanbase * 0.2 + maxf(club.cash, 0.0) * 0.08  # 有存款的俱樂部可以加碼
 			club.wage_budget = clampi(int(club.wage_budget * 0.6 + target * 0.4), 300000, cap)
 			club.history.append({"year": w.year, "league_id": lg.id, "tier": lg.tier, "position": i + 1, "champion": is_champ,
-				"worlds": worlds_result.get(club.id, "")})
+				"worlds": worlds_result.get(club.id, ""), "msi": msi_result.get(club.id, ""),
+				"intl": _club_intl(mid_results, club.id)})
 			if not club.is_human:
 				ClubAI.review_coach(w, club, i + 1, n)
 			Finance.close_season(w, club)
@@ -137,18 +145,43 @@ static func end_season(w: WorldState) -> void:
 	w.phase_day = w.day
 
 
-## 世界賽結算：獎金、聲望、選手生涯紀錄。回傳 club_id -> 成績（champion/final/semis/groups）。
-static func _close_international(w: WorldState, season: Dictionary) -> Dictionary:
+static func _club_intl(results: Dictionary, club_id: String) -> Dictionary:
 	var out := {}
-	var it: League = w.international
+	for k in results:
+		if results[k].has(club_id):
+			out[k] = results[k][club_id]
+	return out
+
+
+## 聲望變化：越接近頂點，成績帶來的聲望越少（頂級豪門只能「維持」，不會無限累積光環）。
+static func rep_change(rep: float, delta: float) -> float:
+	if delta > 0.0:
+		delta *= clampf((100.0 - rep) / 40.0, 0.15, 1.0)
+	return clampf(rep + delta, 5.0, 99.0)
+
+
+## 國際賽事結算：獎金、聲望、選手生涯紀錄。回傳 club_id -> 成績（champion/final/semis/groups）。
+## 世界賽記在 season["international"]，季中邀請賽記在 season["midseason"]。
+static func _close_international(w: WorldState, season: Dictionary, it: League = null) -> Dictionary:
+	var out := {}
+	if it == null:
+		it = w.international
 	if it == null or it.club_ids.is_empty() or it.champion_id == "":
 		return out
+	var worlds = str(it.format.get("timing", "end")) == "end"
+	var scale = float(it.format.get("scale", 1.0 if worlds else 0.6))  # 季中賽事的份量較輕
 	var final_fx = it.fixtures.filter(func(f): return f["stage"] == "final")
 	var runner_up := ""
 	if not final_fx.is_empty():
 		var f: Dictionary = final_fx[0]
 		runner_up = f["home"] if f["result"]["winner"] == f["away"] else f["away"]
-	var semis: Array = it.playoff_bracket[0] if not it.playoff_bracket.is_empty() else []
+	var semis: Array = []
+	var quarters: Array = []
+	for b in it.playoff_bracket:
+		if b.size() == 4:
+			semis = b
+		elif b.size() == 8:
+			quarters = b
 	var n = it.club_ids.size()
 	for cid in it.club_ids:
 		var club: Club = w.clubs[cid]
@@ -167,22 +200,33 @@ static func _close_international(w: WorldState, season: Dictionary) -> Dictionar
 			res = "semis"
 			share = 0.05
 			rep_gain = 2.0
+		elif quarters.has(cid):
+			res = "quarters"
+			share = 0.03
+			rep_gain = 1.0
 		out[cid] = res
+		rep_gain *= scale
 		Finance.earn(club, "prize", int(it.prize_pool * share))
-		club.reputation = clampf(club.reputation + rep_gain + 1.0, 5.0, 99.0)
+		club.reputation = rep_change(club.reputation, rep_gain + scale)
 		club.fanbase = int(club.fanbase * (1.0 + rep_gain / 100.0))
 		for pid in club.lineup.values():
 			var p: Player = w.players[pid]
-			p.career["worlds"] = int(p.career.get("worlds", 0)) + 1
+			var k = "worlds" if worlds else ("msi" if it.id == "msi" else it.id)
+			p.career[k] = int(p.career.get(k, 0)) + 1
 			if res == "champion":
-				p.career["world_titles"] = int(p.career.get("world_titles", 0)) + 1
-				p.reputation = minf(p.reputation + 10.0, 100.0)
+				p.career[k + "_titles" if not worlds else "world_titles"] = int(p.career.get(k + "_titles" if not worlds else "world_titles", 0)) + 1
+				p.reputation = minf(p.reputation + 10.0 * scale, 100.0)
 	var champ: Club = w.clubs[it.champion_id]
-	champ.world_titles += 1
+	if worlds:
+		champ.world_titles += 1
+	elif it.id == "msi":
+		champ.msi_titles += 1
+	else:
+		champ.intl_titles[it.id] = int(champ.intl_titles.get(it.id, 0)) + 1
 	var awards = _awards(w, it)
-	season["international"] = {"id": it.id, "name": it.name, "champion": it.champion_id, "runner_up": runner_up,
+	season["international" if worlds else ("midseason" if it.id == "msi" else it.id)] = {"id": it.id, "name": it.name, "champion": it.champion_id, "runner_up": runner_up,
 		"teams": it.club_ids.duplicate(), "mvp": awards["mvp"]}
-	w.log.add("worlds_champion", w.day, [champ.id], {"year": w.year, "runner_up": runner_up}, [])
+	w.log.add("intl_champion", w.day, [champ.id], {"year": w.year, "event": it.id, "runner_up": runner_up}, [])
 	return out
 
 
@@ -304,19 +348,6 @@ static func _retirements(w: WorldState) -> void:
 
 static func _new_patch(w: WorldState) -> void:
 	w.patch = WorldBuilder.generate_patch(w, w.rng, "%d.1" % ((w.year + 1) % 100))
-	# 新英雄推出：約每兩年一隻（由既有英雄的標籤重組生成，名稱由資料模組的名字庫組合）
-	if w.rng.chance(0.5):
-		var base: Champion = w.rng.pick(w.champions.values())
-		var c = Champion.from_dict(base.to_dict())
-		c.id = "gen_%d_%s" % [w.year, base.id]
-		c.name = "%s・覺醒" % base.name
-		for t in c.tags.keys():
-			c.tags[t] = clampf(float(c.tags[t]) + w.rng.range_i(-1, 1), 0.0, 3.0)
-		c.early = clampf(c.early + w.rng.range_i(-2, 2), 2, 9)
-		c.late = clampf(c.late + w.rng.range_i(-2, 2), 2, 9)
-		w.champions[c.id] = c
-		w.patch.tiers[c.id] = 1.0
-		w.log.add("new_champion", w.day, [], {"champion": c.id}, [])
 	for p in w.active_players():
 		Development.adapt_to_patch(w, p, w.rng)
 
@@ -351,6 +382,7 @@ static func _new_season(w: WorldState) -> void:
 		Finance.auto_sign_remaining(w, hc)
 		if hc.coach_id == "":
 			StaffSystem.ai_fill(w, hc)  # 沒有主教練無法開季：由董事會指派
+	Organization.new_season(w)
 	for p in w.active_players():
 		p.reset_season_stats()
 		p.goals = PlayerGenerator.derive_goals(p, w.year)
@@ -358,6 +390,8 @@ static func _new_season(w: WorldState) -> void:
 		p.stress = lerpf(p.stress, 25.0, 0.6)
 		p.refuses_renewal = false
 		p.weeks_unhappy = 0
+		# 新賽季重燃鬥志：慢慢回到由野心決定的基準（冠軍隊的鬆懈不會一個休賽季就消失）
+		p.motivation = lerpf(p.motivation, 50.0 + p.trait_value("ambition") * 0.35, 0.3)
 	# 長期無人簽約的老將與低水準自由選手離開職業圈
 	for pid in w.free_agents.duplicate():
 		var p: Player = w.players[pid]

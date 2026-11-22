@@ -7,6 +7,10 @@ static func pick(w: WorldState, club: Club) -> void:
 	var used := {}
 	var lineup := {}
 	var players = club.roster.map(func(pid): return w.players[pid]).filter(func(p): return not p.retired)
+	# 禁賽／無法出賽的選手不上場（人數不足時才例外）
+	var available = players.filter(func(p): return p.is_available(w.day + 1))
+	if available.size() >= 5:
+		players = available
 	# 依位置挑選：主位置優先，其次副位置，最後任何人（打錯位置有懲罰）
 	for role in Attr.ROLES:
 		var best: Player = null
@@ -32,6 +36,6 @@ static func pick(w: WorldState, club: Club) -> void:
 static func is_valid(w: WorldState, club: Club) -> bool:
 	for role in Attr.ROLES:
 		var pid: String = club.lineup.get(role, "")
-		if pid == "" or not (pid in club.roster) or w.players[pid].retired:
+		if pid == "" or not (pid in club.roster) or not w.players[pid].is_available(w.day + 1):
 			return false
 	return true

@@ -16,7 +16,11 @@
     "teams": 4,
     "best_of": 5
    },
-   "wage_cap": 2400000
+   "wage_cap": 2400000,
+   "slots": {
+    "worlds": 4,
+    "msi": 2
+   }
   }
  },
  {
@@ -36,7 +40,36 @@
     "teams": 4,
     "best_of": 5
    },
-   "wage_cap": 2000000
+   "wage_cap": 2000000,
+   "slots": {
+    "worlds": 4,
+    "msi": 2
+   }
+  }
+ },
+ {
+  "id": "psl",
+  "name": "Pacific Star League",
+  "region": "PACIFIC",
+  "tier": 1,
+  "prize_pool": 400000,
+  "format": {
+   "regular": {
+    "type": "double_round_robin",
+    "best_of": 1,
+    "days_between_rounds": 2
+   },
+   "playoffs": {
+    "type": "single_elimination",
+    "teams": 4,
+    "best_of": 5
+   },
+   "wage_cap": 1500000,
+   "revenue_share": 180000,
+   "slots": {
+    "worlds": 2,
+    "msi": 1
+   }
   }
  },
  {
@@ -103,6 +136,34 @@
     "regular": 1.4,
     "playoffs": 1.7,
     "final": 2.0
+   },
+   "timing": "end"
+  }
+ },
+ {
+  "id": "msi",
+  "name": "Mid-Season Invitational",
+  "region": "INTL",
+  "tier": 0,
+  "prize_pool": 1200000,
+  "format": {
+   "timing": "midseason",
+   "qualify_per_league": 1,
+   "break_days": 16,
+   "regular": {
+    "type": "single_round_robin",
+    "best_of": 1,
+    "days_between_rounds": 1
+   },
+   "playoffs": {
+    "type": "single_elimination",
+    "teams": 4,
+    "best_of": 5
+   },
+   "stakes": {
+    "regular": 1.3,
+    "playoffs": 1.5,
+    "final": 1.8
    }
   }
  }

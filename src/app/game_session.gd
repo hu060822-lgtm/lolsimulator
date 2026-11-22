@@ -118,6 +118,98 @@ func play_game(ds: DraftSession) -> Dictionary:
 	return s.play_game(ds)
 
 
+# ---------------------------------------------------------------- 品牌
+
+func run_brand_campaign(kind: String) -> Dictionary:
+	return Organization.run_campaign(world, club(), kind)
+
+
+# ---------------------------------------------------------------- 對話
+
+func talk_to_player(player_id: String, topic: String) -> Dictionary:
+	var p: Player = world.players.get(player_id)
+	if p == null or p.club_id != world.human_club_id:
+		return {"ok": false, "reply": "只能和自家選手談話"}
+	return Dialogue.talk(world, p, topic)
+
+
+func can_team_talk() -> bool:
+	if pending.is_empty():
+		return false
+	var s: SeriesState = pending["series"]
+	return int(pending.get("talk_game", -1)) != s.games.size()
+
+
+## 賽前／局間團隊談話（每局一次）。
+func team_talk(kind: String) -> Dictionary:
+	if not can_team_talk():
+		return {"ok": false, "reactions": []}
+	var s: SeriesState = pending["series"]
+	pending["talk_game"] = s.games.size()
+	var me: Club = club()
+	var opp: Club = world.clubs[s.b.club_id if s.a.club_id == me.id else s.a.club_id]
+	var r = Dialogue.team_talk(world, me, kind, s.stakes, opp.reputation - me.reputation >= 12.0)
+	return r  # 選手狀態在下一局開始時讀取，談話立即影響比賽
+
+
+# ---------------------------------------------------------------- 即時戰術指揮
+
+var live: MatchEngine = null
+var live_side: String = ""
+
+const LIVE_ORDERS := ["", "press", "control", "stall", "split", "siege"]
+
+
+## 開始一局即時指揮的比賽：推進到第一個戰術調整點前暫停。回傳局勢。
+func start_live_game(ds: DraftSession) -> Dictionary:
+	var s: SeriesState = pending["series"]
+	live = s.begin_game(ds)
+	live_side = s.side_of(world.human_club_id)
+	return _live_pause()
+
+
+## 下達接下來這段時間的指示（"" = 交給指揮自行判斷），推進到下一個調整點。
+## 比賽結束時回傳 {"done": true, "game": 結果}。
+func live_continue(order: String) -> Dictionary:
+	if live == null:
+		return {}
+	var at = live.next_shotcall()
+	var t: TeamContext = live.team(live_side)
+	t.orders = {}
+	if order != "" and at != -1:
+		t.orders[str(at)] = order
+	if at != -1:
+		live.run_until(at)  # 先打過這個調整點（指示在此生效），再停在下一個調整點前
+	return _live_pause()
+
+
+## 不再介入，直接打完這局。
+func live_finish() -> Dictionary:
+	if live == null:
+		return {}
+	live.team(live_side).orders = {}
+	var s: SeriesState = pending["series"]
+	var g = s.finish_game(live)
+	live = null
+	return {"done": true, "game": g}
+
+
+func _live_pause() -> Dictionary:
+	var at = live.next_shotcall()
+	var over = live.run_until(at - 1 if at != -1 else MatchEngine.MAX_MINUTE)
+	if over or at == -1:
+		live.team(live_side).orders = {}
+		var s: SeriesState = pending["series"]
+		var g = s.finish_game(live)
+		live = null
+		return {"done": true, "game": g}
+	var snap = live.snapshot()
+	snap["next_call"] = at
+	snap["side"] = live_side
+	snap["done"] = false
+	return snap
+
+
 func finish_match() -> Dictionary:
 	var s: SeriesState = pending["series"]
 	while not s.is_done():
@@ -188,6 +280,9 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 			return Relationships.resolve_conflict(world, msg, option)
 	if option.begins_with("ev:"):
 		return RandomEvents.resolve(world, msg, option)
+	if option.begins_with("crisis:"):
+		msg["resolved"] = true
+		return Organization.resolve(world, club(), option.trim_prefix("crisis:"))
 	var r = respond_to_player(msg["player_id"], option)
 	msg["resolved"] = true
 	return r

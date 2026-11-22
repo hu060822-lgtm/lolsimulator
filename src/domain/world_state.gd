@@ -20,7 +20,11 @@ var human_club_id: String = ""
 var champions: Dictionary = {}    ## id -> Champion
 var patch: PatchState = PatchState.new()
 var leagues: Dictionary = {}      ## id -> League（國內聯賽，含次級聯賽）
-var international: League = null  ## 世界賽（tier 0），參賽隊伍每季決定
+var internationals: Dictionary = {}  ## id -> League：國際賽事（tier 0），參賽隊伍每季決定
+## 年底的世界賽（format.timing == "end"）
+var international: League:
+	get:
+		return intl("end")
 var event_defs: Array = []        ## 隨機事件定義（來自資料模組，隨存檔保存）
 var news: Array = []              ## 媒體新聞（見 Media）
 var clubs: Dictionary = {}        ## id -> Club
@@ -35,6 +39,14 @@ var inbox: Array = []             ## 給玩家俱樂部的訊息（選手要求�
 var log := SimLog.new()
 var rng := SimRng.new()
 var next_id: int = 1
+
+
+## 依時機取得國際賽事："midseason"（季中邀請賽）或 "end"（世界賽）。
+func intl(timing: String) -> League:
+	for l in internationals.values():
+		if str(l.format.get("timing", "end")) == timing:
+			return l
+	return null
 
 
 func new_id(prefix: String) -> String:
@@ -65,7 +77,7 @@ func to_dict() -> Dictionary:
 		"clubs": clubs.values().map(func(c): return c.to_dict()),
 		"players": players.values().map(func(p): return p.to_dict()),
 		"staff": staff.values().map(func(s): return s.to_dict()),
-		"international": international.to_dict() if international else {}, "news": news, "event_defs": event_defs,
+		"internationals": internationals.values().map(func(l): return l.to_dict()), "news": news, "event_defs": event_defs,
 		"free_agents": free_agents, "names": names, "history": history, "inbox": inbox, "relations": relations,
 		"log": log.to_array(), "rng": rng.get_state(), "next_id": next_id,
 	}
@@ -88,9 +100,13 @@ static func from_dict(d: Dictionary) -> WorldState:
 	for l in d.get("leagues", []):
 		var lg = League.from_dict(l)
 		w.leagues[lg.id] = lg
-	var intl: Dictionary = d.get("international", {})
-	if not intl.is_empty():
-		w.international = League.from_dict(intl)
+	for l in d.get("internationals", []):
+		var it = League.from_dict(l)
+		w.internationals[it.id] = it
+	var legacy: Dictionary = d.get("international", {})
+	if not legacy.is_empty() and w.internationals.is_empty():
+		var it2 = League.from_dict(legacy)
+		w.internationals[it2.id] = it2
 	w.news = d.get("news", [])
 	w.event_defs = d.get("event_defs", [])
 	for c in d.get("clubs", []):

@@ -4,6 +4,7 @@ extends RefCounted
 
 var id: String
 var name: String
+var short_name: String = ""   ## 顯示用縮寫（例：LCK）；空白時用全名
 var region: String
 var tier: int = 1
 var club_ids: Array = []
@@ -34,7 +35,7 @@ static func from_dict(d: Dictionary) -> League:
 
 
 func to_dict() -> Dictionary:
-	return {"id": id, "name": name, "region": region, "tier": tier, "club_ids": club_ids,
+	return {"id": id, "name": name, "short_name": short_name, "region": region, "tier": tier, "club_ids": club_ids,
 		"format": format, "prize_pool": prize_pool, "fixtures": fixtures,
 		"standings": standings, "playoff_bracket": playoff_bracket,
 		"champion_id": champion_id, "season_complete": season_complete}

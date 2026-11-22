@@ -7,7 +7,8 @@
 ## effects 格式：
 ##   "target": 對象選手 {morale, stress, fatigue, trust, confidence, reputation, motivation}
 ##   "roster": 全隊選手（同上）
-##   "club":   {cash, fans_pct, opinion, chemistry, draft_familiarity, reputation}
+##   "club":   {cash, fans_pct, opinion, chemistry, draft_familiarity, reputation, board, brand}
+##   target 另有 suspend_days：禁賽／無法出賽天數（法律、簽證、聯盟處分）
 ##   "team_relations": 對象選手與隊友（無對象時為全隊）關係變化
 class_name RandomEvents
 extends RefCounted
@@ -71,6 +72,8 @@ static func _targets(w: WorldState, club: Club, ev: Dictionary) -> Array:
 		if cond.has("min_reputation") and p.reputation < float(cond["min_reputation"]):
 			ok = false
 		if cond.has("min_ability") and p.current_ability() < float(cond["min_ability"]):
+			ok = false
+		if cond.get("foreign", false) and p.home_region == club.region:
 			ok = false
 		if ok:
 			out.append(p)
@@ -137,6 +140,10 @@ static func apply_option(w: WorldState, club: Club, ev: Dictionary, option_id: S
 	var fx: Dictionary = opt.get("effects", {})
 	if target and fx.has("target"):
 		_apply_player(target, fx["target"])
+		if fx["target"].has("suspend_days"):
+			target.suspended_until = maxi(target.suspended_until, w.day + int(fx["target"]["suspend_days"]))
+			if club.lineup.values().has(target.id):
+				LineupSelector.pick(w, club)
 	if fx.has("roster"):
 		for pid in club.roster:
 			_apply_player(w.players[pid], fx["roster"])
@@ -192,3 +199,7 @@ static func _apply_club(c: Club, e: Dictionary) -> void:
 				c.draft_familiarity = clampf(c.draft_familiarity + v, 0.0, 100.0)
 			"reputation":
 				c.reputation = clampf(c.reputation + v, 5.0, 99.0)
+			"board":
+				c.board_confidence = clampf(c.board_confidence + v, 0.0, 100.0)
+			"brand":
+				c.brand = clampf(c.brand + v, 0.0, 100.0)

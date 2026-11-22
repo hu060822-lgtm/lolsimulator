@@ -57,8 +57,7 @@ static func on_match(w: WorldState, lg: League, fx: Dictionary, series: Dictiona
 		post(w, "slump", "%s 陷入 %d 連敗，外界質疑聲浪升高" % [loser.name, -loser.streak], [lose_id], -0.7)
 
 
-static func on_worlds_start(w: WorldState) -> void:
-	var it: League = w.international
+static func on_intl_start(w: WorldState, it: League) -> void:
 	var names = it.club_ids.map(func(c): return _sn(w, c))
 	post(w, "worlds", "%d %s 開打！參賽隊伍：%s" % [w.year, it.name, "、".join(names)], it.club_ids.duplicate(), 0.5)
 	var hc: Club = w.human_club()

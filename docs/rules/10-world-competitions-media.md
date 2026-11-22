@@ -2,14 +2,32 @@
 
 ## 一年的循環
 
-季前賽（2 週）→ 例行賽 → 季後賽 → **世界賽** → 賽季結算（含升降級）→ 休賽季（4 週轉會期）→ 新賽季
+季前賽（2 週）→ 例行賽第一循環 → **季中邀請賽（MSI）** → 例行賽第二循環 → 季後賽 → **世界賽** → 賽季結算（含升降級）→ 休賽季（4 週轉會期）→ 新賽季
 
-所有國內聯賽（含次級聯賽）都結束後，世界賽才開打；沒有資格的隊伍這段期間只訓練。
+- 所有國內聯賽（含次級聯賽）都在第一循環結束後一起休兵 `break_days` 天（預設 16 天），季中邀請賽在這段期間進行。
+- 所有國內聯賽都結束後，世界賽才開打；沒有資格的隊伍這段期間只訓練。
+
+## 賽區
+
+| 賽區 | 一級聯賽 | 次級聯賽 | MSI 名額 | 世界賽名額 |
+|---|---|---|---|---|
+| EAST | Eastern Crown League（8 隊，Bo3） | Eastern Challengers League（6 隊） | 2 | 4 |
+| WEST | Western Vanguard League（8 隊，Bo1） | Western Challengers League（6 隊） | 2 | 4 |
+| PACIFIC | Pacific Star League（6 隊，Bo1） | 無（不升降級） | 1 | 2 |
+
+名額寫在各聯賽 `format.slots`（以國際賽事 id 為鍵）。
+
+## 季中邀請賽（Mid-Season Invitational）
+
+- `leagues.json` 中 `tier: 0`、`format.timing: "midseason"` 的賽事。
+- 所有一級聯賽的第一循環都打完時開打，資格依當時的例行賽排名。
+- 小組單循環 Bo1 → 前 4 名單淘汰 Bo5。比賽重要性 1.3 / 1.5 / 1.8。
+- 獎金池較小，聲望與選手名氣的提升是世界賽的 60%。記錄在 `history.seasons[].midseason`、俱樂部 `msi_titles`、選手 `career.msi` / `career.msi_titles`。
 
 ## 世界賽（`LeagueEngine.start_international`）
 
-- 定義在 `leagues.json` 的 `tier: 0` 項目（`w.international`），不屬於任何俱樂部。
-- 資格：每個一級聯賽取 `qualify_per_league` 隊。季後賽冠軍優先，其餘依例行賽排名。
+- 定義在 `leagues.json` 的 `tier: 0`、`format.timing: "end"` 項目（`w.internationals`，`w.international` 取得世界賽），不屬於任何俱樂部。
+- 資格：每個一級聯賽依 `slots.worlds` 派隊（預設 `qualify_per_league`）。季後賽冠軍優先，其餘依例行賽排名。共 10 隊。
 - 賽制：小組單循環 Bo1 → 前 4 名單淘汰 Bo5（皆可由資料修改）。
 - 比賽重要性（stakes）：小組 1.4、淘汰賽 1.7、決賽 2.0。壓力增加較多，`big_games` 大賽經驗會累積，
   大賽經驗豐富的選手比較不怕壓力。
@@ -51,3 +69,19 @@
   - `target` / `roster`：morale、stress、fatigue、trust、confidence、reputation、motivation
   - `club`：cash、fans_pct、opinion、chemistry、draft_familiarity、reputation
   - `team_relations`：對象選手與隊友（沒有對象時為全隊）的關係變化
+
+## 長期平衡：王朝與挑戰者
+
+多年模擬中，資源最多的俱樂部容易永遠奪冠。以下機制讓王朝存在，但可以被挑戰：
+
+- **頂尖選手薪資**：能力超過 72 的選手，每多 1 點薪資要求 +7%；名氣也會抬高薪資。全明星陣容會撞上薪資預算上限。
+- **冠軍後的鬆懈**：奪冠的先發選手求勝慾（motivation）下降，野心越小下降越多。新賽季只會慢慢恢復到由野心決定的基準。求勝慾影響每場比賽的狀態。
+- **聲望遞減**：聲望越接近 100，成績帶來的聲望越少，加上每年向平均值回歸，豪門只能維持而不會無限累積。
+- **AI 補強目標**：與聲望相稱，但只以聯賽平均為基準小幅調整。
+- 10 年模擬（種子 7）：世界賽冠軍由 6 支不同隊伍拿下，三個賽區都有冠軍。
+
+## 效能
+
+- BP 時每個位置先以熟練度與版本強度篩出 16 名候選（禁用 32 名），再做完整陣容評估。
+- 陣容分析以累加方式計算，不重算整個陣容。
+- 一季（34 支俱樂部、5 個聯賽、2 個國際賽事）在無頭模式下約 20 秒。

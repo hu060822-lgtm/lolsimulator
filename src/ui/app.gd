@@ -1,7 +1,7 @@
 ## 主場景：開局畫面 → 管理介面。
 extends Control
 
-const MODULE := "res://data/modules/fictional_base"
+const MODULE := "res://data/modules/lol_world"
 
 var session := GameSession.new()
 var current: Control

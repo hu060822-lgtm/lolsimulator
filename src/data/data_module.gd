@@ -35,8 +35,43 @@ static func load_from_dir(dir_path: String) -> DataModule:
 	m.names = n if n is Dictionary else {}
 	var r = _read_json(dir_path.path_join(files.get("rules", "rules.json")))
 	m.rules = r if r is Dictionary else {}
+	m.apply_name_overlay(OVERLAY_DIR.path_join(m.id + ".json"))
 	m.validate()
 	return m
+
+
+## 真名名單（選用）：玩家自行放在 user://name_overlays/<模組 id>.json，遊戲不附帶。
+## 格式：{"clubs": {"俱樂部 id": {"name": "...", "short_name": "..."}},
+##        "players": {"致敬名": {"handle": "...", "real_name": "..."}}}
+const OVERLAY_DIR := "user://name_overlays"
+var overlay_applied: bool = false
+
+
+func apply_name_overlay(path: String) -> void:
+	if not FileAccess.file_exists(path):
+		return
+	var o = _read_json(path)
+	if not (o is Dictionary):
+		errors.append("真名名單格式錯誤：%s" % path)
+		return
+	var cmap: Dictionary = o.get("clubs", {})
+	for c in clubs:
+		if cmap.has(c.get("id", "")):
+			for k in ["name", "short_name"]:
+				if cmap[c["id"]].has(k):
+					c[k] = str(cmap[c["id"]][k])
+	var pmap: Dictionary = o.get("players", {})
+	for p in players:
+		var h = str(p.get("handle", ""))
+		if pmap.has(h):
+			var e = pmap[h]
+			if e is String:
+				p["handle"] = e
+			elif e is Dictionary:
+				for k in ["handle", "real_name"]:
+					if e.has(k):
+						p[k] = str(e[k])
+	overlay_applied = true
 
 
 func start_year() -> int:

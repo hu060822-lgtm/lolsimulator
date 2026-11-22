@@ -59,7 +59,7 @@ static func _needs(w: WorldState, club: Club) -> Array:
 	# 期待與聲望相稱：豪門以聯賽頂尖為目標，小隊只求不墊底
 	if league:
 		var reps: Array = league.club_ids.map(func(c): return w.clubs[c].reputation)
-		avg += (club.reputation - MathX.mean(reps)) * 0.2
+		avg += (club.reputation - MathX.mean(reps)) * 0.12
 	for role in Attr.ROLES:
 		var best := 0.0
 		for pid in club.roster:
@@ -109,7 +109,7 @@ static func _recruit(w: WorldState, club: Club) -> void:
 				if o.transfer_requested or poachable or lower_tier or not c.lineup.values().has(pid):
 					candidates.append(o)
 		for p in candidates:
-			if p.retired or p.primary_role != role:
+			if p.retired or p.primary_role != role or TransferMarket.import_blocked(w, club, p):
 				continue
 			if p.club_id != "" and int(p.career.get("last_move_year", -1)) == w.year:
 				continue  # 剛轉會的選手不會再走
@@ -148,7 +148,7 @@ static func _recruit(w: WorldState, club: Club) -> void:
 static func fill_roster(w: WorldState, club: Club) -> void:
 	while club.roster.size() < Tuning.i("min_roster"):
 		var role = _thinnest_role(w, club)
-		var pool = w.free_agents.map(func(pid): return w.players[pid]).filter(func(p): return p.primary_role == role and not p.retired)
+		var pool = w.free_agents.map(func(pid): return w.players[pid]).filter(func(p): return p.primary_role == role and not p.retired and not TransferMarket.import_blocked(w, club, p))
 		pool.sort_custom(func(a, b): return a.current_ability() > b.current_ability())
 		var signed := false
 		for p in pool.slice(0, 3):

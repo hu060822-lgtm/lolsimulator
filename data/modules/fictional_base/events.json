@@ -358,5 +358,227 @@
    }
   ],
   "ai": "grant"
+ },
+ {
+  "id": "visa_issue",
+  "weight": 2,
+  "target": "player",
+  "condition": {
+   "foreign": true
+  },
+  "category": "legal",
+  "text": "{player} 的工作簽證文件出問題，可能無法出賽",
+  "headline": "{club} 外援 {player} 簽證卡關",
+  "options": [
+   {
+    "id": "lawyer",
+    "label": "聘請移民律師加急處理（$60k）",
+    "effects": {
+     "club": {
+      "cash": -60000
+     },
+     "target": {
+      "suspend_days": 4,
+      "stress": 4
+     }
+    }
+   },
+   {
+    "id": "wait",
+    "label": "依正常程序等待",
+    "effects": {
+     "target": {
+      "suspend_days": 14,
+      "morale": -6
+     }
+    }
+   }
+  ],
+  "ai": "lawyer"
+ },
+ {
+  "id": "contract_dispute",
+  "weight": 1,
+  "target": "player",
+  "category": "legal",
+  "text": "{player} 的經紀人主張俱樂部少付了一筆簽約獎金，揚言提告",
+  "headline": "{player} 與 {club} 爆合約糾紛",
+  "options": [
+   {
+    "id": "settle",
+    "label": "和解並支付（$90k）",
+    "effects": {
+     "club": {
+      "cash": -90000
+     },
+     "target": {
+      "trust": 6
+     }
+    }
+   },
+   {
+    "id": "fight",
+    "label": "打官司（律師費 $40k，選手關係惡化）",
+    "effects": {
+     "club": {
+      "cash": -40000,
+      "opinion": -6,
+      "board": -4
+     },
+     "target": {
+      "trust": -15,
+      "morale": -8
+     }
+    }
+   }
+  ],
+  "ai": "settle"
+ },
+ {
+  "id": "chat_ban",
+  "weight": 1,
+  "target": "player",
+  "condition": {
+   "trait_below": {
+    "temperament": 45
+   }
+  },
+  "category": "legal",
+  "text": "{player} 在 Solo Queue 的不當言論遭聯盟調查",
+  "headline": "聯盟調查 {club} 選手 {player} 的 Solo Queue 言論",
+  "options": [
+   {
+    "id": "accept",
+    "label": "接受處分並公開道歉",
+    "effects": {
+     "target": {
+      "suspend_days": 7,
+      "morale": -5
+     },
+     "club": {
+      "opinion": 4
+     }
+    }
+   },
+   {
+    "id": "appeal",
+    "label": "提出申訴",
+    "effects": {
+     "target": {
+      "suspend_days": 3,
+      "stress": 6
+     },
+     "club": {
+      "opinion": -8,
+      "board": -3
+     }
+    }
+   }
+  ],
+  "ai": "accept"
+ },
+ {
+  "id": "integrity_probe",
+  "weight": 1,
+  "target": "club",
+  "category": "legal",
+  "text": "聯盟對一場異常比賽展開比賽誠信調查，要求俱樂部配合",
+  "headline": "聯盟調查 {club} 涉及的一場比賽",
+  "options": [
+   {
+    "id": "cooperate",
+    "label": "全力配合並主動公開",
+    "effects": {
+     "club": {
+      "opinion": -3,
+      "board": 2
+     },
+     "roster": {
+      "stress": 4
+     }
+    }
+   },
+   {
+    "id": "minimal",
+    "label": "只做最低限度的配合",
+    "effects": {
+     "club": {
+      "opinion": -12,
+      "board": -8,
+      "brand": -3
+     },
+     "roster": {
+      "stress": 2
+     }
+    }
+   }
+  ],
+  "ai": "cooperate"
+ },
+ {
+  "id": "board_meeting",
+  "weight": 1,
+  "target": "club",
+  "category": "organization",
+  "text": "董事會召開臨時會議，要求你說明本季計畫",
+  "options": [
+   {
+    "id": "promise_results",
+    "label": "承諾本季成績",
+    "effects": {
+     "club": {
+      "board": 8
+     }
+    }
+   },
+   {
+    "id": "long_term",
+    "label": "說明長期培養計畫",
+    "effects": {
+     "club": {
+      "board": 3
+     }
+    }
+   },
+   {
+    "id": "ask_budget",
+    "label": "爭取更多預算",
+    "effects": {
+     "club": {
+      "board": -5,
+      "cash": 200000
+     }
+    }
+   }
+  ],
+  "ai": "long_term"
+ },
+ {
+  "id": "viral_clip",
+  "weight": 2,
+  "target": "player",
+  "condition": {
+   "min_ability": 55
+  },
+  "category": "brand",
+  "text": "{player} 的精彩操作片段在社群爆紅",
+  "headline": "{player}（{club}）神操作影片爆紅",
+  "options": [
+   {
+    "id": "ok",
+    "label": "太好了",
+    "effects": {
+     "target": {
+      "confidence": 5,
+      "reputation": 4
+     },
+     "club": {
+      "brand": 2,
+      "fans_pct": 2
+     }
+    }
+   }
+  ],
+  "ai": "ok"
  }
 ]

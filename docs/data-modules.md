@@ -51,7 +51,9 @@ data/modules/<module_id>/
 
 - `tier`：1 = 一級聯賽，2 = 次級聯賽。同 `region` 的一級最後一名與次級冠軍每季互換。
 - `format.wage_cap`：薪資預算上限；`format.revenue_share`：每季聯賽分潤（預設 250000）。
-- `tier: 0` 的項目是國際賽事（世界賽），不屬於任何俱樂部：
+- `format.slots`：國際賽事名額，例如 `{"worlds": 4, "msi": 2}`。
+- `tier: 0` 的項目是國際賽事，不屬於任何俱樂部。`format.timing` 為 `"end"`（世界賽，國內賽季結束後）或
+  `"midseason"`（季中邀請賽，第一循環後；`break_days` 為國內聯賽休兵天數）：
 
 ```json
 {"id": "worlds", "name": "World Championship", "region": "INTL", "tier": 0, "prize_pool": 3000000,
@@ -98,5 +100,35 @@ data/modules/<module_id>/
 
 ## 授權注意
 
-預設模組的俱樂部、選手、聯賽為虛構，英雄使用英雄聯盟實際英雄（173 隻，台服中文名，`name_en` 為英文名；roles / curve / tags 為本模擬的設計值）。以真實俱樂部、選手、聯賽為基礎的資料需要相關授權；
-未取得授權時，應以獨立、明確標示為「非官方」的模組散佈，且不放入本倉庫。
+英雄使用英雄聯盟實際英雄（173 隻，台服中文名，`name_en` 為英文名；roles / curve / tags 為本模擬的設計值）。
+`lol_world` 的聯賽與國際賽事名稱、賽制對標 Riot 的官方賽事（非官方粉絲作品）；俱樂部與選手只使用改寫過的致敬名，不使用真實姓名或戰隊商標。
+`fictional_base` 的俱樂部、選手、聯賽為原創。真名名單只存在玩家自己的電腦（`user://`），不放入本倉庫。
+
+
+## 致敬選手（players.json 的簡化格式）
+
+```json
+{"homage": true, "handle": "Fakir", "primary_role": "MID", "club_id": "t_one", "birth": 1996, "quality": 0.93, "signature": ["azir", "ryze"]}
+```
+
+只需要名字、位置、出生年與水準（0..1），能力、個性、英雄池由生成器依水準產生；`signature` 的英雄熟練度至少 95。
+
+## 賽區人才水準
+
+`names.json` 的每個賽區可以加上 `"talent": 0.86`，乘上該賽區生成選手的水準（預設 1.0）。
+
+## 真名名單
+
+遊戲不附帶真實選手或戰隊名稱。想用真名，自己建立 `user://name_overlays/<模組 id>.json`
+（Windows 為 `%APPDATA%/Godot/app_userdata/ESPORT_ LOL Simulator/name_overlays/lol_world.json`）：
+
+```json
+{
+ "clubs":   {"t_one": {"name": "（真實戰隊名）", "short_name": "（縮寫）"}},
+ "players": {"Fakir": {"handle": "（真實 ID）", "real_name": "（本名）"},
+             "Chovi": "（真實 ID）"}
+}
+```
+
+- `clubs` 以俱樂部 id 對應，`players` 以致敬名對應（可以只給新 ID 字串）。
+- 開新遊戲時自動套用，開局畫面會顯示「已套用真名名單」。只影響新遊戲。

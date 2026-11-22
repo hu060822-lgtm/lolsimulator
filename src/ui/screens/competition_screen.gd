@@ -7,6 +7,12 @@ var standings: Tree
 var fixtures: Tree
 var review: VBoxContainer
 var ids: Array = []
+var league_chips: Array = []
+
+
+func _sync_chips() -> void:
+	for k in league_chips.size():
+		league_chips[k].button_pressed = k == league_opt.selected
 
 
 func build() -> void:
@@ -14,8 +20,20 @@ func build() -> void:
 	ids = LeagueEngine.all_competitions(w()).map(func(l): return l.id)
 	var c = session.club()
 	league_opt = UIKit.option(ids.map(func(i): return _comp(i).name + ("（次級）" if _comp(i).tier >= 2 else "")), ids.find(c.league_id))
-	league_opt.item_selected.connect(func(_i): refresh())
+	league_opt.item_selected.connect(func(_i): _sync_chips(); refresh())
+	league_opt.visible = false
 	add_child(league_opt)
+	var chips := HFlowContainer.new()
+	chips.add_theme_constant_override("h_separation", 6)
+	chips.add_theme_constant_override("v_separation", 6)
+	for k in ids.size():
+		var comp = _comp(ids[k])
+		var b := UIKit.chip(comp.short_name if comp.short_name != "" else comp.name, func(): league_opt.select(k); _sync_chips(); refresh())
+		b.tooltip_text = comp.name
+		league_chips.append(b)
+		chips.add_child(b)
+	add_child(chips)
+	_sync_chips()
 	var row := UIKit.hbox(12)
 	add_child(row)
 	standings = UIKit.table(["#", "隊伍", "勝", "敗", "小分", "小分差"], 300)
@@ -61,7 +79,7 @@ func _comp(id: String) -> League:
 	var ww = w()
 	if ww.leagues.has(id):
 		return ww.leagues[id]
-	return ww.international
+	return ww.internationals.get(id)
 
 
 func _on_fixture() -> void:

@@ -1,0 +1,803 @@
+[
+ {
+  "homage": true,
+  "handle": "Dorann",
+  "primary_role": "TOP",
+  "club_id": "t_one",
+  "birth": 2000,
+  "quality": 0.84,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "0ner",
+  "primary_role": "JUNGLE",
+  "club_id": "t_one",
+  "birth": 2002,
+  "quality": 0.89,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Fakir",
+  "primary_role": "MID",
+  "club_id": "t_one",
+  "birth": 1996,
+  "quality": 0.93,
+  "signature": [
+   "azir",
+   "ryze",
+   "galio"
+  ]
+ },
+ {
+  "homage": true,
+  "handle": "Gumayushi",
+  "primary_role": "ADC",
+  "club_id": "t_one",
+  "birth": 2002,
+  "quality": 0.89,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kerya",
+  "primary_role": "SUPPORT",
+  "club_id": "t_one",
+  "birth": 2002,
+  "quality": 0.94,
+  "signature": [
+   "bard",
+   "rakan"
+  ]
+ },
+ {
+  "homage": true,
+  "handle": "Kiinn",
+  "primary_role": "TOP",
+  "club_id": "gen_zero",
+  "birth": 1999,
+  "quality": 0.91,
+  "signature": [
+   "ksante"
+  ]
+ },
+ {
+  "homage": true,
+  "handle": "Kanyon",
+  "primary_role": "JUNGLE",
+  "club_id": "gen_zero",
+  "birth": 2001,
+  "quality": 0.92,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Chovi",
+  "primary_role": "MID",
+  "club_id": "gen_zero",
+  "birth": 2001,
+  "quality": 0.96,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Rulr",
+  "primary_role": "ADC",
+  "club_id": "gen_zero",
+  "birth": 1998,
+  "quality": 0.93,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Durro",
+  "primary_role": "SUPPORT",
+  "club_id": "gen_zero",
+  "birth": 2002,
+  "quality": 0.84,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Zeuz",
+  "primary_role": "TOP",
+  "club_id": "hanwa_lifeline",
+  "birth": 2004,
+  "quality": 0.91,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Peanutt",
+  "primary_role": "JUNGLE",
+  "club_id": "hanwa_lifeline",
+  "birth": 1998,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Zekka",
+  "primary_role": "MID",
+  "club_id": "hanwa_lifeline",
+  "birth": 2002,
+  "quality": 0.89,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Vypr",
+  "primary_role": "ADC",
+  "club_id": "hanwa_lifeline",
+  "birth": 2000,
+  "quality": 0.92,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Dlight",
+  "primary_role": "SUPPORT",
+  "club_id": "hanwa_lifeline",
+  "birth": 2002,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Perfekt",
+  "primary_role": "TOP",
+  "club_id": "keytel_rolster",
+  "birth": 2004,
+  "quality": 0.83,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kuzz",
+  "primary_role": "JUNGLE",
+  "club_id": "keytel_rolster",
+  "birth": 1999,
+  "quality": 0.84,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Bddd",
+  "primary_role": "MID",
+  "club_id": "keytel_rolster",
+  "birth": 1999,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Deokdamm",
+  "primary_role": "ADC",
+  "club_id": "keytel_rolster",
+  "birth": 2001,
+  "quality": 0.83,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Petr",
+  "primary_role": "SUPPORT",
+  "club_id": "keytel_rolster",
+  "birth": 2002,
+  "quality": 0.81,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Siwu",
+  "primary_role": "TOP",
+  "club_id": "dplus_kira",
+  "birth": 2005,
+  "quality": 0.82,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Lucyd",
+  "primary_role": "JUNGLE",
+  "club_id": "dplus_kira",
+  "birth": 2005,
+  "quality": 0.85,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "ShowMakr",
+  "primary_role": "MID",
+  "club_id": "dplus_kira",
+  "birth": 2000,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Aimng",
+  "primary_role": "ADC",
+  "club_id": "dplus_kira",
+  "birth": 2000,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Beryll",
+  "primary_role": "SUPPORT",
+  "club_id": "dplus_kira",
+  "birth": 1997,
+  "quality": 0.83,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Lehendz",
+  "primary_role": "SUPPORT",
+  "club_id": "nongsim_redfury",
+  "birth": 1998,
+  "quality": 0.81,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Binn",
+  "primary_role": "TOP",
+  "club_id": "bilibala",
+  "birth": 2003,
+  "quality": 0.92,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Beichwan",
+  "primary_role": "JUNGLE",
+  "club_id": "bilibala",
+  "birth": 2004,
+  "quality": 0.86,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Knyght",
+  "primary_role": "MID",
+  "club_id": "bilibala",
+  "birth": 2000,
+  "quality": 0.94,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Elkk",
+  "primary_role": "ADC",
+  "club_id": "bilibala",
+  "birth": 2001,
+  "quality": 0.91,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "0N",
+  "primary_role": "SUPPORT",
+  "club_id": "bilibala",
+  "birth": 2004,
+  "quality": 0.88,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Three69",
+  "primary_role": "TOP",
+  "club_id": "topp_esports",
+  "birth": 2001,
+  "quality": 0.88,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kanavy",
+  "primary_role": "JUNGLE",
+  "club_id": "topp_esports",
+  "birth": 2000,
+  "quality": 0.9,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kreme",
+  "primary_role": "MID",
+  "club_id": "topp_esports",
+  "birth": 2004,
+  "quality": 0.86,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "JackyLove",
+  "primary_role": "ADC",
+  "club_id": "topp_esports",
+  "birth": 2000,
+  "quality": 0.89,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Meyko",
+  "primary_role": "SUPPORT",
+  "club_id": "topp_esports",
+  "birth": 1998,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Flander",
+  "primary_role": "TOP",
+  "club_id": "anyones_legacy",
+  "birth": 1998,
+  "quality": 0.85,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Tarzann",
+  "primary_role": "JUNGLE",
+  "club_id": "anyones_legacy",
+  "birth": 1999,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Shankz",
+  "primary_role": "MID",
+  "club_id": "anyones_legacy",
+  "birth": 2000,
+  "quality": 0.86,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Hopee",
+  "primary_role": "ADC",
+  "club_id": "anyones_legacy",
+  "birth": 2000,
+  "quality": 0.87,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kaell",
+  "primary_role": "SUPPORT",
+  "club_id": "anyones_legacy",
+  "birth": 2000,
+  "quality": 0.84,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Xiaohoo",
+  "primary_role": "MID",
+  "club_id": "weibu_gaming",
+  "birth": 1998,
+  "quality": 0.86,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Krisp",
+  "primary_role": "SUPPORT",
+  "club_id": "weibu_gaming",
+  "birth": 1999,
+  "quality": 0.85,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "BrokenBlayde",
+  "primary_role": "TOP",
+  "club_id": "gee_two",
+  "birth": 2000,
+  "quality": 0.81,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "SkewMoon",
+  "primary_role": "JUNGLE",
+  "club_id": "gee_two",
+  "birth": 2004,
+  "quality": 0.79,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Capz",
+  "primary_role": "MID",
+  "club_id": "gee_two",
+  "birth": 1999,
+  "quality": 0.85,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Hans Samma",
+  "primary_role": "ADC",
+  "club_id": "gee_two",
+  "birth": 1999,
+  "quality": 0.82,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Labroff",
+  "primary_role": "SUPPORT",
+  "club_id": "gee_two",
+  "birth": 2002,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Oskarinin",
+  "primary_role": "TOP",
+  "club_id": "fanatic",
+  "birth": 2003,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Razorc",
+  "primary_role": "JUNGLE",
+  "club_id": "fanatic",
+  "birth": 2000,
+  "quality": 0.8,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Humanoyd",
+  "primary_role": "MID",
+  "club_id": "fanatic",
+  "birth": 2000,
+  "quality": 0.81,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Upsett",
+  "primary_role": "ADC",
+  "club_id": "fanatic",
+  "birth": 2000,
+  "quality": 0.82,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Mykyx",
+  "primary_role": "SUPPORT",
+  "club_id": "fanatic",
+  "birth": 1998,
+  "quality": 0.8,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kanna",
+  "primary_role": "TOP",
+  "club_id": "carmine_corp",
+  "birth": 2000,
+  "quality": 0.79,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Yyke",
+  "primary_role": "JUNGLE",
+  "club_id": "carmine_corp",
+  "birth": 2000,
+  "quality": 0.79,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Vladdi",
+  "primary_role": "MID",
+  "club_id": "carmine_corp",
+  "birth": 2003,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kaliste",
+  "primary_role": "ADC",
+  "club_id": "carmine_corp",
+  "birth": 2005,
+  "quality": 0.81,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Targamaz",
+  "primary_role": "SUPPORT",
+  "club_id": "carmine_corp",
+  "birth": 2000,
+  "quality": 0.77,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Myrwyn",
+  "primary_role": "TOP",
+  "club_id": "movistel_koi",
+  "birth": 2003,
+  "quality": 0.77,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Elyoyya",
+  "primary_role": "JUNGLE",
+  "club_id": "movistel_koi",
+  "birth": 2000,
+  "quality": 0.8,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Jojopyunn",
+  "primary_role": "MID",
+  "club_id": "movistel_koi",
+  "birth": 2005,
+  "quality": 0.79,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Soupa",
+  "primary_role": "ADC",
+  "club_id": "movistel_koi",
+  "birth": 2002,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Alvarro",
+  "primary_role": "SUPPORT",
+  "club_id": "movistel_koi",
+  "birth": 2003,
+  "quality": 0.76,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Bwipow",
+  "primary_role": "TOP",
+  "club_id": "flyquester",
+  "birth": 1998,
+  "quality": 0.77,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Inspyred",
+  "primary_role": "JUNGLE",
+  "club_id": "flyquester",
+  "birth": 2002,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kwad",
+  "primary_role": "MID",
+  "club_id": "flyquester",
+  "birth": 2003,
+  "quality": 0.77,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Massoo",
+  "primary_role": "ADC",
+  "club_id": "flyquester",
+  "birth": 2004,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Busyo",
+  "primary_role": "SUPPORT",
+  "club_id": "flyquester",
+  "birth": 2003,
+  "quality": 0.75,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Impakt",
+  "primary_role": "TOP",
+  "club_id": "team_liquidity",
+  "birth": 1995,
+  "quality": 0.74,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Umti",
+  "primary_role": "JUNGLE",
+  "club_id": "team_liquidity",
+  "birth": 1998,
+  "quality": 0.74,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "APAA",
+  "primary_role": "MID",
+  "club_id": "team_liquidity",
+  "birth": 2003,
+  "quality": 0.75,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Yeonn",
+  "primary_role": "ADC",
+  "club_id": "team_liquidity",
+  "birth": 2003,
+  "quality": 0.75,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "CoreJJJ",
+  "primary_role": "SUPPORT",
+  "club_id": "team_liquidity",
+  "birth": 1994,
+  "quality": 0.76,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Blabber",
+  "primary_role": "JUNGLE",
+  "club_id": "cloud_ten",
+  "birth": 2000,
+  "quality": 0.75,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Zvenn",
+  "primary_role": "ADC",
+  "club_id": "cloud_ten",
+  "birth": 1996,
+  "quality": 0.73,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Vulkan",
+  "primary_role": "SUPPORT",
+  "club_id": "cloud_ten",
+  "birth": 1998,
+  "quality": 0.74,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Restt",
+  "primary_role": "TOP",
+  "club_id": "ctbc_flying_oystar",
+  "birth": 2003,
+  "quality": 0.76,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "JunJey",
+  "primary_role": "JUNGLE",
+  "club_id": "ctbc_flying_oystar",
+  "birth": 2003,
+  "quality": 0.78,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "HongKyu",
+  "primary_role": "MID",
+  "club_id": "ctbc_flying_oystar",
+  "birth": 2002,
+  "quality": 0.79,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Dogo",
+  "primary_role": "ADC",
+  "club_id": "ctbc_flying_oystar",
+  "birth": 2003,
+  "quality": 0.79,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kaiwingg",
+  "primary_role": "SUPPORT",
+  "club_id": "ctbc_flying_oystar",
+  "birth": 1998,
+  "quality": 0.76,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Kiayya",
+  "primary_role": "TOP",
+  "club_id": "gamma_esports",
+  "birth": 2002,
+  "quality": 0.74,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Levvi",
+  "primary_role": "JUNGLE",
+  "club_id": "gamma_esports",
+  "birth": 1999,
+  "quality": 0.76,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Emmo",
+  "primary_role": "MID",
+  "club_id": "gamma_esports",
+  "birth": 2003,
+  "quality": 0.74,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "EasyLuv",
+  "primary_role": "ADC",
+  "club_id": "gamma_esports",
+  "birth": 2003,
+  "quality": 0.75,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Elyo",
+  "primary_role": "SUPPORT",
+  "club_id": "gamma_esports",
+  "birth": 2003,
+  "quality": 0.73,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Karza",
+  "primary_role": "JUNGLE",
+  "club_id": "paris_talon",
+  "birth": 1997,
+  "quality": 0.76,
+  "signature": []
+ },
+ {
+  "homage": true,
+  "handle": "Mapple",
+  "primary_role": "MID",
+  "club_id": "paris_talon",
+  "birth": 1997,
+  "quality": 0.76,
+  "signature": []
+ }
+]
