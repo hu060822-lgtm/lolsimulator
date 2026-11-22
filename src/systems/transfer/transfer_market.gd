@@ -104,8 +104,13 @@ static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int,
 		return r
 	var seller: Club = w.clubs[p.club_id]
 	if seller.is_human:
+		var dup = w.inbox.any(func(m): return m.get("kind") == "transfer_offer" and m.get("player_id") == p.id and m.get("from_club") == buyer.id and not m.get("resolved", false))
+		if dup:
+			return {"accepted": false, "reason": "等待玩家回覆"}
 		w.inbox.append({"id": w.new_id("msg"), "day": w.day, "kind": "transfer_offer", "player_id": p.id, "from_club": buyer.id,
-			"fee": fee, "text": "%s 對 %s 提出 %d 的轉會報價" % [buyer.name, p.handle, fee], "resolved": false})
+			"fee": fee, "salary": salary, "years": years, "role_promise": role_promise,
+			"text": "%s 對 %s 提出 %d 的轉會報價" % [buyer.name, p.handle, fee], "resolved": false,
+			"options": ["accept_offer", "reject_offer"]})
 		return {"accepted": false, "reason": "等待玩家回覆"}
 	if fee < asking_price(w, seller, p) or buyer.cash < fee:
 		return {"accepted": false, "reason": "賣方拒絕轉會費"}
@@ -118,13 +123,15 @@ static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int,
 static func _move(w: WorldState, p: Player, from: Club, to: Club, fee: int) -> void:
 	if from:
 		from.roster.erase(p.id)
-		from.cash += fee
+		if fee > 0:
+			Finance.earn(from, "transfer_in", fee)
 		for role in from.lineup.keys():
 			if from.lineup[role] == p.id:
 				from.lineup.erase(role)
 	else:
 		w.free_agents.erase(p.id)
-	to.cash -= fee
+	if fee > 0:
+		Finance.spend(to, "transfer_out", fee)
 	to.roster.append(p.id)
 	p.club_id = to.id
 	p.squad_status = p.contract.role_promise if p.contract else "rotation"
@@ -157,3 +164,25 @@ static func wage_bill(w: WorldState, club: Club) -> int:
 		if p.contract:
 			total += p.contract.salary
 	return total
+
+
+## 玩家回覆 AI 俱樂部的轉會報價。接受後仍需選手本人同意新合約。
+static func respond_to_offer(w: WorldState, msg: Dictionary, accept: bool) -> Dictionary:
+	msg["resolved"] = true
+	var p: Player = w.players.get(msg.get("player_id", ""))
+	var buyer: Club = w.clubs.get(msg.get("from_club", ""))
+	if p == null or buyer == null or p.club_id != w.human_club_id:
+		return {"accepted": false, "reason": "報價已失效"}
+	if not accept:
+		w.log.add("offer_rejected", w.day, [p.id, buyer.id], {"fee": msg["fee"]}, ["玩家拒絕報價"])
+		# 選手想走卻被拒絕 → 不滿
+		if p.transfer_requested:
+			p.happiness -= 0.2
+			p.trust_in_management -= 8.0
+		return {"accepted": false, "reason": "已拒絕"}
+	if buyer.cash < int(msg["fee"]):
+		return {"accepted": false, "reason": "買方資金不足"}
+	var r = offer_contract(w, buyer, p, int(msg.get("salary", wage_demand(w, p))), int(msg.get("years", 2)), msg.get("role_promise", "starter"))
+	if r["accepted"]:
+		_move(w, p, w.clubs[p.club_id], buyer, int(msg["fee"]))
+	return r

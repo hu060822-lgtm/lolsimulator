@@ -25,7 +25,12 @@ var draft_familiarity: float = 40.0  ## BP 演練熟悉度
 var training_plan: Dictionary = {}
 var history: Array = []              ## [{year, league_id, position, playoff_result, titles}]
 var titles: int = 0
-var finance_log: Array = []
+var finance_log: Array = []          ## 歷年帳本 [{year, income, expense, cash_end}]
+var ledger: Dictionary = {"income": {}, "expense": {}}  ## 本季帳本
+var staff: Dictionary = {}           ## 職位 -> staff_id（主教練仍用 coach_id）
+var sponsors: Array = []             ## 生效中的贊助合約
+var sponsor_offers: Array = []       ## 待選擇的贊助報價（玩家）
+var scout_knowledge: Dictionary = {}  ## player_id -> 0..1（僅玩家俱樂部使用）
 
 
 static func from_dict(d: Dictionary) -> Club:
@@ -37,7 +42,22 @@ static func from_dict(d: Dictionary) -> Club:
 	c.wage_budget = int(c.wage_budget)
 	c.fanbase = int(c.fanbase)
 	c.titles = int(c.titles)
+	if c.short_name.strip_edges() == "":
+		c.short_name = make_short_name(c.name)
 	return c
+
+
+## 自動產生縮寫：多字取字首（最多 4 碼），單字取前 3 碼。
+static func make_short_name(full: String) -> String:
+	var words = full.strip_edges().split(" ", false)
+	if words.size() == 0:
+		return "CLB"
+	if words.size() == 1:
+		return words[0].substr(0, 3).to_upper()
+	var s := ""
+	for wd in words.slice(0, 4):
+		s += wd.substr(0, 1)
+	return s.to_upper()
 
 
 func to_dict() -> Dictionary:
@@ -47,4 +67,5 @@ func to_dict() -> Dictionary:
 		"roster": roster, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
 		"training_plan": training_plan, "history": history, "titles": titles,
-		"finance_log": finance_log}
+		"finance_log": finance_log, "scout_knowledge": scout_knowledge,
+		"ledger": ledger, "staff": staff, "sponsors": sponsors, "sponsor_offers": sponsor_offers}

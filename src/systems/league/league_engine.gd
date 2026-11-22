@@ -71,6 +71,20 @@ static func play_day(w: WorldState) -> Array:
 
 
 static func play_fixture(w: WorldState, lg: League, fx: Dictionary) -> Dictionary:
+	var s = prepare_series(w, fx)
+	while not s.is_done():
+		var ds = s.new_draft()
+		ds.run_all()
+		s.play_game(ds)
+	return complete_fixture(w, lg, fx, s.result())
+
+
+static func stakes_of(fx: Dictionary) -> float:
+	return 1.0 if fx["stage"] == "regular" else (1.6 if fx["stage"] == "final" else 1.3)
+
+
+## 建立系列賽（玩家手動 BP 時由 GameSession 逐局推進）。
+static func prepare_series(w: WorldState, fx: Dictionary) -> SeriesState:
 	var home: Club = w.clubs[fx["home"]]
 	var away: Club = w.clubs[fx["away"]]
 	for c in [home, away]:
@@ -79,19 +93,32 @@ static func play_fixture(w: WorldState, lg: League, fx: Dictionary) -> Dictionar
 	var a = TeamContext.from_club(w, home)
 	var b = TeamContext.from_club(w, away)
 	var detail = home.is_human or away.is_human
-	var stakes = 1.0 if fx["stage"] == "regular" else (1.6 if fx["stage"] == "final" else 1.3)
-	var series = SeriesSim.play(a, b, int(fx["best_of"]), w.champions, w.patch, w.rng.fork(hash(fx["id"])), detail, stakes)
+	return SeriesState.new(a, b, int(fx["best_of"]), w.champions, w.patch, w.rng.fork(hash(fx["id"])), detail, stakes_of(fx))
+
+
+static func complete_fixture(w: WorldState, lg: League, fx: Dictionary, series: Dictionary) -> Dictionary:
+	var home: Club = w.clubs[fx["home"]]
+	var away: Club = w.clubs[fx["away"]]
+	var detail = home.is_human or away.is_human
 	fx["played"] = true
 	fx["result"] = {"winner": series["winner"], "score": series["score"]}
 	if detail:
 		fx["result"]["games"] = series["games"]
-	MatchEffects.apply_series(w, series, stakes)
+	MatchEffects.apply_series(w, series, stakes_of(fx))
 	if fx["stage"] == "regular":
 		_record(lg, series)
 	var winner: Club = w.clubs[series["winner"]]
 	w.log.add("match", w.day, [home.id, away.id], {"fixture": fx["id"], "winner": winner.id,
 		"score": "%d-%d" % [series["score"][home.id], series["score"][away.id]], "stage": fx["stage"]}, [])
 	return {"league": lg.id, "fixture": fx, "series": series}
+
+
+static func find_fixture(w: WorldState, club_id: String, day: int) -> Dictionary:
+	for lg in w.leagues.values():
+		for fx in lg.fixtures:
+			if not fx["played"] and int(fx["day"]) == day and (fx["home"] == club_id or fx["away"] == club_id):
+				return {"league": lg, "fixture": fx}
+	return {}
 
 
 static func _record(lg: League, series: Dictionary) -> void:

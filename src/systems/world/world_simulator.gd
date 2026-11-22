@@ -60,6 +60,7 @@ static func weekly(w: WorldState) -> void:
 		if not club.is_human:
 			ClubAI.weekly(w, club)
 		_finance_week(w, club)
+	Scouting.weekly(w)
 	for pid in w.free_agents:
 		var p: Player = w.players[pid]
 		Development.weekly(w, p, {}, null)
@@ -67,12 +68,7 @@ static func weekly(w: WorldState) -> void:
 
 
 static func _finance_week(w: WorldState, club: Club) -> void:
-	var wages = TransferMarket.wage_bill(w, club) / 52
-	var coach: Staff = w.staff.get(club.coach_id)
-	if coach:
-		wages += coach.salary / 52
-	var income := int(club.wage_budget / 52.0 * (0.85 + club.reputation / 250.0))
-	club.cash += income - wages
+	Finance.weekly(w, club)
 
 
 # ---------------------------------------------------------------- 賽季結算
@@ -88,6 +84,7 @@ static func end_season(w: WorldState) -> void:
 			champ.titles += 1
 			for pid in champ.lineup.values():
 				w.players[pid].career["titles"] = int(w.players[pid].career.get("titles", 0)) + 1
+				w.players[pid].reputation = minf(w.players[pid].reputation + 6.0, 100.0)  # 冠軍選手身價上漲
 		if awards["mvp"] != "":
 			w.players[awards["mvp"]].career["mvps"] = int(w.players[awards["mvp"]].career.get("mvps", 0)) + 1
 		var n = order.size()
@@ -95,12 +92,21 @@ static func end_season(w: WorldState) -> void:
 			var club: Club = w.clubs[order[i]]
 			var is_champ = club.id == lg.champion_id
 			var prize = lg.prize_pool * (0.35 if is_champ else (0.65 / maxf(n - 1, 1)))
-			club.cash += int(prize)
+			Finance.earn(club, "prize", int(prize))
+			Finance.pay_bonuses(w, club, i + 1, is_champ, i < int(lg.format.get("playoffs", {}).get("teams", 4)))
+			Finance.update_fanbase(club, i + 1, n, is_champ)
 			var expected = (1.0 - club.reputation / 100.0) * n
 			club.reputation = clampf(club.reputation + (expected - i) * 0.8 + (4.0 if is_champ else 0.0), 5.0, 99.0)
+			# 聲望回歸平均：沒有成績支撐的光環會慢慢褪去
+			club.reputation = lerpf(club.reputation, 55.0, 0.08)
+			# 下季薪資預算：由聲望與粉絲決定，受聯賽薪資上限約束
+			var cap = int(lg.format.get("wage_cap", 99999999))
+			var target = 350000.0 + club.reputation * 20000.0 + club.fanbase * 0.2 + maxf(club.cash, 0.0) * 0.08  # 有存款的俱樂部可以加碼
+			club.wage_budget = clampi(int(club.wage_budget * 0.6 + target * 0.4), 300000, cap)
 			club.history.append({"year": w.year, "league_id": lg.id, "position": i + 1, "champion": is_champ})
 			if not club.is_human:
 				ClubAI.review_coach(w, club, i + 1, n)
+			Finance.close_season(w, club)
 		w.log.add("season_end", w.day, [lg.id], {"champion": lg.champion_id, "mvp": awards["mvp"]}, [])
 	for p in w.active_players():
 		var g: int = p.season_stats.get("games", 0)
@@ -133,15 +139,23 @@ static func _awards(w: WorldState, lg: League) -> Dictionary:
 static func _offseason_day(w: WorldState, d: int) -> void:
 	var clubs: Array = w.clubs.values()
 	if d == 1:
+		_notify_human_expiring(w)
 		_retirements(w)
 		_new_patch(w)
 		_youth_intake(w)
+		StaffSystem.offseason(w)
+		for c in clubs:
+			Finance.offseason_sponsors(w, c)
 	elif d >= 2 and d <= 6:
 		for i in clubs.size():
 			if i % 5 == d - 2 and not clubs[i].is_human:
 				ClubAI.offseason_step(w, clubs[i], "renew")
 	elif d == 7:
 		_expire_contracts(w)
+		for c in clubs:
+			if not c.is_human:
+				StaffSystem.ai_fill(w, c)
+		StaffSystem.replenish(w)
 	elif d >= 8 and d <= 24:
 		for i in clubs.size():
 			if i % 2 == d % 2 and not clubs[i].is_human:
@@ -151,6 +165,10 @@ static func _offseason_day(w: WorldState, d: int) -> void:
 			if not c.is_human:
 				ClubAI.offseason_step(w, c, "trim")
 				ClubAI.offseason_step(w, c, "recruit")
+		# 最後一輪挖角可能讓別隊缺人：只補自由選手/新人，不再挖角
+		for c in clubs:
+			if not c.is_human:
+				ClubAI.fill_roster(w, c)
 	elif d >= OFFSEASON_DAYS:
 		_new_season(w)
 
@@ -181,7 +199,7 @@ static func _new_patch(w: WorldState) -> void:
 		var base: Champion = w.rng.pick(w.champions.values())
 		var c = Champion.from_dict(base.to_dict())
 		c.id = "gen_%d_%s" % [w.year, base.id]
-		c.name = "%s Reborn" % base.name
+		c.name = "%s・覺醒" % base.name
 		for t in c.tags.keys():
 			c.tags[t] = clampf(float(c.tags[t]) + w.rng.range_i(-1, 1), 0.0, 3.0)
 		c.early = clampf(c.early + w.rng.range_i(-2, 2), 2, 9)
@@ -214,6 +232,11 @@ static func _expire_contracts(w: WorldState) -> void:
 
 static func _new_season(w: WorldState) -> void:
 	w.year += 1
+	var hc: Club = w.human_club()
+	if hc:
+		Finance.auto_sign_remaining(w, hc)
+		if hc.coach_id == "":
+			StaffSystem.ai_fill(w, hc)  # 沒有主教練無法開季：由董事會指派
 	for p in w.active_players():
 		p.reset_season_stats()
 		p.goals = PlayerGenerator.derive_goals(p, w.year)
@@ -232,3 +255,16 @@ static func _new_season(w: WorldState) -> void:
 		LineupSelector.pick(w, club)
 	LeagueEngine.start_season(w)
 	w.log.add("season_start", w.day, [], {"year": w.year}, [])
+
+
+static func _notify_human_expiring(w: WorldState) -> void:
+	var club: Club = w.human_club()
+	if club == null:
+		return
+	var expiring: Array = club.roster.filter(func(pid): return w.players[pid].contract and w.players[pid].contract.end_year <= w.year)
+	if expiring.is_empty():
+		return
+	var names = expiring.map(func(pid): return w.players[pid].handle)
+	w.inbox.append({"id": w.new_id("msg"), "day": w.day, "kind": "contracts_expiring", "player_id": "",
+		"text": "轉會期開始：%d 名選手合約即將到期（%s）。第 7 天前未續約將成為自由球員。" % [expiring.size(), "、".join(names)],
+		"resolved": false, "options": ["acknowledge"]})

@@ -5,6 +5,8 @@ extends RefCounted
 
 var club_id: String = ""
 var name: String = ""
+var short_name: String = ""  ## 比賽文字使用縮寫
+var staff_ratings: Dictionary = {}  ## 教練團綜合能力（主教練 + 專職員工）
 var players: Dictionary = {}   ## role -> Player
 var coach: Staff = null
 var plan: String = "flexible"  ## 戰術方向（Tactics）
@@ -22,11 +24,14 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 	var t := TeamContext.new()
 	t.club_id = club.id
 	t.name = club.name
+	t.short_name = club.short_name if club.short_name != "" else club.name
 	for role in Attr.ROLES:
 		var pid: String = club.lineup.get(role, "")
 		if pid != "" and w.players.has(pid):
 			t.players[role] = w.players[pid]
 	t.coach = w.staff.get(club.coach_id)
+	for k in ["tactical", "drafting", "adaptability", "man_management"]:
+		t.staff_ratings[k] = StaffSystem.rating(w, club, k)
 	t.plan = club.tactics.get("plan", "flexible")
 	t.aggression = float(club.tactics.get("aggression", 0.5))
 	t.chemistry = club.chemistry
@@ -35,6 +40,8 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 
 
 func coach_stat(s: String) -> float:
+	if staff_ratings.has(s):
+		return float(staff_ratings[s])
 	return float(coach.get(s)) if coach else 40.0
 
 

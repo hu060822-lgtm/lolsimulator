@@ -73,7 +73,7 @@ func simulate() -> Dictionary:
 	if winner == "":
 		# 時間上限：以總經濟與塔數決勝（極少發生）
 		winner = "blue" if _team_gold("blue") + _structures_lost("red") * 800 >= _team_gold("red") + _structures_lost("blue") * 800 else "red"
-		_event("end", "比賽進入極限時間，%s 以運營優勢終結比賽" % team(winner).name, [winner], ["時間上限"])
+		_event("end", "比賽進入極限時間，%s 以運營優勢終結比賽" % team(winner).short_name, [winner], ["時間上限"])
 	return _build_result()
 
 
@@ -238,7 +238,7 @@ func _laning() -> void:
 					causes.append("劣勢方逆境反殺")
 				if _maybe_mistake(victim, 0.35):
 					causes.append("%s 走位失誤" % _h(victim))
-				_kill(killer_side, killer, victim, [], "solo_kill" if lane != "bot" else "lane_kill", "%s 的 %s 在%s路擊殺 %s" % [team(killer_side).name, _h(killer), _lane_name(lane), _h(victim)], causes)
+				_kill(killer_side, killer, victim, [], "solo_kill" if lane != "bot" else "lane_kill", "%s 的 %s 在%s路擊殺 %s" % [team(killer_side).short_name, _h(killer), _lane_name(lane), _h(victim)], causes)
 	# 對線期中的偶發失誤（與局面無關的個人失誤，頻率取決於穩定性）
 	for side in SIDES:
 		for u in units[side]:
@@ -248,10 +248,10 @@ func _laning() -> void:
 				var lane = _lane_of(u["role"])
 				var opp = _pick_lane_unit(other(side), lane)
 				if opp and opp["dead_until"] <= minute and rng.chance(0.55):
-					_kill(other(side), opp, u, [], "punished_mistake", "%s 的 %s 失誤被懲罰，%s 拿下擊殺" % [team(side).name, _h(u), _h(opp)], ["%s 失誤（穩定性 %d）" % [_h(u), int(u["player"].skill("consistency")) if u["player"] else 0]])
+					_kill(other(side), opp, u, [], "punished_mistake", "%s 的 %s 失誤被懲罰，%s 拿下擊殺" % [team(side).short_name, _h(u), _h(opp)], ["%s 失誤（穩定性 %d）" % [_h(u), int(u["player"].skill("consistency")) if u["player"] else 0]])
 				else:
 					u["gold"] -= 120
-					_event("mistake", "%s 的 %s 失誤，損失兵線" % [team(side).name, _h(u)], [side], ["個人失誤"], [u["player"].id if u["player"] else ""])
+					_event("mistake", "%s 的 %s 失誤，損失兵線" % [team(side).short_name, _h(u)], [side], ["個人失誤"], [u["player"].id if u["player"] else ""])
 
 
 func _pick_lane_unit(side: String, lane: String) -> Variant:
@@ -352,7 +352,7 @@ func _resolve_gank(side: String, lane: String, countered: bool) -> void:
 		var killer = units[win_side][1] if rng.chance(0.5) else _pick_lane_unit(win_side, lane)
 		var victim = units[lose_side][1] if rng.chance(0.5) else _pick_lane_unit(lose_side, lane)
 		if killer and victim and victim["dead_until"] <= minute:
-			_kill(win_side, killer, victim, [], "counter_gank", "%s路爆發小規模戰鬥，%s 的 %s 擊殺 %s" % [_lane_name(lane), team(win_side).name, _h(killer), _h(victim)],
+			_kill(win_side, killer, victim, [], "counter_gank", "%s路爆發小規模戰鬥，%s 的 %s 擊殺 %s" % [_lane_name(lane), team(win_side).short_name, _h(killer), _h(victim)],
 				["雙方打野同時出現在%s" % _lane_name(lane), "局部戰力 %.0f%%" % (p_win * 100.0 if win_side == side else (1.0 - p_win) * 100.0)])
 		return
 	var jg_q = _perf(jg, {"map_awareness": 0.5, "decision_making": 0.5})
@@ -370,12 +370,12 @@ func _resolve_gank(side: String, lane: String, countered: bool) -> void:
 			causes.append("%s路線權讓隊友能跟上" % _lane_name(lane))
 		if vision[side] > vision[other(side)] + 0.1:
 			causes.append("視野優勢")
-		_kill(side, killer, target, assists, "gank", "%s 打野 %s 成功 Gank %s路，擊殺 %s" % [team(side).name, _h(jg), _lane_name(lane), _h(target)], causes)
+		_kill(side, killer, target, assists, "gank", "%s 打野 %s 成功 Gank %s路，擊殺 %s" % [team(side).short_name, _h(jg), _lane_name(lane), _h(target)], causes)
 		lane_tilt[other(side)][lane] -= 0.12  # 交出閃現/被壓線
 	else:
 		lane_tilt[other(side)][lane] -= 0.04   # 交出閃現逃生
 		if detail:
-			_event("gank_fail", "%s 打野 %s Gank %s路失敗，%s 交閃逃生" % [team(side).name, _h(jg), _lane_name(lane), _h(target)], [side], ["成功率 %d%%，仍被躲過" % int(p * 100)])
+			_event("gank_fail", "%s 打野 %s Gank %s路失敗，%s 交閃逃生" % [team(side).short_name, _h(jg), _lane_name(lane), _h(target)], [side], ["成功率 %d%%，仍被躲過" % int(p * 100)])
 		if rng.chance(0.12):
 			_kill(other(side), target, jg, [], "gank_punished", "%s 反打 Gank，擊殺 %s" % [_h(target), _h(jg)], ["Gank 時機不佳"])
 
@@ -389,12 +389,12 @@ func _resolve_invade(side: String, enemy_plan: String) -> void:
 		jg["gold"] += 180.0
 		ejg["gold"] -= 120.0
 		if detail:
-			_event("invade", "%s 打野 %s 趁對手 Gank 時反野，竊取野怪資源" % [team(side).name, _h(jg)], [side], ["中路線權", "掌握敵方打野位置"])
+			_event("invade", "%s 打野 %s 趁對手 Gank 時反野，竊取野怪資源" % [team(side).short_name, _h(jg)], [side], ["中路線權", "掌握敵方打野位置"])
 		return
 	if rng.chance(mine / (mine + theirs) * 0.6):
-		_kill(side, jg, ejg, [], "invade_kill", "%s 打野 %s 反野成功，擊殺 %s" % [team(side).name, _h(jg), _h(ejg)], ["打野戰力優勢", "中路線權支援"])
+		_kill(side, jg, ejg, [], "invade_kill", "%s 打野 %s 反野成功，擊殺 %s" % [team(side).short_name, _h(jg), _h(ejg)], ["打野戰力優勢", "中路線權支援"])
 	elif rng.chance(0.3):
-		_kill(other(side), ejg, jg, [], "invade_punished", "%s 反野被抓，%s 擊殺 %s" % [team(side).name, _h(ejg), _h(jg)], ["反野時機錯誤"])
+		_kill(other(side), ejg, jg, [], "invade_punished", "%s 反野被抓，%s 擊殺 %s" % [team(side).short_name, _h(ejg), _h(jg)], ["反野時機錯誤"])
 
 
 # ---------------------------------------------------------------- 中期經濟
@@ -448,7 +448,7 @@ func _contest(obj: String, near_lanes: Array) -> void:
 			"stall": bias = -0.20
 			"split": bias = -0.05
 		if obj == "baron":
-			bias -= 0.15
+			bias -= 0.30
 		if obj == "elder" or (obj == "dragon" and dragons[other(side)] == 3):
 			bias += 0.25  # 必須阻止對手拿下龍魂/遠古龍
 		want[side] = perceived + bias + team(side).aggression * 0.1 - 0.05
@@ -463,7 +463,7 @@ func _contest(obj: String, near_lanes: Array) -> void:
 			var ej: Dictionary = units[other(taker)][1]
 			var steal = 0.06 + (_perf(ej, {"mechanics": 1.0}) - _perf(mj, {"mechanics": 1.0})) * 0.4
 			if rng.chance(clampf(steal, 0.01, 0.25)):
-				_event("steal", "%s 打野 %s 懲戒搶下%s！" % [team(other(taker)).name, _h(ej), _obj_name(obj)], [other(taker)], ["打野操作（懲戒）"], [ej["player"].id if ej["player"] else ""])
+				_event("steal", "%s 打野 %s 懲戒搶下%s！" % [team(other(taker)).short_name, _h(ej), _obj_name(obj)], [other(taker)], ["打野操作（懲戒）"], [ej["player"].id if ej["player"] else ""])
 				taker = other(taker)
 		_award_objective(taker, obj, ["團戰勝利"])
 		if fight["margin"] >= 3 and minute >= 20:
@@ -489,14 +489,14 @@ func _trade(side: String, given_up: String, near_lanes: Array) -> void:
 	if minute >= 14:
 		siege[side][far] += 0.8
 		if detail:
-			_event("trade", "%s 放棄%s，轉而向%s路施壓" % [team(side).name, _obj_name(given_up), _lane_name(far)], [side], ["資源交換"])
+			_event("trade", "%s 放棄%s，轉而向%s路施壓" % [team(side).short_name, _obj_name(given_up), _lane_name(far)], [side], ["資源交換"])
 		_try_destroy(side, far, "以%s交換%s路推進" % [_obj_name(given_up), _lane_name(far)])
 	else:
 		for u in units[side]:
 			u["gold"] += 120.0
 		siege[side][far] += 0.5
 		if detail:
-			_event("trade", "%s 放棄%s，轉而在%s路取得鍍層與野區資源" % [team(side).name, _obj_name(given_up), _lane_name(far)], [side], ["資源交換"])
+			_event("trade", "%s 放棄%s，轉而在%s路取得鍍層與野區資源" % [team(side).short_name, _obj_name(given_up), _lane_name(far)], [side], ["資源交換"])
 
 
 func _award_objective(side: String, obj: String, causes: Array) -> void:
@@ -505,35 +505,35 @@ func _award_objective(side: String, obj: String, causes: Array) -> void:
 			dragons[side] += 1
 			for u in units[side]:
 				u["gold"] += 40.0
-			var txt = "%s 拿下第 %d 條小龍" % [team(side).name, dragons[side]]
+			var txt = "%s 拿下第 %d 條小龍" % [team(side).short_name, dragons[side]]
 			if dragons[side] == 4:
 				txt += "，取得龍魂"
 			_event("dragon", txt, [side], causes)
 		"elder":
 			elder_until[side] = minute + 3
-			_event("elder", "%s 拿下遠古龍！" % team(side).name, [side], causes)
+			_event("elder", "%s 拿下遠古龍！" % team(side).short_name, [side], causes)
 		"grubs":
 			grubs_taken = true
 			grubs[side] += 3
 			siege[side]["top"] += 0.4
-			_event("grubs", "%s 拿下虛空幼蟲" % team(side).name, [side], causes)
+			_event("grubs", "%s 拿下虛空幼蟲" % team(side).short_name, [side], causes)
 		"herald":
 			herald_taken = true
 			siege[side]["mid"] += 0.9
-			_event("herald", "%s 拿下預示者，準備衝塔" % team(side).name, [side], causes)
+			_event("herald", "%s 拿下預示者，準備衝塔" % team(side).short_name, [side], causes)
 		"baron":
 			barons[side] += 1
 			baron_until[side] = minute + 3
 			for u in units[side]:
 				u["gold"] += 300.0
-			_event("baron", "%s 拿下巴龍！" % team(side).name, [side], causes)
+			_event("baron", "%s 拿下巴龍！" % team(side).short_name, [side], causes)
 
 
 func _schedule_next(obj: String) -> void:
 	if obj == "dragon" or obj == "elder":
-		next_dragon = minute + (5 if obj == "dragon" else 6)
+		next_dragon = minute + 6
 	elif obj == "baron":
-		next_baron = minute + 6
+		next_baron = minute + 7
 
 
 # ---------------------------------------------------------------- 中後期決策
@@ -545,7 +545,7 @@ func _shotcall() -> void:
 		var old: String = stance[side]
 		if t.orders.has(str(minute)):
 			stance[side] = t.orders[str(minute)]
-			_event("order", "%s 教練下達指示：%s" % [t.name, _stance_name(stance[side])], [side], ["玩家即時戰術指令"])
+			_event("order", "%s 教練下達指示：%s" % [t.short_name, _stance_name(stance[side])], [side], ["玩家即時戰術指令"])
 			continue
 		var gd = (_team_gold(side) - _team_gold(other(side))) / maxf(_team_gold(side) + _team_gold(other(side)), 1.0) * 2.0
 		var scale_diff: float = (comp[side]["late"] - comp[other(side)]["late"]) / 3.0
@@ -579,7 +579,7 @@ func _shotcall() -> void:
 				why.append("陣容具備分推能力")
 			if best == "pick":
 				why.append("陣容擅長抓單")
-			_event("adapt", "%s 調整戰術：%s → %s" % [t.name, _stance_name(old), _stance_name(best)], [side], why if why.size() > 0 else ["指揮判斷"])
+			_event("adapt", "%s 調整戰術：%s → %s" % [t.short_name, _stance_name(old), _stance_name(best)], [side], why if why.size() > 0 else ["指揮判斷"])
 
 
 func _macro() -> void:
@@ -608,7 +608,7 @@ func _macro() -> void:
 			var causes: Array = ["%s 站位/地圖意識不足" % _h(victim)]
 			if vision[side] > vision[other(side)] + 0.1:
 				causes.append("視野控制優勢")
-			_kill(side, killer, victim, [], "pick", "%s 抓到落單的 %s" % [team(side).name, _h(victim)], causes)
+			_kill(side, killer, victim, [], "pick", "%s 抓到落單的 %s" % [team(side).short_name, _h(victim)], causes)
 			if winner != "":
 				return
 	# 3) 主動開團
@@ -638,7 +638,7 @@ func _macro() -> void:
 			var w: String = f["winner"]
 			if minute >= next_baron - 0 and minute >= 20 and f["margin"] >= 3 and baron_until[w] < minute:
 				_award_objective(w, "baron", ["團戰勝利後轉巴龍"])
-				next_baron = minute + 6
+				next_baron = minute + 7
 			_push(w, f["margin"] - 1 + (1 if baron_until[w] >= minute else 0), "團戰勝利後推進")
 
 
@@ -669,12 +669,12 @@ func _split_push(side: String) -> void:
 	if respond_correctly and def_p >= duel_p * 0.9:
 		# 派出單挑能力足夠的選手守邊
 		if rng.chance(def_p / (def_p + duel_p) * 0.5):
-			_kill(enemy, best_def, splitter, [], "split_caught", "%s 守邊成功，擊殺分推的 %s" % [_h(best_def), _h(splitter)], ["%s 判斷正確，派出單挑能力足夠的選手" % team(enemy).name])
+			_kill(enemy, best_def, splitter, [], "split_caught", "%s 守邊成功，擊殺分推的 %s" % [_h(best_def), _h(splitter)], ["%s 判斷正確，派出單挑能力足夠的選手" % team(enemy).short_name])
 		else:
 			siege[side][lane] += 0.25
 	elif respond_correctly:
 		# 單挑打不贏 → 以多打少強開
-		_event("force_4v5", "%s 趁 %s 分推時在中路以五打四開戰" % [team(enemy).name, _h(splitter)], [enemy], ["%s 守邊單挑不利，選擇以多打少" % team(enemy).name])
+		_event("force_4v5", "%s 趁 %s 分推時在中路以五打四開戰" % [team(enemy).short_name, _h(splitter)], [enemy], ["%s 守邊單挑不利，選擇以多打少" % team(enemy).short_name])
 		splitter["dead_until"] = minute + 1  # 暫時不在團戰中（並非死亡）
 		var f = _teamfight("中路", enemy)
 		splitter["dead_until"] = 0
@@ -684,7 +684,7 @@ func _split_push(side: String) -> void:
 	else:
 		siege[side][lane] += 0.9
 		if detail:
-			_event("split", "%s 的 %s 在%s路分推，對手回應太慢" % [team(side).name, _h(splitter), _lane_name(lane)], [side], ["%s 判斷失誤" % team(enemy).name])
+			_event("split", "%s 的 %s 在%s路分推，對手回應太慢" % [team(side).short_name, _h(splitter), _lane_name(lane)], [side], ["%s 判斷失誤" % team(enemy).short_name])
 
 
 func _passive_siege() -> void:
@@ -716,9 +716,12 @@ func _passive_siege() -> void:
 func _teamfight(where: String, initiator: String) -> Dictionary:
 	var causes: Array = []
 	var participants := {}
-	var debuffs := {}
 	for side in SIDES:
 		participants[side] = _alive(side)
+	# 一方無人可戰（全員陣亡或回城）：不構成團戰
+	if participants["blue"].is_empty() or participants["red"].is_empty():
+		var only = "blue" if participants["red"].is_empty() else "red"
+		return {"winner": only, "margin": participants[only].size(), "kills": {"blue": 0, "red": 0}}
 	var mult = {"blue": _side_multiplier("blue"), "red": _side_multiplier("red")}
 	var pb_final = _sum_power(participants["blue"]) * mult["blue"]
 	var pr_final = _sum_power(participants["red"]) * mult["red"]
@@ -746,9 +749,9 @@ func _teamfight(where: String, initiator: String) -> Dictionary:
 	if rng.chance(clampf(engage_p, 0.1, 0.85)) and participants[other(initiator)].size() > 0:
 		var target: Dictionary = _weakest_positioned(participants[other(initiator)])
 		target["debuff"] = maxf(target["debuff"], 0.6)
-		causes.append("%s 先手開到 %s" % [team(initiator).name, _h(target)])
+		causes.append("%s 先手開到 %s" % [team(initiator).short_name, _h(target)])
 	elif participants[other(initiator)].size() > 0:
-		causes.append("%s 開戰失敗被反打" % team(initiator).name)
+		causes.append("%s 開戰失敗被反打" % team(initiator).short_name)
 		var tgt: Dictionary = _weakest_positioned(participants[initiator])
 		tgt["debuff"] = maxf(tgt["debuff"], 0.3)
 	# 3) 逐回合
@@ -796,8 +799,11 @@ func _teamfight(where: String, initiator: String) -> Dictionary:
 	var share_w = (pb_final if win == "blue" else pr_final) / (pb_final + pr_final)
 	causes.append("開戰前戰力 %d%% : %d%%" % [int(share_w * 100.0), 100 - int(share_w * 100.0)])
 	if disengaged != "":
-		causes.append("%s 及時撤退止損" % team(disengaged).name)
-	var text = "%s團戰：%s %d 換 %d 獲勝" % [where, team(win).name, kills[win], kills[other(win)]]
+		causes.append("%s 及時撤退止損" % team(disengaged).short_name)
+	var text = "%s團戰：%s %d 換 %d 獲勝" % [where, team(win).short_name, kills[win], kills[other(win)]]
+	if kills["blue"] + kills["red"] == 0:
+		text = "%s對峙：雙方互有試探，%s 取得位置優勢" % [where, team(win).short_name]
+		margin = 0
 	_event("teamfight", text, [win], causes, [], {"kills": kills.duplicate(), "margin": margin})
 	return {"winner": win, "margin": margin, "kills": kills}
 
@@ -863,15 +869,15 @@ func _destroy_structure(side: String, lane: String, reason: String) -> void:
 			u["gold"] += 60.0
 		var names = ["一塔", "二塔", "高地塔", "兵營"]
 		if detail:
-			_event("structure", "%s 摧毀 %s %s路%s" % [team(side).name, team(enemy).name, _lane_name(lane), names[s[lane] - 1]], [side], [reason])
+			_event("structure", "%s 摧毀 %s %s路%s" % [team(side).short_name, team(enemy).short_name, _lane_name(lane), names[s[lane] - 1]], [side], [reason])
 	elif any_inhib:
 		if s["nexus_towers"] < 2:
 			s["nexus_towers"] += 1
 			if detail:
-				_event("structure", "%s 摧毀主堡塔" % team(side).name, [side], [reason])
+				_event("structure", "%s 摧毀主堡塔" % team(side).short_name, [side], [reason])
 		else:
 			winner = side
-			_event("end", "%s 摧毀主堡，贏得比賽！（%d 分鐘）" % [team(side).name, minute], [side], [reason])
+			_event("end", "%s 摧毀主堡，贏得比賽！（%d 分鐘）" % [team(side).short_name, minute], [side], [reason])
 
 
 ## 下一座建築需要的推進值：外塔 1、二塔 1.6、高地塔 2.2、兵營 1.4；

@@ -26,7 +26,15 @@ static func offseason_step(w: WorldState, club: Club, stage: String) -> void:
 
 
 static func _renewals(w: WorldState, club: Club) -> void:
-	for pid in club.roster.duplicate():
+	var bill = 0
+	for pid in club.roster:
+		var q: Player = w.players[pid]
+		if q.contract and q.contract.end_year > w.year:
+			bill += q.contract.salary
+	var ids: Array = club.roster.duplicate()
+	# 先續約最重要的選手；薪資空間不夠時，其餘選手只能放走（王朝的代價）
+	ids.sort_custom(func(x, y): return w.players[x].current_ability() > w.players[y].current_ability())
+	for pid in ids:
 		var p: Player = w.players[pid]
 		if p.contract == null or p.contract.end_year > w.year:
 			continue
@@ -35,7 +43,13 @@ static func _renewals(w: WorldState, club: Club) -> void:
 			continue
 		var demand = TransferMarket.wage_demand(w, p)
 		var mult = {"win_now": 1.1, "balanced": 1.0, "develop": 0.95, "moneyball": 0.9}.get(club.philosophy, 1.0)
-		TransferMarket.offer_contract(w, club, p, int(demand * mult), w.rng.range_i(1, 3), "starter" if club.lineup.values().has(pid) else "rotation")
+		var new_salary = int(demand * mult)
+		if bill + new_salary > club.wage_budget:
+			w.log.add("cannot_afford_renewal", w.day, [p.id, club.id], {"demand": new_salary}, ["薪資空間不足"])
+			continue
+		var r = TransferMarket.offer_contract(w, club, p, new_salary, w.rng.range_i(1, 3), "starter" if club.lineup.values().has(pid) else "rotation")
+		if r["accepted"]:
+			bill += new_salary
 
 
 static func _needs(w: WorldState, club: Club) -> Array:
@@ -83,7 +97,9 @@ static func _recruit(w: WorldState, club: Club) -> void:
 				continue
 			for pid in c.roster:
 				var o: Player = w.players[pid]
-				if o.transfer_requested or (o.contract and o.contract.years_left(w.year) <= 0) or not c.lineup.values().has(pid):
+				# 挖角對手先發：只在缺口夠大時考慮合約將到期者
+				var poachable = o.contract and o.contract.years_left(w.year) <= 1 and need["gap"] >= 6.0
+				if o.transfer_requested or poachable or not c.lineup.values().has(pid):
 					candidates.append(o)
 		for p in candidates:
 			if p.retired or p.primary_role != role:
@@ -112,7 +128,11 @@ static func _recruit(w: WorldState, club: Club) -> void:
 			var r = TransferMarket.make_transfer_offer(w, club, best, fee, salary, w.rng.range_i(1, 3), "starter")
 			if r.get("accepted", false):
 				wage_room -= salary
-	# 名單不足：簽便宜的自由選手或提拔新人
+	fill_roster(w, club)
+
+
+## 名單不足：簽便宜的自由選手或提拔新人（不挖角，因此不會連鎖影響其他隊伍），最後重選先發。
+static func fill_roster(w: WorldState, club: Club) -> void:
 	while club.roster.size() < Tuning.i("min_roster"):
 		var role = _thinnest_role(w, club)
 		var pool = w.free_agents.map(func(pid): return w.players[pid]).filter(func(p): return p.primary_role == role and not p.retired)
@@ -132,6 +152,8 @@ static func _recruit(w: WorldState, club: Club) -> void:
 				TransferMarket._move(w, youth, null, club, 0)
 			else:
 				break
+	if not LineupSelector.is_valid(w, club):
+		LineupSelector.pick(w, club)
 
 
 static func _thinnest_role(w: WorldState, club: Club) -> String:
@@ -166,11 +188,7 @@ static func review_coach(w: WorldState, club: Club, position: int, teams: int) -
 	var expected = clampf(1.0 - club.reputation / 100.0, 0.0, 1.0) * teams
 	if position > expected + teams * 0.35 and w.rng.chance(0.6):
 		var old: Staff = w.staff.get(club.coach_id)
-		var q = clampf((club.reputation - 25.0) / 70.0 + w.rng.normal(0, 0.1), 0.05, 1.0)
-		var coach = PlayerGenerator.generate_coach(w, w.rng, q)
-		coach.club_id = club.id
-		w.staff[coach.id] = coach
-		club.coach_id = coach.id
-		if old:
-			old.club_id = ""
-		w.log.add("coach_fired", w.day, [club.id], {"old": old.name if old else "", "new": coach.name}, ["排名第 %d，低於預期" % position])
+		StaffSystem.dismiss(w, club, "head_coach")
+		StaffSystem.ai_fill(w, club)
+		var coach: Staff = w.staff.get(club.coach_id)
+		w.log.add("coach_fired", w.day, [club.id], {"old": old.name if old else "", "new": coach.name if coach else ""}, ["排名第 %d，低於預期" % position])

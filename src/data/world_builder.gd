@@ -50,6 +50,15 @@ static func build(module: DataModule, world_seed: int, human_club_id: String = "
 	if human_club_id != "" and w.clubs.has(human_club_id):
 		w.human_club_id = human_club_id
 		w.clubs[human_club_id].is_human = true
+	# 員工市場與各隊教練團、初始贊助
+	StaffSystem.offseason(w)
+	for cl in w.clubs.values():
+		StaffSystem.ai_fill(w, cl)
+		for kind in Finance.SPONSOR_KINDS:
+			var offers = Finance.make_offers(w, cl, kind)
+			offers[2]["years"] = w.rng.range_i(1, 3)
+			Finance.sign_sponsor(w, cl, offers[2] if kind == "main" else offers[0])
+	StaffSystem.replenish(w)
 	for cl in w.clubs.values():
 		LineupSelector.pick(w, cl)
 		cl.training_plan = TrainingEngine.default_plan()
