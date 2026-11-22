@@ -5,7 +5,7 @@ extends VBoxContainer
 
 signal reached_end
 
-const SPEEDS := {"1x": 0.9, "2x": 0.45, "4x": 0.18}
+const SPEEDS := {"1x": 2.4, "2x": 1.2, "4x": 0.6}  ## 每遊戲分鐘的秒數
 const BIG := ["teamfight", "baron", "elder", "end", "steal", "dragon", "order", "adapt", "split", "force_4v5"]
 const TAGS := {"teamfight": "團戰", "baron": "巴龍", "elder": "遠古龍", "dragon": "小龍", "grubs": "幼蟲", "herald": "預示者", "end": "勝利",
 	"steal": "搶龍", "structure": "推塔", "solo_kill": "單殺", "gank": "Gank", "lane_kill": "擊殺", "pick": "抓單", "counter_gank": "反蹲",
@@ -66,7 +66,7 @@ func setup(s: GameSession, ally_side: String) -> MatchCenter:
 		speed_btns[k] = b
 		ctl.add_child(b)
 	right.add_child(ctl)
-	_set_speed("2x")
+	_set_speed("1x")
 	return self
 
 

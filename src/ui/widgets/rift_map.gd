@@ -19,7 +19,8 @@ var champs: Dictionary = {}        ## side -> [champion id × 5]
 var champ_db: Dictionary = {}      ## id -> Champion
 var head: float = 0.0              ## 目前播放到的格（可為小數，用於平滑移動）
 var target: float = 0.0
-var sec_per_frame: float = 0.6
+var sec_per_frame: float = 2.4
+var _paths: Dictionary = {}       ## "格:方:人" -> 沿路網的折線（快取）
 var _last_minute: int = -1
 
 const MAP_IMAGE := "res://assets/maps/summoners_rift.jpg"
@@ -62,6 +63,7 @@ func set_game(f: Array, c: Dictionary, db: Dictionary) -> void:
 	frames = f
 	champs = c
 	champ_db = db
+	_paths.clear()
 	queue_redraw()
 
 
@@ -136,7 +138,7 @@ func _draw() -> void:
 	var i1 = clampi(i0 + 1, 0, frames.size() - 1)
 	var t = clampf(head - i0, 0.0, 1.0)
 	var f0: Dictionary = frames[i0]
-	var f1: Dictionary = frames[i1] if t > 0.0 else f0
+	var f1: Dictionary = frames[i1]
 	_draw_structures(r, f1 if t >= 0.5 else f0, bg != null, _fallen_nexus(i1 if t >= 0.5 else i0))
 	_draw_marks(r, font)
 	# 英雄小棋
@@ -149,8 +151,8 @@ func _draw() -> void:
 			var b: Array = p1[k] if k < p1.size() else a
 			var alive_now: bool = int(b[2]) == 1 if t >= 0.5 else int(a[2]) == 1
 			var pos: Vector2
-			if int(a[2]) == 1 and int(b[2]) == 1:
-				pos = _pt(r, a).lerp(_pt(r, b), _ease(t))
+			if int(a[2]) == 1 and int(b[2]) == 1 and i1 != i0:
+				pos = _pt(r, RiftGeometry.along(_path(i0, side, k, a, b), _ease(t)))
 			else:
 				pos = _pt(r, b if t >= 0.5 else a)
 			var cid: String = champs.get(side, [])[k] if k < champs.get(side, []).size() else ""
@@ -185,8 +187,17 @@ func _draw_procedural(r: Rect2) -> void:
 	draw_circle(_pt(r, RiftGeometry.BARON_PIT), s * 0.045, Color("2c1f3a"))
 
 
+## 兩格之間沿路網走的路徑；同一段路只計算一次。
+func _path(i0: int, side: String, k: int, a: Array, b: Array) -> PackedVector2Array:
+	var key = "%d:%s:%d" % [i0, side, k]
+	if not _paths.has(key):
+		_paths[key] = RiftGeometry.nav_path(Vector2(float(a[0]), float(a[1])), Vector2(float(b[0]), float(b[1])))
+	return _paths[key]
+
+
+## 起步與停下稍微放慢，中段等速前進。
 func _ease(t: float) -> float:
-	return t * t * (3.0 - 2.0 * t)
+	return lerpf(t, t * t * (3.0 - 2.0 * t), 0.5)
 
 
 ## 到第 idx 格為止主堡被摧毀的一方（沒有則為空字串）。
