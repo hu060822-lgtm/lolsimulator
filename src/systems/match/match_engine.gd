@@ -1226,7 +1226,7 @@ func _record_frame() -> void:
 			if not alive:
 				p = RiftGeometry.FOUNTAIN[side] + RiftGeometry.spread(u["idx"], 5, 0.02)
 			elif _involved.has(key):
-				p = _loc_point(_involved[key]) + RiftGeometry.spread(u["idx"] + (5 if side == "red" else 0), 10, 0.035)
+				p = _loc_point(_involved[key]) + RiftGeometry.spread(u["idx"] + (5 if side == "red" else 0), 10, 0.045)
 			else:
 				p = _default_loc(side, u) + RiftGeometry.spread(u["idx"], 5, 0.012)
 			list.append([snappedf(p.x, 0.001), snappedf(p.y, 0.001), 1 if alive else 0])
