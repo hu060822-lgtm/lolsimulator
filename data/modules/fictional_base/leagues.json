@@ -1,0 +1,8 @@
+[
+ {"id": "ecl", "name": "Eastern Crown League", "region": "EAST", "tier": 1, "prize_pool": 800000,
+  "format": {"regular": {"type": "double_round_robin", "best_of": 3, "days_between_rounds": 3},
+             "playoffs": {"type": "single_elimination", "teams": 4, "best_of": 5}}},
+ {"id": "wvl", "name": "Western Vanguard League", "region": "WEST", "tier": 1, "prize_pool": 600000,
+  "format": {"regular": {"type": "double_round_robin", "best_of": 1, "days_between_rounds": 2},
+             "playoffs": {"type": "single_elimination", "teams": 4, "best_of": 5}}}
+]

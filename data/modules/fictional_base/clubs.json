@@ -1,0 +1,19 @@
+[
+ {"id": "crimson_tide_gaming", "name": "Crimson Tide Gaming", "short_name": "CTG", "league_id": "ecl", "region": "EAST", "reputation": 82, "cash": 4000000, "wage_budget": 2400000, "fanbase": 900000, "philosophy": "win_now"},
+ {"id": "jade_dragons", "name": "Jade Dragons", "short_name": "JDR", "league_id": "ecl", "region": "EAST", "reputation": 76, "cash": 3200000, "wage_budget": 2000000, "fanbase": 700000, "philosophy": "balanced"},
+ {"id": "northstar_esports", "name": "Northstar Esports", "short_name": "NSE", "league_id": "ecl", "region": "EAST", "reputation": 70, "cash": 2500000, "wage_budget": 1700000, "fanbase": 500000, "philosophy": "develop"},
+ {"id": "harbor_lights", "name": "Harbor Lights", "short_name": "HBL", "league_id": "ecl", "region": "EAST", "reputation": 62, "cash": 1800000, "wage_budget": 1300000, "fanbase": 300000, "philosophy": "balanced"},
+ {"id": "iron_lotus", "name": "Iron Lotus", "short_name": "ILT", "league_id": "ecl", "region": "EAST", "reputation": 55, "cash": 1400000, "wage_budget": 1100000, "fanbase": 220000, "philosophy": "moneyball"},
+ {"id": "silver_monsoon", "name": "Silver Monsoon", "short_name": "SMS", "league_id": "ecl", "region": "EAST", "reputation": 50, "cash": 1100000, "wage_budget": 900000, "fanbase": 150000, "philosophy": "develop"},
+ {"id": "paper_tigers", "name": "Paper Tigers", "short_name": "PPT", "league_id": "ecl", "region": "EAST", "reputation": 42, "cash": 800000, "wage_budget": 700000, "fanbase": 90000, "philosophy": "moneyball"},
+ {"id": "mountain_echo", "name": "Mountain Echo", "short_name": "MTE", "league_id": "ecl", "region": "EAST", "reputation": 38, "cash": 600000, "wage_budget": 600000, "fanbase": 60000, "philosophy": "develop"},
+
+ {"id": "atlas_vanguard", "name": "Atlas Vanguard", "short_name": "ATV", "league_id": "wvl", "region": "WEST", "reputation": 74, "cash": 3500000, "wage_budget": 1900000, "fanbase": 650000, "philosophy": "win_now"},
+ {"id": "royal_falcons", "name": "Royal Falcons", "short_name": "RYF", "league_id": "wvl", "region": "WEST", "reputation": 68, "cash": 2600000, "wage_budget": 1600000, "fanbase": 480000, "philosophy": "balanced"},
+ {"id": "obsidian_order", "name": "Obsidian Order", "short_name": "OBO", "league_id": "wvl", "region": "WEST", "reputation": 60, "cash": 2000000, "wage_budget": 1300000, "fanbase": 350000, "philosophy": "balanced"},
+ {"id": "copper_wolves", "name": "Copper Wolves", "short_name": "CPW", "league_id": "wvl", "region": "WEST", "reputation": 55, "cash": 1500000, "wage_budget": 1100000, "fanbase": 260000, "philosophy": "develop"},
+ {"id": "neon_harbor", "name": "Neon Harbor", "short_name": "NHB", "league_id": "wvl", "region": "WEST", "reputation": 50, "cash": 1200000, "wage_budget": 950000, "fanbase": 180000, "philosophy": "moneyball"},
+ {"id": "velvet_storm", "name": "Velvet Storm", "short_name": "VST", "league_id": "wvl", "region": "WEST", "reputation": 46, "cash": 1000000, "wage_budget": 850000, "fanbase": 140000, "philosophy": "win_now"},
+ {"id": "lowland_rovers", "name": "Lowland Rovers", "short_name": "LLR", "league_id": "wvl", "region": "WEST", "reputation": 40, "cash": 750000, "wage_budget": 650000, "fanbase": 80000, "philosophy": "develop"},
+ {"id": "quiet_comet", "name": "Quiet Comet", "short_name": "QCM", "league_id": "wvl", "region": "WEST", "reputation": 35, "cash": 550000, "wage_budget": 550000, "fanbase": 50000, "philosophy": "moneyball"}
+]
