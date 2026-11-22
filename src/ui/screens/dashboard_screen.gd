@@ -15,7 +15,7 @@ func refresh() -> void:
 	var c = session.club()
 	var ww = w()
 	var lg: League = ww.leagues[c.league_id]
-	body.add_child(UIKit.title(c.name))
+	body.add_child(UIKit.title(UIKit.club_label(c)))
 	body.add_child(UIKit.muted("%s・聲望 %.0f・粉絲 %d・經營方向 %s" % [lg.name, c.reputation, c.fanbase, UIKit.philosophy_name(c.philosophy)]))
 	var row := UIKit.hbox(12)
 	body.add_child(row)
@@ -27,14 +27,14 @@ func refresh() -> void:
 		if not f.is_empty():
 			var fx: Dictionary = f["fixture"]
 			var opp: String = fx["away"] if fx["home"] == c.id else fx["home"]
-			nm = "第 %d 天 vs %s（Bo%d・%s）" % [next_day, ww.clubs[opp].name, int(fx["best_of"]), "例行賽" if fx["stage"] == "regular" else "季後賽"]
+			nm = "第 %d 天 對 %s\n%s・%s" % [next_day, UIKit.club_label(ww.clubs[opp]), UIKit.bo_text(int(fx["best_of"])), "例行賽" if fx["stage"] == "regular" else "季後賽"]
 	row.add_child(_card("下一場比賽", nm))
 	var st: Dictionary = lg.standings.get(c.id, {"w": 0, "l": 0})
 	var pos = LeagueEngine.sorted_standings(lg).find(c.id) + 1
 	row.add_child(_card("聯賽排名", "第 %d 名（%d 勝 %d 敗）" % [pos, int(st["w"]), int(st["l"])]))
 	var bill = TransferMarket.wage_bill(ww, c)
 	row.add_child(_card("財務", "資金 %s\n薪資 %s / 預算 %s" % [UIKit.money(c.cash), UIKit.money(bill), UIKit.money(c.wage_budget)]))
-	row.add_child(_card("團隊", "默契 %.0f\nBP 熟悉度 %.0f" % [c.chemistry, c.draft_familiarity]))
+	row.add_child(_card("團隊", "默契 %.0f\n禁選熟悉度 %.0f" % [c.chemistry, c.draft_familiarity]))
 	for ch in row.get_children():
 		ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	# 先發狀態
@@ -57,7 +57,7 @@ func refresh() -> void:
 	for e in ww.log.of_type("match").filter(func(x): return c.id in x["actors"]).slice(-5):
 		var other: String = e["actors"][1] if e["actors"][0] == c.id else e["actors"][0]
 		var won: bool = e["data"]["winner"] == c.id
-		recent.add_child(UIKit.label("%s　vs %s　%s" % ["勝" if won else "敗", ww.clubs[other].name, e["data"]["score"]], 14, UIKit.GOOD if won else UIKit.BAD))
+		recent.add_child(UIKit.label("%s　對 %s　%s" % ["勝" if won else "敗", UIKit.club_label(ww.clubs[other]), e["data"]["score"]], 14, UIKit.GOOD if won else UIKit.BAD))
 		shown += 1
 	if shown == 0:
 		recent.add_child(UIKit.muted("尚未出賽"))

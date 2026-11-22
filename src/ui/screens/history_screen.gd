@@ -12,16 +12,16 @@ func refresh() -> void:
 		remove_child(c)
 		c.queue_free()
 	var ww = w()
-	var t := UIKit.table(["年份", "聯賽", "冠軍", "MVP", "版本"], 260)
+	var t := UIKit.table(["年份", "聯賽", "冠軍", "最佳選手", "版本"], 260)
 	for s in ww.history["seasons"]:
 		for lid in s["leagues"]:
 			var L: Dictionary = s["leagues"][lid]
-			UIKit.add_row(t, [int(s["year"]), ww.leagues[lid].name, ww.clubs[L["champion"]].name if ww.clubs.has(L["champion"]) else "-", ww.players[L["mvp"]].handle if L["mvp"] != "" else "-", s["patch"]])
+			UIKit.add_row(t, [int(s["year"]), ww.leagues[lid].name, UIKit.club_label(ww.clubs[L["champion"]]) if ww.clubs.has(L["champion"]) else "-", ww.players[L["mvp"]].handle if L["mvp"] != "" else "-", s["patch"]])
 	add_child(t)
 	if ww.history["seasons"].is_empty():
 		add_child(UIKit.muted("完成第一個賽季後，歷史紀錄會出現在這裡。"))
 	var c = session.club()
-	add_child(UIKit.label("%s 歷年成績" % c.name, 17))
+	add_child(UIKit.label("%s 歷年成績" % UIKit.club_label(c), 17))
 	for h in c.history:
 		add_child(UIKit.label("%d　第 %d 名%s" % [int(h["year"]), int(h["position"]), "　🏆" if h.get("champion", false) else ""], 14))
 	add_child(UIKit.label("最近退役", 17))

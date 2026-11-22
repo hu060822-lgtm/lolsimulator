@@ -28,7 +28,7 @@ func build() -> void:
 	var root := UIKit.vbox(14)
 	margin.add_child(root)
 	root.add_child(UIKit.label("ESPORT: LOL SIMULATOR", 30, UIKit.TEXT))
-	root.add_child(UIKit.muted("Build a Legacy. Not Just a Team.　｜　資料庫：虛構世界（fictional_base）"))
+	root.add_child(UIKit.muted("打造傳奇，不只是一支隊伍。　｜　資料庫：虛構世界"))
 	var cols := UIKit.hbox(16)
 	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(cols)
@@ -42,13 +42,13 @@ func build() -> void:
 	lp.size_flags_stretch_ratio = 1.6
 	cols.add_child(lp)
 	left.add_child(UIKit.title("接管俱樂部"))
-	list = UIKit.table(["俱樂部", "聯賽", "聲望", "資金", "薪資預算", "經營方向"], 360)
+	list = UIKit.table(["俱樂部", "縮寫", "聯賽", "聲望", "資金", "薪資預算", "經營方向"], 360)
 	for c in clubs:
 		var lg_name := ""
 		for l in leagues:
 			if l["id"] == c["league_id"]:
 				lg_name = l["name"]
-		UIKit.add_row(list, [c["name"], lg_name, int(c["reputation"]), UIKit.money(int(c["cash"])), UIKit.money(int(c["wage_budget"])), UIKit.philosophy_name(c["philosophy"])], c["id"])
+		UIKit.add_row(list, [c["name"], c.get("short_name", ""), lg_name, int(c["reputation"]), UIKit.money(int(c["cash"])), UIKit.money(int(c["wage_budget"])), UIKit.philosophy_name(c["philosophy"])], c["id"])
 	list.item_selected.connect(_on_select)
 	left.add_child(list)
 	info = UIKit.rich("[color=#8a90a0]選擇一支俱樂部。聲望越低，資源越少、挑戰越大。[/color]")
@@ -69,7 +69,7 @@ func build() -> void:
 	seed_row.add_child(seed_edit)
 	right.add_child(seed_row)
 	manual = CheckBox.new()
-	manual.text = "親自進行 BP（關閉則由教練團代為 BP）"
+	manual.text = "親自進行禁選（關閉則由教練團代為禁選）"
 	manual.button_pressed = true
 	right.add_child(manual)
 	right.add_child(UIKit.primary("接管所選俱樂部", _start_selected))
@@ -142,7 +142,7 @@ func _start_custom() -> void:
 	var name = custom_name.text.strip_edges()
 	if name == "":
 		name = "Custom Club"
-	var custom = {"id": "custom_" + name.to_lower().replace(" ", "_"), "name": name, "short_name": custom_short.text.to_upper(),
+	var custom = {"id": "custom_" + name.to_lower().replace(" ", "_"), "name": name, "short_name": custom_short.text.strip_edges().to_upper().substr(0, 4),
 		"league_id": lg["id"], "region": lg["region"], "reputation": 35, "cash": int(custom_cash.value),
 		"wage_budget": 600000, "fanbase": 20000, "philosophy": "balanced", "replace": weakest}
 	start_with("", custom)

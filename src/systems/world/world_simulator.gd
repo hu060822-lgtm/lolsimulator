@@ -194,7 +194,7 @@ static func _new_patch(w: WorldState) -> void:
 		var base: Champion = w.rng.pick(w.champions.values())
 		var c = Champion.from_dict(base.to_dict())
 		c.id = "gen_%d_%s" % [w.year, base.id]
-		c.name = "%s Reborn" % base.name
+		c.name = "%s・覺醒" % base.name
 		for t in c.tags.keys():
 			c.tags[t] = clampf(float(c.tags[t]) + w.rng.range_i(-1, 1), 0.0, 3.0)
 		c.early = clampf(c.early + w.rng.range_i(-2, 2), 2, 9)

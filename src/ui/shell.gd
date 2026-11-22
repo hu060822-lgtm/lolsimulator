@@ -107,9 +107,9 @@ func refresh_status() -> void:
 	var w = session.world
 	var c = session.club()
 	var unread = session.open_messages().size()
-	status.text = "%s　｜　%d 年　第 %d 天　%s　｜　資金 %s　｜　收件匣 %d" % [c.name if c else "", w.year, w.day, UIKit.PHASE_NAMES.get(w.phase, w.phase), UIKit.money(c.cash) if c else "", unread]
+	status.text = "%s　｜　%d 年　第 %d 天　%s　｜　資金 %s　｜　收件匣 %d" % [c.short_name if c else "", w.year, w.day, UIKit.PHASE_NAMES.get(w.phase, w.phase), UIKit.money(c.cash) if c else "", unread]
 	nav["inbox"].text = "收件匣 (%d)" % unread if unread > 0 else "收件匣"
-	continue_btn.text = "比賽日：進入 BP ▶" if session.has_match_ready() else "繼續 ▶"
+	continue_btn.text = "比賽日：進入禁選 ▶" if session.has_match_ready() else "繼續 ▶"
 
 
 func toast(text: String) -> void:
@@ -123,7 +123,7 @@ func _on_continue() -> void:
 		return
 	session.advance_to_next_match()
 	if session.has_match_ready():
-		toast("明天有比賽，準備 BP")
+		toast("明天有比賽，準備禁選")
 	if page:
 		page.refresh()
 	refresh_status()

@@ -34,7 +34,7 @@ func refresh() -> void:
 	var i := 1
 	for cid in LeagueEngine.sorted_standings(lg):
 		var s: Dictionary = lg.standings[cid]
-		var it := UIKit.add_row(standings, [i, ww.clubs[cid].name, int(s["w"]), int(s["l"]), "%d-%d" % [int(s["gw"]), int(s["gl"])], int(s["gw"]) - int(s["gl"])])
+		var it := UIKit.add_row(standings, [i, UIKit.club_label(ww.clubs[cid]), int(s["w"]), int(s["l"]), "%d-%d" % [int(s["gw"]), int(s["gl"])], int(s["gw"]) - int(s["gl"])])
 		if cid == ww.human_club_id:
 			for col in 6:
 				it.set_custom_color(col, UIKit.ACCENT)
@@ -67,4 +67,4 @@ func _on_fixture() -> void:
 			if fx["result"].has("games"):
 				review.add_child(MatchView.series_summary(session, fx["result"]["games"]))
 			else:
-				review.add_child(UIKit.muted("非玩家比賽只保存結果。勝者：%s" % w().clubs[fx["result"]["winner"]].name))
+				review.add_child(UIKit.muted("非玩家比賽只保存結果。勝者：%s" % w().clubs[fx["result"]["winner"]].short_name))

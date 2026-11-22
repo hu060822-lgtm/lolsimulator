@@ -8,7 +8,7 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 	var ww = session.world
 	var own = p.club_id == ww.human_club_id
 	var v := UIKit.vbox(8)
-	var club_name: String = ww.clubs[p.club_id].name if p.club_id != "" else "自由球員"
+	var club_name: String = UIKit.club_label(ww.clubs[p.club_id]) if p.club_id != "" else "自由球員"
 	v.add_child(UIKit.title("%s　%s" % [p.handle, "（已退役）" if p.retired else ""]))
 	v.add_child(UIKit.muted("%s・%s・%d 歲・%s・%s%s" % [p.real_name, p.nationality, p.age(ww.year), UIKit.ROLE_NAMES.get(p.primary_role, p.primary_role),
 		club_name, ("・副位置 " + "、".join(p.secondary_roles.map(func(r): return UIKit.ROLE_NAMES[r]))) if p.secondary_roles.size() > 0 else ""]))
@@ -57,7 +57,7 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 		right.add_child(UIKit.label("年薪 %s・到 %d 年・%s" % [UIKit.money(p.contract.salary), p.contract.end_year, p.contract.role_promise], 14))
 	right.add_child(UIKit.label("市場價值 %s" % UIKit.money(TransferMarket.market_value(ww, p)), 14))
 	var g: int = p.career.get("games", 0)
-	right.add_child(UIKit.label("生涯 %d 場・勝率 %d%%・冠軍 %d・MVP %d" % [g, int(100.0 * p.career.get("wins", 0) / maxf(g, 1)), int(p.career.get("titles", 0)), int(p.career.get("mvps", 0))], 14))
+	right.add_child(UIKit.label("生涯 %d 場・勝率 %d%%・冠軍 %d・最佳選手 %d" % [g, int(100.0 * p.career.get("wins", 0) / maxf(g, 1)), int(p.career.get("titles", 0)), int(p.career.get("mvps", 0))], 14))
 	var sg: int = p.season_stats.get("games", 0)
 	right.add_child(UIKit.label("本季 %d 場・K/D/A %d/%d/%d・評分 %.2f" % [sg, int(p.season_stats.get("kills", 0)), int(p.season_stats.get("deaths", 0)), int(p.season_stats.get("assists", 0)), p.avg_season_rating()], 14))
 	cols.add_child(right)

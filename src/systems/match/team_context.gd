@@ -5,6 +5,7 @@ extends RefCounted
 
 var club_id: String = ""
 var name: String = ""
+var short_name: String = ""  ## 比賽文字使用縮寫
 var players: Dictionary = {}   ## role -> Player
 var coach: Staff = null
 var plan: String = "flexible"  ## 戰術方向（Tactics）
@@ -22,6 +23,7 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 	var t := TeamContext.new()
 	t.club_id = club.id
 	t.name = club.name
+	t.short_name = club.short_name if club.short_name != "" else club.name
 	for role in Attr.ROLES:
 		var pid: String = club.lineup.get(role, "")
 		if pid != "" and w.players.has(pid):
@@ -48,7 +50,7 @@ func avg_trait(t: String) -> float:
 	return MathX.mean(vals)
 
 
-## BP 品質 0..1：教練 BP 能力、選手 BP 理解、隊伍 BP 演練熟悉度。
+## 禁選品質 0..1：教練 BP 能力、選手 禁選理解、隊伍 禁選演練熟悉度。
 func draft_quality() -> float:
 	return (coach_stat("drafting") * 0.55 + avg_skill("draft_iq") * 0.25 + draft_familiarity * 0.20) / 100.0
 

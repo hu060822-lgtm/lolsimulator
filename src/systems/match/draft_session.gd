@@ -130,7 +130,7 @@ func _best_ban(side: String) -> Dictionary:
 
 
 ## 給 UI 的分析師建議：使用獨立的 RNG，不影響比賽本身的隨機序列。
-## 建議同樣帶有雜訊——BP 品質差的團隊，分析師的建議也比較不可靠。
+## 建議同樣帶有雜訊——禁選品質差的團隊，分析師的建議也比較不可靠。
 func suggestions(side: String, n: int = 5) -> Array:
 	var r := SimRng.new(hash([step, side, picks[side].size(), bans[side].size()]))
 	var action: String = SEQUENCE[step][1] if not is_done() else "pick"

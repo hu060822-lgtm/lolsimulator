@@ -32,7 +32,7 @@ static func event_line(session: GameSession, g: Dictionary, e: Dictionary) -> St
 	var txt = "[color=#8a90a0][%02d'][/color] [color=%s]%s%s%s[/color]" % [int(e["minute"]), side_color, "[b]" if big else "", e["text"], "[/b]" if big else ""]
 	if e["causes"].size() > 0:
 		txt += "  [color=#6b7280]← %s[/color]" % "、".join(e["causes"])
-	txt += "  [color=#555b66](經濟 %+.1fk)[/color]" % (ours / 1000.0)
+	txt += "  [color=#555b66](經濟 %+.1f千)[/color]" % (ours / 1000.0)
 	return txt
 
 
@@ -45,7 +45,7 @@ static func stats_table(session: GameSession, g: Dictionary) -> Tree:
 		var s: Dictionary = g["players"][pid]
 		var club_id: String = g["blue_club"] if s["side"] == "blue" else g["red_club"]
 		var ch: Champion = ww.champions.get(s["champion"])
-		var it := UIKit.add_row(t, [ww.players[pid].handle + (" ★MVP" if pid == g["mvp"] else ""), ww.clubs[club_id].short_name, ch.name if ch else s["champion"],
+		var it := UIKit.add_row(t, [ww.players[pid].handle + (" ★最佳選手" if pid == g["mvp"] else ""), ww.clubs[club_id].short_name, ch.name if ch else s["champion"],
 			"%d/%d/%d" % [int(s["kills"]), int(s["deaths"]), int(s["assists"])], "%.1fk" % (int(s["gold"]) / 1000.0), int(s["mistakes"]), "%.1f" % float(s["rating"])])
 		it.set_custom_color(1, UIKit.BLUE_SIDE if club_id == ww.human_club_id else UIKit.RED_SIDE)
 	return t
@@ -56,7 +56,7 @@ static func series_summary(session: GameSession, games: Array) -> VBoxContainer:
 	var ww = session.world
 	for i in games.size():
 		var g: Dictionary = games[i]
-		v.add_child(UIKit.label("第 %d 局：%s 勝（%d 分鐘・擊殺 %d-%d）" % [i + 1, ww.clubs[g["winner_club"]].name, int(g["duration"]), int(g["kills"]["blue"]), int(g["kills"]["red"])], 16))
+		v.add_child(UIKit.label("第 %d 局：%s 勝（%d 分鐘・擊殺 %d-%d）" % [i + 1, ww.clubs[g["winner_club"]].short_name, int(g["duration"]), int(g["kills"]["blue"]), int(g["kills"]["red"])], 16))
 		var r := UIKit.rich()
 		var lines: Array = []
 		for e in g["events"]:
