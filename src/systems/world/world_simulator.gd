@@ -57,6 +57,8 @@ static func weekly(w: WorldState) -> void:
 			Development.weekly(w, p, focus.get(pid, {}), coach)
 			if in_season:
 				CareerAgent.weekly(w, p)
+		if in_season:
+			Relationships.weekly(w, club)
 		if not club.is_human:
 			ClubAI.weekly(w, club)
 		_finance_week(w, club)

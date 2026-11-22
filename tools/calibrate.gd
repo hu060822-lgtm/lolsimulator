@@ -5,9 +5,12 @@ extends SceneTree
 
 func _init() -> void:
 	var n := 300
+	var neutral := false
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--games="):
 			n = int(a.substr(8))
+		if a == "--neutral-staff":
+			neutral = true  # 診斷用：教練團能力全部設為 55，只看選手與 BP
 	var m = DataModule.load_from_dir("res://data/modules/fictional_base")
 	var w = WorldBuilder.build(m, 7)
 	var clubs: Array = w.leagues["ecl"].club_ids.map(func(id): return w.clubs[id])
@@ -29,6 +32,10 @@ func _init() -> void:
 			continue
 		var ta = TeamContext.from_club(w, a)
 		var tb = TeamContext.from_club(w, b)
+		if neutral:
+			for t in [ta, tb]:
+				for k in t.staff_ratings:
+					t.staff_ratings[k] = 55.0
 		var s = SeriesSim.play(ta, tb, 1, w.champions, w.patch, rng.fork(i), true)
 		var g: Dictionary = s["games"][0]
 		dur += g["duration"]

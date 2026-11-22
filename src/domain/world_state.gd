@@ -26,6 +26,7 @@ var free_agents: Array = []       ## player ids
 var names: Dictionary = {}        ## 生成新人用的名字庫（來自資料模組）
 
 var history: Dictionary = {"seasons": [], "transfers": [], "retirements": []}
+var relations: Dictionary = {}    ## "id|id" -> -100..100（見 Relationships）
 var inbox: Array = []             ## 給玩家俱樂部的訊息（選手要求、轉會報價等）
 var log := SimLog.new()
 var rng := SimRng.new()
@@ -60,7 +61,7 @@ func to_dict() -> Dictionary:
 		"clubs": clubs.values().map(func(c): return c.to_dict()),
 		"players": players.values().map(func(p): return p.to_dict()),
 		"staff": staff.values().map(func(s): return s.to_dict()),
-		"free_agents": free_agents, "names": names, "history": history, "inbox": inbox,
+		"free_agents": free_agents, "names": names, "history": history, "inbox": inbox, "relations": relations,
 		"log": log.to_array(), "rng": rng.get_state(), "next_id": next_id,
 	}
 	return d
@@ -95,6 +96,7 @@ static func from_dict(d: Dictionary) -> WorldState:
 	w.names = d.get("names", {})
 	w.history = d.get("history", {"seasons": [], "transfers": [], "retirements": []})
 	w.inbox = d.get("inbox", [])
+	w.relations = d.get("relations", {})
 	w.log.load_array(d.get("log", []))
 	w.rng.set_state(d.get("rng", {}))
 	w.next_id = int(d.get("next_id", 1))

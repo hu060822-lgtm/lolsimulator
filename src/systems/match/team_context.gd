@@ -6,6 +6,8 @@ extends RefCounted
 var club_id: String = ""
 var name: String = ""
 var short_name: String = ""  ## 比賽文字使用縮寫
+var relation_bonus: float = 0.0  ## 先發隊友關係對默契的加減（-15..15）
+var tilt: Dictionary = {}  ## player_id -> 本局狀態下滑（系列賽中輸掉上一局）
 var staff_ratings: Dictionary = {}  ## 教練團綜合能力（主教練 + 專職員工）
 var players: Dictionary = {}   ## role -> Player
 var coach: Staff = null
@@ -35,6 +37,7 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 	t.plan = club.tactics.get("plan", "flexible")
 	t.aggression = float(club.tactics.get("aggression", 0.5))
 	t.chemistry = club.chemistry
+	t.relation_bonus = Relationships.team_average(w, club, club.lineup.values()) * 0.15
 	t.draft_familiarity = club.draft_familiarity
 	return t
 
@@ -70,4 +73,4 @@ func shotcall_quality() -> float:
 
 ## 執行力 0..1：默契、溝通、團隊合作、教練戰術能力。
 func execution() -> float:
-	return (chemistry * 0.35 + avg_trait("communication") * 0.2 + avg_trait("teamwork") * 0.2 + coach_stat("tactical") * 0.25) / 100.0
+	return ((chemistry + relation_bonus) * 0.35 + avg_trait("communication") * 0.2 + avg_trait("teamwork") * 0.2 + coach_stat("tactical") * 0.25) / 100.0

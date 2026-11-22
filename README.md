@@ -18,6 +18,7 @@ Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）
 - 可決定性存讀檔、3 個存檔槽
 - 球探誤差：能力以區間顯示，依認識程度縮小
 - 財務帳本與贊助合約、教練團（五個職位）與員工市場
+- 關係網絡（隊友、教練、衝突事件、老將指導）與選手心理（連勝連敗、局間情緒、大賽經驗）
 - 資料模組與引擎分離（預設模組 `fictional_base`：虛構俱樂部與選手 + 英雄聯盟實際英雄）
 
 ## 文件
@@ -33,6 +34,7 @@ Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）
 | [docs/rules/06-transfers-contracts.md](docs/rules/06-transfers-contracts.md) | 轉會與合約 |
 | [docs/rules/07-training-season-finance.md](docs/rules/07-training-season-finance.md) | 訓練、比賽影響、基本財務 |
 | [docs/rules/08-finance-staff.md](docs/rules/08-finance-staff.md) | 財務、贊助、教練團 |
+| [docs/rules/09-relationships-psychology.md](docs/rules/09-relationships-psychology.md) | 關係網絡與選手心理 |
 | [docs/data-modules.md](docs/data-modules.md) | 資料模組格式（真實／虛構／自訂資料庫） |
 | [docs/roadmap.md](docs/roadmap.md) | 開發路線圖 |
 

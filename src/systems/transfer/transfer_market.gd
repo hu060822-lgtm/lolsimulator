@@ -140,6 +140,7 @@ static func _move(w: WorldState, p: Player, from: Club, to: Club, fee: int) -> v
 	p.happiness = 0.3
 	p.trust_in_management = 55.0
 	p.promises.clear()
+	Relationships.on_leave(w, p.id)
 	var rec = {"year": w.year, "day": w.day, "player_id": p.id, "handle": p.handle, "from": from.id if from else "", "to": to.id, "fee": fee}
 	w.history["transfers"].append(rec)
 	w.log.add("transfer", w.day, [p.id, to.id] + ([from.id] if from else []), rec, [])

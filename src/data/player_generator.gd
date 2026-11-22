@@ -55,12 +55,16 @@ static func generate(w: WorldState, rng: SimRng, region: String, role: String, q
 static func _assign_champion_pool(w: WorldState, rng: SimRng, p: Player, young: bool) -> void:
 	var role_champs = w.champions.values().filter(func(c): return p.primary_role in c.roles)
 	rng.shuffle(role_champs)
-	var depth = rng.range_i(4, 8) + int(p.skill("adaptability") / 25.0)
+	# 英雄池深度：職業選手通常有 8–15 隻可上場的英雄，適應力高者更深
+	var depth = rng.range_i(6, 9) + int(p.skill("adaptability") / 22.0)
 	for i in mini(depth, role_champs.size()):
-		var comfort = 85.0 - i * rng.range_f(3.0, 7.0)
+		var comfort = 85.0 - i * rng.range_f(2.5, 5.5)
 		if young:
 			comfort -= 12.0
 		p.champion_pool[role_champs[i].id] = clampf(comfort + rng.normal(0, 5), 20.0, 99.0)
+	# 本位置其他英雄：職業選手都摸過，只是不熟（避免被 ban 掉拿手英雄後完全無法上場）
+	for i in range(mini(depth, role_champs.size()), role_champs.size()):
+		p.champion_pool[role_champs[i].id] = rng.range_f(25.0, 42.0) - (8.0 if young else 0.0)
 	for r in p.secondary_roles:
 		var sec = w.champions.values().filter(func(c): return r in c.roles)
 		rng.shuffle(sec)

@@ -184,6 +184,8 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 		"acknowledge":
 			msg["resolved"] = true
 			return {"note": "已讀"}
+		"mediate", "back_first", "ignore":
+			return Relationships.resolve_conflict(world, msg, option)
 	var r = respond_to_player(msg["player_id"], option)
 	msg["resolved"] = true
 	return r

@@ -43,6 +43,14 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 		mid.add_child(UIKit.label("滿意度 %+.2f　對管理層信任 %d" % [p.happiness, int(p.trust_in_management)], 14))
 		if p.transfer_requested:
 			mid.add_child(UIKit.label("已要求離隊", 14, UIKit.BAD))
+		if p.club_id != "":
+			var rel = Relationships.summary(ww, p)
+			mid.add_child(UIKit.label("人際關係", 16))
+			mid.add_child(UIKit.label("與隊友平均 %+d（%s）　與主教練 %+d（%s）" % [int(rel["avg"]), Relationships.label(rel["avg"]), int(rel["coach"]), Relationships.label(rel["coach"])], 14))
+			if rel["best"] != "":
+				mid.add_child(UIKit.label("最要好：%s（%+d）" % [ww.players[rel["best"]].handle, int(rel["best_v"])], 14, UIKit.GOOD if rel["best_v"] >= Relationships.FRIEND else UIKit.TEXT))
+				mid.add_child(UIKit.label("最不合：%s（%+d）" % [ww.players[rel["worst"]].handle, int(rel["worst_v"])], 14, UIKit.BAD if rel["worst_v"] <= Relationships.RIVAL else UIKit.TEXT))
+			mid.add_child(UIKit.label("大賽經驗 %d 場" % int(p.career.get("big_games", 0)), 14, UIKit.MUTED))
 	cols.add_child(mid)
 	var right := UIKit.vbox(2)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL

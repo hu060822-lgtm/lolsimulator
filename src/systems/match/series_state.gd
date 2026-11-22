@@ -72,6 +72,11 @@ func play_game(ds: DraftSession) -> Dictionary:
 		var champ: String = res["players"][mvp_id]["champion"]
 		bias[l][champ] = float(bias[l].get(champ, 0.0)) + 0.35
 	var loser_ctx = a if l == a.club_id else b
+	var winner_ctx = b if l == a.club_id else a
+	# 心態：輸掉上一局，抗壓性低的選手下一局狀態下滑；贏的一方消除下滑
+	winner_ctx.tilt.clear()
+	for p in loser_ctx.players.values():
+		loser_ctx.tilt[p.id] = (1.0 - p.trait_value("composure") / 100.0) * 0.06
 	if rng.chance(loser_ctx.coach_stat("adaptability") / 100.0 * 0.6):
 		loser_ctx.plan = "flexible"  # 放下既定方向，改為依陣容與對手調整
 	# 敗方選邊（選藍方）
@@ -82,6 +87,8 @@ func play_game(ds: DraftSession) -> Dictionary:
 		blue = b
 		red = a
 	if is_done():
+		a.tilt.clear()
+		b.tilt.clear()
 		a.plan = base_plan[a.club_id]
 		b.plan = base_plan[b.club_id]
 	return res

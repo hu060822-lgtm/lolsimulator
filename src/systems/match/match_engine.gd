@@ -19,6 +19,7 @@ var champions: Dictionary
 var rng: SimRng
 var detail: bool = true
 var stakes: float = 1.0   ## 1 = 例行賽；季後賽/決賽更高，放大壓力影響
+var tilt: Dictionary = {}  ## player_id -> 狀態下滑（系列賽中輸掉上一局的情緒影響）
 
 var minute: int = 0
 var units: Dictionary = {}        ## side -> Array[Dictionary]（依 Attr.ROLES 排序）
@@ -51,6 +52,7 @@ func _init(blue_ctx: TeamContext, red_ctx: TeamContext, draft_result: Dictionary
 	rng = r
 	detail = keep_detail
 	stakes = stakes_level
+	tilt = blue.tilt.merged(red.tilt)
 
 
 func team(side: String) -> TeamContext:
@@ -112,7 +114,9 @@ func _day_form(p: Player) -> float:
 	f += (p.confidence - 50.0) / 100.0 * 0.06
 	f += (p.morale - 50.0) / 100.0 * 0.03
 	f -= p.fatigue / 100.0 * 0.07
-	f -= maxf(p.stress - 40.0, 0.0) / 100.0 * 0.08 * stakes * (1.2 - p.trait_value("composure") / 100.0)
+	var experience = 1.0 - minf(float(p.career.get("big_games", 0)) / 60.0, 0.5)  # 大賽經驗最多抵銷一半壓力
+	f -= maxf(p.stress - 40.0, 0.0) / 100.0 * 0.08 * stakes * (1.2 - p.trait_value("composure") / 100.0) * experience
+	f -= float(tilt.get(p.id, 0.0))
 	return clampf(f, -0.3, 0.25)
 
 
