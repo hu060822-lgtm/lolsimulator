@@ -21,7 +21,10 @@ static func market_value(w: WorldState, p: Player) -> int:
 static func wage_demand(w: WorldState, p: Player) -> int:
 	var ca = p.current_ability()
 	var base = 18000.0 + 7000.0 * pow(1.075, ca - 40.0)
-	base *= 0.85 + p.reputation / 300.0
+	# 頂尖選手是稀缺資源：超過 72 的能力薪資要求急遽上升，冠軍光環也會抬高身價。
+	# 這讓王朝在薪資預算內難以長期維持全明星陣容。
+	base *= 1.0 + maxf(ca - 72.0, 0.0) * 0.07
+	base *= 0.8 + p.reputation / 200.0
 	if "MONEY" in p.goals:
 		base *= 1.15
 	return int(base)

@@ -9,12 +9,32 @@ const PRESEASON_DAYS := 14
 static func start_season(w: WorldState) -> void:
 	w.phase = WorldState.PHASE_PRESEASON
 	w.phase_day = w.day
+	var start = w.day + PRESEASON_DAYS
+	# 有季中國際賽時，所有國內聯賽在第一循環結束後一起休兵
+	var leg2 := -1
+	var msi: League = w.intl("midseason")
+	if msi:
+		var longest := 0
+		for lg in w.leagues.values():
+			longest = maxi(longest, rounds_per_leg(lg) * int(lg.format.get("regular", {}).get("days_between_rounds", 3)))
+		leg2 = start + longest + int(msi.format.get("break_days", 16))
 	for lg in w.leagues.values():
 		_reset(lg)
-		_generate_regular(w, lg, w.day + PRESEASON_DAYS)
-	if w.international:
-		w.international.club_ids = []
-		_reset(w.international)
+		_generate_regular(w, lg, start, leg2)
+	for it in w.internationals.values():
+		it.club_ids = []
+		_reset(it)
+
+
+static func rounds_per_leg(lg: League) -> int:
+	var n = lg.club_ids.size()
+	return n if n % 2 == 1 else n - 1
+
+
+## 第一循環是否打完（季中國際賽的開打條件）。
+static func first_leg_done(lg: League) -> bool:
+	var per = rounds_per_leg(lg)
+	return not lg.fixtures.any(func(f): return f["stage"] == "regular" and int(f["round"]) <= per and not f["played"])
 
 
 static func _reset(lg: League) -> void:
@@ -27,24 +47,27 @@ static func _reset(lg: League) -> void:
 		lg.standings[cid] = {"w": 0, "l": 0, "gw": 0, "gl": 0, "h2h": {}}
 
 
-## 所有進行中的賽事：國內聯賽 + 已開打的世界賽。
+## 所有進行中的賽事：國內聯賽 + 本季已開打的國際賽事。
 static func all_competitions(w: WorldState) -> Array:
 	var out: Array = w.leagues.values()
-	if w.international and not w.international.club_ids.is_empty():
-		out.append(w.international)
+	for it in w.internationals.values():
+		if not it.club_ids.is_empty():
+			out.append(it)
 	return out
 
 
-## 世界賽資格：每個一級聯賽的冠軍，再依例行賽排名補足名額。
-static func qualifiers(w: WorldState) -> Array:
-	var it: League = w.international
+## 國際賽事資格：每個一級聯賽依名額（format.slots[賽事 id]）派隊。
+## 季後賽冠軍優先，其餘依例行賽排名（季中賽事時聯賽冠軍尚未產生，純看排名）。
+static func qualifiers(w: WorldState, it: League = null) -> Array:
+	if it == null:
+		it = w.international
 	if it == null:
 		return []
-	var per := int(it.format.get("qualify_per_league", 4))
 	var out: Array = []
 	for lg in w.leagues.values():
 		if lg.tier != 1:
 			continue
+		var per := int(lg.format.get("slots", {}).get(it.id, it.format.get("qualify_per_league", 4)))
 		var seeds: Array = []
 		if lg.champion_id != "":
 			seeds.append(lg.champion_id)
@@ -55,22 +78,45 @@ static func qualifiers(w: WorldState) -> Array:
 	return out
 
 
-## 國內賽季全部結束後開打世界賽：小組單循環 Bo1 → 前 4 名淘汰賽。回傳是否開打。
-static func start_international(w: WorldState) -> bool:
-	var q = qualifiers(w)
+## 開打國際賽事：小組單循環 Bo1 → 前 4 名淘汰賽。回傳是否開打。
+## 世界賽在國內賽季全部結束後；季中邀請賽在一級聯賽第一循環結束後。
+static func start_international(w: WorldState, it: League = null) -> bool:
+	if it == null:
+		it = w.international
+	if it == null:
+		return false
+	var q = qualifiers(w, it)
 	if q.size() < 4:
 		return false
-	var it: League = w.international
 	it.club_ids = q
 	_reset(it)
-	_generate_regular(w, it, w.day + 5)
+	_generate_regular(w, it, w.day + (5 if str(it.format.get("timing", "end")) == "end" else 2))
 	for cid in q:
-		w.log.add("worlds_qualified", w.day, [cid], {"year": w.year}, [])
+		w.log.add("intl_qualified", w.day, [cid], {"year": w.year, "event": it.id}, [])
+	Media.on_intl_start(w, it)
 	return true
 
 
-## 雙循環（circle method）
-static func _generate_regular(w: WorldState, lg: League, start_day: int) -> void:
+## 國際賽事小組賽結束 → 排淘汰賽。
+static func advance_internationals(w: WorldState) -> void:
+	for it in w.internationals.values():
+		if not it.club_ids.is_empty() and not it.season_complete and it.playoff_bracket.is_empty() and regular_done(it):
+			start_playoffs(w, it)
+
+
+## 季中邀請賽：所有一級聯賽的第一循環都打完時開打（每季一次）。
+static func maybe_start_midseason(w: WorldState) -> void:
+	var msi: League = w.intl("midseason")
+	if msi == null or not msi.club_ids.is_empty():
+		return
+	for lg in w.leagues.values():
+		if lg.tier == 1 and not first_leg_done(lg):
+			return
+	start_international(w, msi)
+
+
+## 雙循環（circle method）。leg2_day > 0 時第二循環最早從該日開始（季中休兵）。
+static func _generate_regular(w: WorldState, lg: League, start_day: int, leg2_day: int = -1) -> void:
 	var fmt: Dictionary = lg.format.get("regular", {})
 	var bo := int(fmt.get("best_of", 1))
 	var gap := int(fmt.get("days_between_rounds", 3))
@@ -93,6 +139,8 @@ static func _generate_regular(w: WorldState, lg: League, start_day: int) -> void
 	var day = start_day
 	var rn := 0
 	for leg in legs:
+		if leg == 1 and leg2_day > 0:
+			day = maxi(day, leg2_day)
 		for pairs in rounds:
 			rn += 1
 			for pr in pairs:

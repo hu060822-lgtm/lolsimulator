@@ -51,7 +51,9 @@ data/modules/<module_id>/
 
 - `tier`：1 = 一級聯賽，2 = 次級聯賽。同 `region` 的一級最後一名與次級冠軍每季互換。
 - `format.wage_cap`：薪資預算上限；`format.revenue_share`：每季聯賽分潤（預設 250000）。
-- `tier: 0` 的項目是國際賽事（世界賽），不屬於任何俱樂部：
+- `format.slots`：國際賽事名額，例如 `{"worlds": 4, "msi": 2}`。
+- `tier: 0` 的項目是國際賽事，不屬於任何俱樂部。`format.timing` 為 `"end"`（世界賽，國內賽季結束後）或
+  `"midseason"`（季中邀請賽，第一循環後；`break_days` 為國內聯賽休兵天數）：
 
 ```json
 {"id": "worlds", "name": "World Championship", "region": "INTL", "tier": 0, "prize_pool": 3000000,

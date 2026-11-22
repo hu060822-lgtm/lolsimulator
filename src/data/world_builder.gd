@@ -23,7 +23,7 @@ static func build(module: DataModule, world_seed: int, human_club_id: String = "
 	for l in module.leagues:
 		var lg = League.from_dict(l)
 		if lg.tier == 0:
-			w.international = lg  # 國際賽事：參賽隊伍每季由各一級聯賽成績決定
+			w.internationals[lg.id] = lg  # 國際賽事：參賽隊伍每季由各一級聯賽成績決定
 		else:
 			w.leagues[lg.id] = lg
 	var club_defs: Array = module.clubs.duplicate(true)

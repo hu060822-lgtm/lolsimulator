@@ -1,13 +1,180 @@
 {
  "regions": {
-  "EAST": {"nationalities": ["Valdoria", "Kasemir", "Ostral"],
-           "given": ["Jun", "Hyo", "Min", "Tae", "Rin", "Sora", "Kai", "Yul", "Dae", "Ren", "Hana", "Seo", "Lin", "Wen", "Tao"],
-           "family": ["Arin", "Balo", "Corvi", "Deyun", "Esho", "Faro", "Gael", "Huran", "Ilsen", "Joru", "Kemar", "Lisan"]},
-  "WEST": {"nationalities": ["Brennmark", "Lusival", "Norrhavn"],
-           "given": ["Elias", "Mara", "Tobin", "Ansel", "Lena", "Orrin", "Pia", "Corin", "Sven", "Nadia", "Rafe", "Ivo", "Tess", "Bram", "Lio"],
-           "family": ["Halvor", "Marsk", "Quell", "Rendt", "Stavel", "Torvik", "Ulmer", "Vasko", "Wendel", "Yarrow", "Zeller", "Aubry"]}
+  "EAST": {
+   "nationalities": [
+    "Valdoria",
+    "Kasemir",
+    "Ostral"
+   ],
+   "given": [
+    "Jun",
+    "Hyo",
+    "Min",
+    "Tae",
+    "Rin",
+    "Sora",
+    "Kai",
+    "Yul",
+    "Dae",
+    "Ren",
+    "Hana",
+    "Seo",
+    "Lin",
+    "Wen",
+    "Tao"
+   ],
+   "family": [
+    "Arin",
+    "Balo",
+    "Corvi",
+    "Deyun",
+    "Esho",
+    "Faro",
+    "Gael",
+    "Huran",
+    "Ilsen",
+    "Joru",
+    "Kemar",
+    "Lisan"
+   ]
+  },
+  "WEST": {
+   "nationalities": [
+    "Brennmark",
+    "Lusival",
+    "Norrhavn"
+   ],
+   "given": [
+    "Elias",
+    "Mara",
+    "Tobin",
+    "Ansel",
+    "Lena",
+    "Orrin",
+    "Pia",
+    "Corin",
+    "Sven",
+    "Nadia",
+    "Rafe",
+    "Ivo",
+    "Tess",
+    "Bram",
+    "Lio"
+   ],
+   "family": [
+    "Halvor",
+    "Marsk",
+    "Quell",
+    "Rendt",
+    "Stavel",
+    "Torvik",
+    "Ulmer",
+    "Vasko",
+    "Wendel",
+    "Yarrow",
+    "Zeller",
+    "Aubry"
+   ]
+  },
+  "PACIFIC": {
+   "nationalities": [
+    "Maritova",
+    "Selun",
+    "Kahiri"
+   ],
+   "given": [
+    "Arno",
+    "Kalea",
+    "Duc",
+    "Mai",
+    "Rizal",
+    "Tama",
+    "Iko",
+    "Nalu",
+    "Bayu",
+    "Lani",
+    "Sefa",
+    "Quan",
+    "Noa",
+    "Ari",
+    "Vinh"
+   ],
+   "family": [
+    "Atoli",
+    "Banyu",
+    "Corral",
+    "Datu",
+    "Eluan",
+    "Fetu",
+    "Galan",
+    "Hoku",
+    "Isari",
+    "Kanoa",
+    "Lumo",
+    "Marau"
+   ]
+  }
  },
- "handle_parts": ["Zen", "Kite", "Rook", "Nova", "Ember", "Hush", "Vex", "Lynx", "Onyx", "Pulse", "Rift", "Sable", "Talon", "Umbra", "Wisp", "Yonder", "Aero", "Brisk", "Cipher", "Drift", "Echo", "Flux", "Glint", "Halo", "Ion", "Jolt", "Karma", "Lumen", "Mako", "Nimbus", "Orbit", "Prism", "Quill", "Rune", "Spire", "Tempo", "Vale", "Warden", "Xeno", "Zephyr"],
- "coach_given": ["Viktor", "Oda", "Hale", "Marin", "Dorian", "Selene", "Kaito", "Reya"],
- "coach_family": ["Ashford", "Brightwater", "Calloway", "Draven", "Easton", "Fairlie", "Gunnar", "Holt"]
+ "handle_parts": [
+  "Zen",
+  "Kite",
+  "Rook",
+  "Nova",
+  "Ember",
+  "Hush",
+  "Vex",
+  "Lynx",
+  "Onyx",
+  "Pulse",
+  "Rift",
+  "Sable",
+  "Talon",
+  "Umbra",
+  "Wisp",
+  "Yonder",
+  "Aero",
+  "Brisk",
+  "Cipher",
+  "Drift",
+  "Echo",
+  "Flux",
+  "Glint",
+  "Halo",
+  "Ion",
+  "Jolt",
+  "Karma",
+  "Lumen",
+  "Mako",
+  "Nimbus",
+  "Orbit",
+  "Prism",
+  "Quill",
+  "Rune",
+  "Spire",
+  "Tempo",
+  "Vale",
+  "Warden",
+  "Xeno",
+  "Zephyr"
+ ],
+ "coach_given": [
+  "Viktor",
+  "Oda",
+  "Hale",
+  "Marin",
+  "Dorian",
+  "Selene",
+  "Kaito",
+  "Reya"
+ ],
+ "coach_family": [
+  "Ashford",
+  "Brightwater",
+  "Calloway",
+  "Draven",
+  "Easton",
+  "Fairlie",
+  "Gunnar",
+  "Holt"
+ ]
 }

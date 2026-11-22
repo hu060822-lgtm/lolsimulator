@@ -41,6 +41,7 @@ var transfer_requested: bool = false
 var refuses_renewal: bool = false
 var promises: Array = []              ## [{type, made_day, due_day, kept}]
 var retired: bool = false
+var suspended_until: int = -1        ## 禁賽／簽證等因素無法出賽到這一天（含）
 var retired_year: int = 0
 
 ## 數據
@@ -90,6 +91,10 @@ func reset_season_stats() -> void:
 	season_stats = {"games": 0, "wins": 0, "kills": 0, "deaths": 0, "assists": 0, "rating_sum": 0.0, "starts": 0, "team_games": 0}
 
 
+func is_available(day: int) -> bool:
+	return not retired and suspended_until < day
+
+
 func avg_season_rating() -> float:
 	var g: int = season_stats.get("games", 0)
 	return season_stats.get("rating_sum", 0.0) / g if g > 0 else 0.0
@@ -103,7 +108,7 @@ func to_dict() -> Dictionary:
 		"personality": personality, "potential": potential, "development_rate": development_rate,
 		"peak_age": peak_age, "decline_rate": decline_rate, "champion_pool": champion_pool,
 		"morale": morale, "confidence": confidence, "stress": stress, "fatigue": fatigue,
-		"motivation": motivation, "club_id": club_id,
+		"motivation": motivation, "suspended_until": suspended_until, "club_id": club_id,
 		"contract": contract.to_dict() if contract else null,
 		"squad_status": squad_status, "goals": goals, "happiness": happiness,
 		"satisfaction": satisfaction, "trust_in_management": trust_in_management,
@@ -126,4 +131,5 @@ static func from_dict(d: Dictionary) -> Player:
 	p.peak_age = int(p.peak_age)
 	p.weeks_unhappy = int(p.weeks_unhappy)
 	p.retired_year = int(p.retired_year)
+	p.suspended_until = int(p.suspended_until)
 	return p

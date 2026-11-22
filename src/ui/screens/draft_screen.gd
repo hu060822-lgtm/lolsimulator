@@ -38,6 +38,13 @@ func _new_game() -> void:
 		c.queue_free()
 	ds = series.new_draft()
 	hs = session.human_side(series)
+	if session.can_team_talk():
+		var talk := UIKit.hbox(6)
+		talk.name = "TeamTalk"
+		talk.add_child(UIKit.label("賽前談話" if series.games.is_empty() else "局間談話", 15, UIKit.ACCENT))
+		for k in Dialogue.TEAM_TALKS:
+			talk.add_child(UIKit.button(Dialogue.TEAM_TALKS[k], _team_talk.bind(k)))
+		add_child(talk)
 	var row := UIKit.hbox(12)
 	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(row)
@@ -52,6 +59,19 @@ func _new_game() -> void:
 	row.add_child(UIKit.panel(red_col))
 	_advance_ai()
 	refresh()
+
+
+func _team_talk(kind: String) -> void:
+	var r = session.team_talk(kind)
+	var box = get_node_or_null("TeamTalk")
+	if box == null or not r.get("ok", false):
+		return
+	UIKit.clear(box)
+	var parts: Array = r["reactions"].map(func(x): return "%s %s" % [x["player"], x["text"]])
+	var l = UIKit.label("談話後：" + "；".join(parts), 13, UIKit.GOOD if r["avg"] > 0.2 else (UIKit.BAD if r["avg"] < -0.1 else UIKit.TEXT))
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_child(l)
 
 
 ## AI 一方自動行動，直到輪到玩家或 BP 結束。
@@ -190,7 +210,10 @@ func _draft_summary() -> void:
 	orow.add_child(order_opt)
 	center.add_child(orow)
 	center.add_child(UIKit.muted("指示會在 14、20、26… 分鐘的戰術調整時覆蓋選手的判斷。"))
-	center.add_child(UIKit.primary("開始比賽 ▶", _play))
+	var brow := UIKit.hbox()
+	brow.add_child(UIKit.primary("開始比賽 ▶", _play))
+	brow.add_child(UIKit.button("即時指揮（每個戰術調整點暫停）", _play_live))
+	center.add_child(brow)
 
 
 func _play() -> void:
@@ -202,6 +225,73 @@ func _play() -> void:
 	game = session.play_game(ds)
 	t.orders = {}
 	_show_game()
+
+
+# ---------------------------------------------------------------- 即時指揮
+
+var live_box: VBoxContainer
+
+
+func _play_live() -> void:
+	_render_live(session.start_live_game(ds))
+
+
+func _live_order(order: String) -> void:
+	_render_live(session.live_continue(order))
+
+
+func _live_skip() -> void:
+	_render_live(session.live_finish())
+
+
+func _render_live(snap: Dictionary) -> void:
+	if snap.get("done", false):
+		game = snap["game"]
+		_show_game()
+		_reveal_all()
+		return
+	for c in get_children().slice(1):
+		remove_child(c)
+		c.queue_free()
+	var side: String = snap["side"]
+	var opp = "red" if side == "blue" else "blue"
+	var gd = int(snap["gold"][side]) - int(snap["gold"][opp])
+	header.text = "第 %d 局（即時指揮）　%s %d - %d %s" % [series.games.size() + 1, UIKit.club_label(series.a), int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id]), UIKit.club_label(series.b)]
+	live_box = UIKit.vbox(8)
+	add_child(live_box)
+	live_box.add_child(UIKit.label("%d 分鐘　擊殺 %d - %d　經濟 %+.1fk　小龍 %d - %d　巴龍 %d - %d　推塔 %d - %d" % [
+		int(snap["minute"]), int(snap["kills"][side]), int(snap["kills"][opp]), gd / 1000.0,
+		int(snap["dragons"][side]), int(snap["dragons"][opp]), int(snap["barons"][side]), int(snap["barons"][opp]),
+		int(snap["towers_destroyed"][side]), int(snap["towers_destroyed"][opp])], 17, UIKit.GOOD if gd > 1500 else (UIKit.BAD if gd < -1500 else UIKit.TEXT)))
+	var late_edge = float(snap["comp_late"][side]) - float(snap["comp_late"][opp])
+	live_box.add_child(UIKit.muted("目前我方姿態：%s　｜　分析師建議：%s" % [ORDER_NAMES[maxi(ORDERS.find(snap["stances"][side]), 0)], _advice(gd, late_edge)]))
+	live_box.add_child(UIKit.label("第 %d 分鐘的戰術調整：" % int(snap["next_call"]), 15))
+	var row := UIKit.hbox()
+	for i in ORDERS.size():
+		var o: String = ORDERS[i]
+		row.add_child(UIKit.button(ORDER_NAMES[i], _live_order.bind("" if o == "none" else o)))
+	live_box.add_child(row)
+	live_box.add_child(UIKit.button("不再介入，直接打完", _live_skip))
+	var lf = UIKit.rich()
+	lf.fit_content = true
+	var lines: Array = []
+	var evs: Array = snap["events"]
+	for e in evs.slice(maxi(evs.size() - 14, 0)):
+		lines.append(MatchView.event_line(session, snap, e))
+	lf.text = "\n".join(lines)
+	add_child(UIKit.panel(lf))
+
+
+static func _advice(gd: int, late_edge: float) -> String:
+	if gd > 3000:
+		return "經濟領先，主動進攻擴大優勢"
+	if gd > 1000:
+		return "小幅領先，物件控制穩住節奏" if late_edge < 0.5 else "陣容後期也強，穩穩物件控制"
+	if gd < -3000:
+		return "大幅落後，拖後期等對手失誤" if late_edge > -0.5 else "落後且後期不佔優，考慮抓單找機會"
+	if gd < -1000:
+		return "小幅落後，避戰拖後期" if late_edge > 0.0 else "分推牽制，避免正面團戰"
+	return "均勢，依陣容特性選擇：%s" % ("拖後期" if late_edge > 0.5 else ("主動進攻" if late_edge < -0.5 else "物件控制"))
 
 
 func _show_game() -> void:

@@ -17,29 +17,63 @@ const COUNTERS := {
 }
 
 
+static var _single_cache: Dictionary = {}
+
+
 static func analyze(champs: Array) -> Dictionary:
+	return analyze_acc(accumulate(champs))
+
+
+## 單一英雄的分析結果（BP 評估禁用時大量使用，結果只取決於英雄資料，可以快取）。
+static func analyze_single(c: Champion) -> Dictionary:
+	var key = c.id
+	if not _single_cache.has(key):
+		_single_cache[key] = analyze([c])
+	return _single_cache[key]
+
+
+## 累加陣容的標籤與曲線；BP 時先累加已選英雄，再逐一加入候選英雄（避免重算整個陣容）。
+static func accumulate(champs: Array) -> Dictionary:
 	var t := {}
 	for tag in Champion.TAGS:
 		t[tag] = 0.0
-	var ad := 0
-	var ap := 0
-	var early := 0.0
-	var mid := 0.0
-	var late := 0.0
+	var acc = {"t": t, "ad": 0, "ap": 0, "early": 0.0, "mid": 0.0, "late": 0.0, "n": 0}
 	for c in champs:
-		for tag in Champion.TAGS:
-			t[tag] += c.tag(tag)
-		if c.damage == "AD":
-			ad += 1
-		elif c.damage == "AP":
-			ap += 1
-		else:
-			ad += 1
-			ap += 1
-		early += c.early
-		mid += c.mid
-		late += c.late
-	var n = maxf(champs.size(), 1)
+		_add(acc, c)
+	return acc
+
+
+static func _add(acc: Dictionary, c: Champion) -> void:
+	var t: Dictionary = acc["t"]
+	for tag in c.tags:
+		t[tag] = float(t.get(tag, 0.0)) + float(c.tags[tag])
+	if c.damage == "AD":
+		acc["ad"] += 1
+	elif c.damage == "AP":
+		acc["ap"] += 1
+	else:
+		acc["ad"] += 1
+		acc["ap"] += 1
+	acc["early"] += c.early
+	acc["mid"] += c.mid
+	acc["late"] += c.late
+	acc["n"] += 1
+
+
+static func analyze_acc(base: Dictionary, extra: Champion = null) -> Dictionary:
+	var acc := base
+	if extra:
+		acc = {"t": base["t"].duplicate(), "ad": base["ad"], "ap": base["ap"], "early": base["early"],
+			"mid": base["mid"], "late": base["late"], "n": base["n"]}
+		_add(acc, extra)
+	var t: Dictionary = acc["t"]
+	var ad: int = acc["ad"]
+	var ap: int = acc["ap"]
+	var early: float = acc["early"]
+	var mid: float = acc["mid"]
+	var late: float = acc["late"]
+	var count: int = acc["n"]
+	var n = maxf(count, 1)
 	var raw = {
 		"engage": t["engage"] * 1.0 + t["frontline"] * 0.3,
 		"pick": t["pick"] * 1.0 + t["burst"] * 0.5 + t["mobility"] * 0.3,
@@ -61,7 +95,7 @@ static func analyze(champs: Array) -> Dictionary:
 	# 缺陷：沒有前排、傷害類型單一、沒有開戰也沒有反開、沒有清線
 	var flaws: Array = []
 	var fit := 1.0
-	if champs.size() >= 5:
+	if count >= 5:
 		if t["frontline"] < 2.0:
 			flaws.append("no_frontline")
 			fit -= 0.08

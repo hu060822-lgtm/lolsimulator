@@ -55,11 +55,22 @@ func new_draft() -> DraftSession:
 
 ## 進行一局：若 BP 尚未完成，剩下的步驟由 AI 完成。
 func play_game(ds: DraftSession) -> Dictionary:
+	var eng = begin_game(ds)
+	return finish_game(eng)
+
+
+## 即時指揮用：建立並開始一局（尚未推進時間）。之後呼叫 eng.run_until(...)，最後 finish_game(eng)。
+func begin_game(ds: DraftSession) -> MatchEngine:
 	while not ds.is_done():
 		ds.ai_step()
 	var dr = ds.result()
 	var eng := MatchEngine.new(blue, red, dr, champions, rng.fork(games.size()), detail, stakes)
-	var res = eng.simulate()
+	eng.begin()
+	return eng
+
+
+func finish_game(eng: MatchEngine) -> Dictionary:
+	var res = eng.finish()
 	res["blue_club"] = blue.club_id
 	res["red_club"] = red.club_id
 	games.append(res)

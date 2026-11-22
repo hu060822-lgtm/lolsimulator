@@ -66,12 +66,58 @@ func other(side: String) -> String:
 # ---------------------------------------------------------------- 主流程
 
 func simulate() -> Dictionary:
+	begin()
+	return finish()
+
+
+# ---------------------------------------------------------------- 逐段推進（即時戰術指揮）
+## 與 simulate() 使用完全相同的隨機序列：begin → run_until(...)* → finish。
+
+const SHOTCALL_MINUTES := [14, 20, 26, 32, 38, 44, 50, 56]
+
+
+func begin() -> void:
 	_setup()
-	for m in range(1, MAX_MINUTE + 1):
-		minute = m
+	minute = 0
+
+
+func is_over() -> bool:
+	return winner != "" or minute >= MAX_MINUTE
+
+
+## 推進到指定分鐘（含）。回傳比賽是否結束。
+func run_until(stop_minute: int) -> bool:
+	while not is_over() and minute < mini(stop_minute, MAX_MINUTE):
+		minute += 1
 		_tick()
-		if winner != "":
-			break
+	return is_over()
+
+
+## 下一個戰術調整點（玩家可在這之前下達指示）；沒有則回傳 -1。
+func next_shotcall() -> int:
+	for m in SHOTCALL_MINUTES:
+		if m > minute:
+			return m
+	return -1
+
+
+## 給 UI 的即時局勢。
+func snapshot() -> Dictionary:
+	var kills := {}
+	for side in SIDES:
+		var k := 0
+		for u in units[side]:
+			k += u["kills"]
+		kills[side] = k
+	return {"minute": minute, "gold": {"blue": int(_team_gold("blue")), "red": int(_team_gold("red"))}, "kills": kills,
+		"dragons": dragons.duplicate(), "barons": barons.duplicate(), "grubs": grubs.duplicate(),
+		"towers_destroyed": {"blue": _structures_lost("red"), "red": _structures_lost("blue")},
+		"stances": stance.duplicate(), "events": events, "blue_club": blue.club_id, "red_club": red.club_id,
+		"comp_late": {"blue": comp["blue"]["late"], "red": comp["red"]["late"]}, "over": is_over()}
+
+
+func finish() -> Dictionary:
+	run_until(MAX_MINUTE)
 	if winner == "":
 		# 時間上限：以總經濟與塔數決勝（極少發生）
 		winner = "blue" if _team_gold("blue") + _structures_lost("red") * 800 >= _team_gold("red") + _structures_lost("blue") * 800 else "red"
@@ -113,6 +159,7 @@ func _day_form(p: Player) -> float:
 	var f = rng.normal(0.0, sd)
 	f += (p.confidence - 50.0) / 100.0 * 0.06
 	f += (p.morale - 50.0) / 100.0 * 0.03
+	f += (p.motivation - 60.0) / 100.0 * 0.05  # 求勝慾：連霸後容易鬆懈
 	f -= p.fatigue / 100.0 * 0.07
 	var experience = 1.0 - minf(float(p.career.get("big_games", 0)) / 60.0, 0.5)  # 大賽經驗最多抵銷一半壓力
 	f -= maxf(p.stress - 40.0, 0.0) / 100.0 * 0.08 * stakes * (1.2 - p.trait_value("composure") / 100.0) * experience
@@ -756,8 +803,9 @@ func _teamfight(where: String, initiator: String) -> Dictionary:
 		causes.append("%s 先手開到 %s" % [team(initiator).short_name, _h(target)])
 	elif participants[other(initiator)].size() > 0:
 		causes.append("%s 開戰失敗被反打" % team(initiator).short_name)
-		var tgt: Dictionary = _weakest_positioned(participants[initiator])
-		tgt["debuff"] = maxf(tgt["debuff"], 0.3)
+		if participants[initiator].size() > 0:  # 開戰方可能在開戰前全員被抓
+			var tgt: Dictionary = _weakest_positioned(participants[initiator])
+			tgt["debuff"] = maxf(tgt["debuff"], 0.3)
 	# 3) 逐回合
 	var k = Tuning.f("fight_decisiveness")
 	var rounds := 0
@@ -824,6 +872,8 @@ func _team_power(side: String) -> float:
 
 
 func _weakest_positioned(list: Array) -> Dictionary:
+	if list.is_empty():
+		return {"debuff": 0.0}
 	var weights = list.map(func(u): return (1.25 - (u["player"].skill("positioning") if u["player"] else 40.0) / 100.0) * (1.4 if u["role"] in ["ADC", "MID"] else 1.0) * (1.0 + u["debuff"]))
 	return list[rng.weighted_index(weights)]
 

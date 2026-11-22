@@ -50,7 +50,20 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 			if rel["best"] != "":
 				mid.add_child(UIKit.label("最要好：%s（%+d）" % [ww.players[rel["best"]].handle, int(rel["best_v"])], 14, UIKit.GOOD if rel["best_v"] >= Relationships.FRIEND else UIKit.TEXT))
 				mid.add_child(UIKit.label("最不合：%s（%+d）" % [ww.players[rel["worst"]].handle, int(rel["worst_v"])], 14, UIKit.BAD if rel["worst_v"] <= Relationships.RIVAL else UIKit.TEXT))
-			mid.add_child(UIKit.label("大賽經驗 %d 場" % int(p.career.get("big_games", 0)), 14, UIKit.MUTED))
+			mid.add_child(UIKit.label("大賽經驗 %d 場　求勝慾 %d" % [int(p.career.get("big_games", 0)), int(p.motivation)], 14, UIKit.MUTED))
+			# 對話：主動找選手談話（每 7 天一次）
+			mid.add_child(UIKit.label("談話", 16))
+			var reply := UIKit.label("" if Dialogue.can_talk(ww, p) else "最近已經談過，過幾天再談。", 14, UIKit.MUTED)
+			reply.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			reply.custom_minimum_size = Vector2(260, 0)
+			var topics := HFlowContainer.new()
+			for topic in Dialogue.TOPICS:
+				topics.add_child(UIKit.button(Dialogue.TOPICS[topic], func():
+					var r = session.talk_to_player(p.id, topic)
+					reply.text = r.get("reply", "")
+					reply.add_theme_color_override("font_color", UIKit.GOOD if r.get("tone", 0.0) > 0.3 else (UIKit.BAD if r.get("tone", 0.0) < -0.3 else UIKit.TEXT))))
+			mid.add_child(topics)
+			mid.add_child(reply)
 	cols.add_child(mid)
 	var right := UIKit.vbox(2)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL

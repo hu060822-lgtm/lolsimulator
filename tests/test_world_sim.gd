@@ -15,9 +15,10 @@ func test_tier2_leagues_exist() -> void:
 		tiers[lg.tier] = int(tiers.get(lg.tier, 0)) + 1
 		for cid in lg.club_ids:
 			check(LineupSelector.is_valid(w, w.clubs[cid]), "%s fields a lineup" % cid)
-	check_eq(int(tiers.get(1, 0)), 2, "two tier-1 leagues")
+	check_eq(int(tiers.get(1, 0)), 3, "three tier-1 leagues (EAST, WEST, PACIFIC)")
 	check_eq(int(tiers.get(2, 0)), 2, "two tier-2 leagues")
 	check(w.international != null, "world championship defined")
+	check(w.intl("midseason") != null, "mid-season invitational defined")
 	check(not w.leagues.has("worlds"), "worlds is not a domestic league")
 
 
@@ -34,7 +35,7 @@ func test_worlds_after_domestic_season() -> void:
 	var s: Dictionary = w.history["seasons"][0]
 	check(s.has("international"), "worlds recorded in history")
 	var I: Dictionary = s["international"]
-	check_eq(I["teams"].size(), 8, "4 teams from each tier-1 league")
+	check_eq(I["teams"].size(), 10, "4 + 4 + 2 slots")
 	for cid in I["teams"]:
 		check_eq(w.leagues[w.clubs[cid].league_id].tier, 1, "only tier-1 clubs qualify")
 	check(w.clubs[I["champion"]].world_titles == 1, "champion credited")
@@ -58,7 +59,7 @@ func test_promotion_and_relegation() -> void:
 		check(w.leagues[up.league_id].club_ids.has(up.id), "promoted club listed in its new league")
 		check(not w.leagues[mv["from"]].club_ids.has(up.id), "promoted club removed from old league")
 	for lg in w.leagues.values():
-		check_eq(lg.club_ids.size(), 8 if lg.tier == 1 else 6, "%s keeps its size" % lg.id)
+		check_eq(lg.club_ids.size(), 6 if lg.tier == 2 or lg.id == "psl" else 8, "%s keeps its size" % lg.id)
 	# 下一季賽程包含新成員
 	WorldSimulator.advance_to_year(w, w.year + 1)
 	var mv0: Dictionary = s["movements"][0]
@@ -120,3 +121,37 @@ func test_save_keeps_phase3_state() -> void:
 	check_eq(copy.event_defs.size(), w.event_defs.size(), "event definitions saved")
 	check(copy.international != null, "worlds definition saved")
 	check_eq(copy.clubs["harbor_lights"].opinion, 12.5, "opinion saved")
+
+
+func test_midseason_invitational() -> void:
+	var w = make_world(81)
+	var msi: League = w.intl("midseason")
+	var started_day := -1
+	var leg1_done_everywhere := false
+	var guard := 0
+	while w.phase != WorldState.PHASE_OFFSEASON and guard < 500:
+		WorldSimulator.advance_day(w)
+		guard += 1
+		if started_day == -1 and not msi.club_ids.is_empty():
+			started_day = w.day
+			leg1_done_everywhere = w.leagues.values().filter(func(l): return l.tier == 1).all(func(l): return LeagueEngine.first_leg_done(l))
+	check(started_day > 0, "MSI started during the season")
+	check(leg1_done_everywhere, "MSI starts after every tier-1 league finished its first leg")
+	check_eq(msi.club_ids.size(), 5, "2 + 2 + 1 slots")
+	check(msi.champion_id != "", "MSI has a champion")
+	# MSI 期間國內聯賽休兵：MSI 比賽日沒有一級聯賽比賽
+	var msi_days := {}
+	for f in msi.fixtures:
+		msi_days[int(f["day"])] = true
+	var clash := 0
+	for lg in w.leagues.values():
+		if lg.tier != 1:
+			continue
+		for f in lg.fixtures:
+			if msi_days.has(int(f["day"])) and msi.club_ids.has(f["home"]):
+				clash += 1
+	check_eq(clash, 0, "qualified clubs have no domestic games during MSI")
+	var s: Dictionary = w.history["seasons"][0]
+	check(s.has("midseason"), "MSI recorded in history")
+	check_eq(w.clubs[msi.champion_id].msi_titles, 1, "MSI title credited")
+	print("  MSI %d: champion %s, started day %d" % [w.year, w.clubs[msi.champion_id].short_name, started_day])

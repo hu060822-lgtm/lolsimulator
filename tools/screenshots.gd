@@ -49,10 +49,14 @@ func _run() -> void:
 	sh.open_match()
 	await _shot("04_draft")
 	var d: DraftScreen = sh.page
+	d._team_talk("fire_up")
+	await _shot("04_team_talk")
 	d._auto_draft()
 	await _shot("05_draft_done")
-	d._play()
-	d._reveal_all()
+	d._play_live()
+	d._live_order("control")
+	await _shot("06_live_tactics")
+	d._live_skip()
 	await _shot("06_match")
 	# 推進到世界賽與賽季結束
 	app.session.manual_draft = false
@@ -76,4 +80,6 @@ func _run() -> void:
 	await _shot("09_history")
 	sh.open("dashboard")
 	await _shot("10_dashboard_offseason")
+	sh.open("finance")
+	await _shot("11_finance_brand")
 	quit()

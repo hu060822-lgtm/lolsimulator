@@ -61,7 +61,7 @@ func _comp(id: String) -> League:
 	var ww = w()
 	if ww.leagues.has(id):
 		return ww.leagues[id]
-	return ww.international
+	return ww.internationals.get(id)
 
 
 func _on_fixture() -> void:

@@ -38,7 +38,8 @@ func refresh() -> void:
 	var pos = LeagueEngine.sorted_standings(lg).find(c.id) + 1
 	row.add_child(_card("聯賽排名", "第 %d 名（%d 勝 %d 敗）" % [pos, int(st["w"]), int(st["l"])]))
 	var bill = TransferMarket.wage_bill(ww, c)
-	row.add_child(_card("財務", "資金 %s\n薪資 %s / 預算 %s" % [UIKit.money(c.cash), UIKit.money(bill), UIKit.money(c.wage_budget)]))
+	row.add_child(_card("財務與董事會", "資金 %s・薪資 %s / %s\n董事會 %s（%d）・品牌 %d" % [UIKit.money(c.cash), UIKit.money(bill), UIKit.money(c.wage_budget),
+		Organization.label(c.board_confidence), int(c.board_confidence), int(c.brand)]))
 	var mood = Relationships.team_average(ww, c)
 	var streak_txt = ("%d 連勝" % c.streak) if c.streak > 0 else (("%d 連敗" % -c.streak) if c.streak < 0 else "—")
 	row.add_child(_card("團隊", "默契 %.0f・BP 熟悉度 %.0f\n隊內氣氛 %s（%+d）・%s" % [c.chemistry, c.draft_familiarity, Relationships.label(mood), int(mood), streak_txt]))

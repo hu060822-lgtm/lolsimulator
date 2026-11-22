@@ -334,5 +334,77 @@
   "wage_budget": 489000,
   "fanbase": 31500,
   "philosophy": "balanced"
+ },
+ {
+  "id": "coral_tempest",
+  "name": "Coral Tempest",
+  "short_name": "CRT",
+  "league_id": "psl",
+  "region": "PACIFIC",
+  "reputation": 64,
+  "cash": 1580000,
+  "wage_budget": 1196000,
+  "fanbase": 224000,
+  "philosophy": "win_now"
+ },
+ {
+  "id": "lagoon_spirits",
+  "name": "Lagoon Spirits",
+  "short_name": "LGS",
+  "league_id": "psl",
+  "region": "PACIFIC",
+  "reputation": 57,
+  "cash": 1440000,
+  "wage_budget": 1098000,
+  "fanbase": 199500,
+  "philosophy": "balanced"
+ },
+ {
+  "id": "monsoon_raiders",
+  "name": "Monsoon Raiders",
+  "short_name": "MNR",
+  "league_id": "psl",
+  "region": "PACIFIC",
+  "reputation": 51,
+  "cash": 1320000,
+  "wage_budget": 1014000,
+  "fanbase": 178500,
+  "philosophy": "develop"
+ },
+ {
+  "id": "reef_sharks",
+  "name": "Reef Sharks",
+  "short_name": "RFS",
+  "league_id": "psl",
+  "region": "PACIFIC",
+  "reputation": 46,
+  "cash": 1220000,
+  "wage_budget": 944000,
+  "fanbase": 161000,
+  "philosophy": "moneyball"
+ },
+ {
+  "id": "typhoon_lanterns",
+  "name": "Typhoon Lanterns",
+  "short_name": "TYL",
+  "league_id": "psl",
+  "region": "PACIFIC",
+  "reputation": 41,
+  "cash": 1120000,
+  "wage_budget": 874000,
+  "fanbase": 143500,
+  "philosophy": "balanced"
+ },
+ {
+  "id": "atoll_kings",
+  "name": "Atoll Kings",
+  "short_name": "ATK",
+  "league_id": "psl",
+  "region": "PACIFIC",
+  "reputation": 36,
+  "cash": 1020000,
+  "wage_budget": 804000,
+  "fanbase": 126000,
+  "philosophy": "develop"
  }
 ]

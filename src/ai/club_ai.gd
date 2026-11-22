@@ -59,7 +59,7 @@ static func _needs(w: WorldState, club: Club) -> Array:
 	# 期待與聲望相稱：豪門以聯賽頂尖為目標，小隊只求不墊底
 	if league:
 		var reps: Array = league.club_ids.map(func(c): return w.clubs[c].reputation)
-		avg += (club.reputation - MathX.mean(reps)) * 0.2
+		avg += (club.reputation - MathX.mean(reps)) * 0.12
 	for role in Attr.ROLES:
 		var best := 0.0
 		for pid in club.roster:

@@ -49,6 +49,18 @@ func build() -> void:
 	var rp = UIKit.panel(right)
 	rp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cols.add_child(rp)
+	right.add_child(UIKit.label("董事會與品牌", 17))
+	right.add_child(UIKit.label("董事會信心 %d（%s）　品牌價值 %d（收入 ×%.2f）" % [int(c.board_confidence), Organization.label(c.board_confidence),
+		int(c.brand), Organization.brand_multiplier(c)], 14, UIKit.BAD if c.board_confidence < 30 else UIKit.TEXT))
+	var camp := HFlowContainer.new()
+	for k in Organization.BRAND_CAMPAIGNS:
+		var info: Dictionary = Organization.BRAND_CAMPAIGNS[k]
+		camp.add_child(UIKit.button("%s（%s）" % [info["name"], UIKit.money(int(info["cost"]))], func():
+			var r = session.run_brand_campaign(k)
+			toast(r["note"])
+			refresh()))
+	right.add_child(camp)
+	right.add_child(UIKit.muted("品牌活動提升品牌價值與粉絲；品牌越強，贊助與周邊收入越高，但邊際效益遞減。"))
 	right.add_child(UIKit.label("贊助合約", 17))
 	if c.sponsors.is_empty():
 		right.add_child(UIKit.muted("目前沒有贊助"))

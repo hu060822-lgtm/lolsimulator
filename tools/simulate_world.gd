@@ -21,6 +21,9 @@ func _init() -> void:
 			var L: Dictionary = s["leagues"][lid]
 			var mvp: String = w.players[L["mvp"]].handle if L["mvp"] != "" else "-"
 			line += "%s %-4s " % [lid.to_upper(), w.clubs[L["champion"]].short_name]
+		var M: Dictionary = s.get("midseason", {})
+		if not M.is_empty():
+			line += "｜MSI %s" % w.clubs[M["champion"]].short_name
 		var I: Dictionary = s.get("international", {})
 		if not I.is_empty():
 			line += "｜世界賽 %s（亞軍 %s）" % [w.clubs[I["champion"]].short_name, w.clubs[I["runner_up"]].short_name]
@@ -31,7 +34,7 @@ func _init() -> void:
 	var clubs: Array = w.clubs.values()
 	clubs.sort_custom(func(a, b): return a.titles + a.world_titles * 3 > b.titles + b.world_titles * 3)
 	for c in clubs:
-		print("  %-20s %-6s 冠軍 %d  世界賽 %d  聲望 %.0f  現金 %d  評價 %+d" % [c.name, c.league_id, c.titles, c.world_titles, c.reputation, c.cash, int(c.opinion)])
+		print("  %-20s %-6s 冠軍 %d  MSI %d  世界賽 %d  聲望 %.0f  現金 %d  評價 %+d" % [c.name, c.league_id, c.titles, c.msi_titles, c.world_titles, c.reputation, c.cash, int(c.opinion)])
 	print("\n新聞 %d 則；最近：" % w.news.size())
 	for n in Media.latest(w, 8):
 		print("  " + n["text"])

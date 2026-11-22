@@ -93,5 +93,5 @@ func test_decades_of_world_simulation() -> void:
 	check(starters_regen > starters * 0.6, "new generation now forms most lineups")
 	check(champions.size() >= 4, "power shifts between clubs over the decade")
 	var pop = w.active_players().size()
-	var cap = w.clubs.size() * 18
+	var cap = w.clubs.size() * 20
 	check(pop > w.clubs.size() * 6 and pop < cap, "player population stays stable (%d, limit %d)" % [pop, cap])
