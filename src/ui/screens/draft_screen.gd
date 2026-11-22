@@ -13,6 +13,9 @@ var blue_col: VBoxContainer
 var red_col: VBoxContainer
 var center: VBoxContainer
 var role_filter: String = ""
+var search_text: String = ""
+var champ_grid: HFlowContainer
+var grid_act: String = ""
 var pick_role: OptionButton
 var pre_order: int = 0
 var order_btns: Array = []
@@ -133,18 +136,43 @@ func refresh() -> void:
 		fr.add_child(UIKit.label("　給", 13, UIKit.MUTED))
 		pick_role = UIKit.option(open.map(func(r): return "%s %s" % [UIKit.ROLE_SHORT[r], ds.teams[hs].players[r].handle if ds.teams[hs].players.has(r) else "?"]), maxi(open.find(role_filter), 0))
 		fr.add_child(pick_role)
+	# 搜尋：中文名、英文名或縮寫皆可
+	var search := LineEdit.new()
+	search.placeholder_text = "搜尋英雄（中文／英文）"
+	search.text = search_text
+	search.clear_button_enabled = true
+	search.custom_minimum_size = Vector2(200, 0)
+	search.text_changed.connect(func(t): search_text = t; _fill_grid())
+	fr.add_child(search)
 	center.add_child(fr)
-	# 英雄格（頭像）
-	var grid := HFlowContainer.new()
-	grid.add_theme_constant_override("h_separation", 6)
-	grid.add_theme_constant_override("v_separation", 6)
-	var champs: Array = ds.champions.values().filter(func(c): return role_filter == "" or role_filter in c.roles)
-	champs.sort_custom(func(a, b): return a.name < b.name)
+	# 英雄格（頭像），依英文名排序，與頭像縮寫一致
+	champ_grid = HFlowContainer.new()
+	champ_grid.add_theme_constant_override("h_separation", 6)
+	champ_grid.add_theme_constant_override("v_separation", 6)
+	grid_act = act
+	center.add_child(champ_grid)
+	_fill_grid()
+
+
+static func champ_matches(c: Champion, q: String) -> bool:
+	q = q.strip_edges().to_lower()
+	if q == "":
+		return true
+	return c.name.to_lower().contains(q) or c.name_en.to_lower().contains(q) or c.id.to_lower().contains(q)
+
+
+func _fill_grid() -> void:
+	if champ_grid == null:
+		return
+	UIKit.clear(champ_grid)
+	var champs: Array = ds.champions.values().filter(func(c): return (role_filter == "" or role_filter in c.roles) and champ_matches(c, search_text))
+	champs.sort_custom(func(a, b): return (a.name_en if a.name_en != "" else a.name) < (b.name_en if b.name_en != "" else b.name))
 	for c in champs:
 		var meta = w().patch.meta(c.id)
 		var ring = UIKit.GOOD if meta >= 1 else (UIKit.BAD if meta <= -1 else UIKit.BORDER.lightened(0.3))
-		grid.add_child(ChampToken.card(c, _champ_info(c, act), ring, _choose.bind(c.id, ""), ds.unavailable.has(c.id)))
-	center.add_child(grid)
+		champ_grid.add_child(ChampToken.card(c, _champ_info(c, grid_act), ring, _choose.bind(c.id, ""), ds.unavailable.has(c.id)))
+	if champs.is_empty():
+		champ_grid.add_child(UIKit.muted("找不到符合的英雄"))
 
 
 ## 英雄卡下方的一行：熟練度（選角看我方、禁用看對手）＋版本強弱。
@@ -222,6 +250,7 @@ func _choose(champ_id: String, role: String) -> void:
 		toast("無法選擇：英雄不可用或位置不符")
 		return
 	ds.apply(champ_id, role, "玩家決定")
+	search_text = ""
 	_advance_ai()
 	refresh()
 

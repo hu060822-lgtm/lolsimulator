@@ -47,3 +47,13 @@ func test_draft_screen_plays_a_series() -> void:
 			d._new_game()
 	check(s.pending.is_empty(), "series finished through the UI")
 	sh.free()
+
+
+func test_draft_search_finds_bard() -> void:
+	var s := GameSession.new()
+	s.new_game("res://data/modules/lol_world", 4, "t_one")
+	var bard: Champion = s.world.champions.get("bard")
+	check(bard != null, "Bard is in the champion pool")
+	check(DraftScreen.champ_matches(bard, "巴德"), "search by Chinese name")
+	check(DraftScreen.champ_matches(bard, "bar"), "search by English prefix")
+	check(not DraftScreen.champ_matches(bard, "雷玟"), "non-matching search")
