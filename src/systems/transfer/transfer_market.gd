@@ -27,6 +27,7 @@ static func wage_demand(w: WorldState, p: Player) -> int:
 	base *= 0.8 + p.reputation / 200.0
 	if "MONEY" in p.goals:
 		base *= 1.15
+	base *= Agents.wage_factor(p)
 	return int(base)
 
 
@@ -88,6 +89,9 @@ static func offer_contract(w: WorldState, club: Club, p: Player, salary: int, ye
 		c.role_promise = role_promise
 		p.contract = c
 		p.refuses_renewal = false
+		var agent_fee = Agents.fee(p, salary)
+		if agent_fee > 0:
+			Finance.spend(club, "agent_fees", agent_fee)
 	return {"accepted": accepted, "reason": reason, "utility": u}
 
 
@@ -129,6 +133,8 @@ static func asking_price(w: WorldState, seller: Club, p: Player) -> int:
 static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int, salary: int, years: int, role_promise: String) -> Dictionary:
 	if import_blocked(w, buyer, p):
 		return {"accepted": false, "reason": "外援名額已滿"}
+	if Loans.is_loaned(p):
+		return {"accepted": false, "reason": "選手租借中，季後才能轉會"}
 	if p.club_id == "":
 		var r = offer_contract(w, buyer, p, salary, years, role_promise)
 		if r["accepted"]:
@@ -198,9 +204,9 @@ static func release(w: WorldState, club: Club, p: Player, reason: String) -> voi
 static func wage_bill(w: WorldState, club: Club) -> int:
 	var total := 0
 	for pid in club.roster:
-		var p: Player = w.players[pid]
-		if p.contract:
-			total += p.contract.salary
+		total += Loans.wage_for(w, club, w.players[pid])
+	for pid in club.loaned_out:
+		total += Loans.wage_for(w, club, w.players[pid])
 	return total
 
 

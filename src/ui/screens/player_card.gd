@@ -27,6 +27,13 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 	tags.add_child(UIKit.pill(club.short_name if club else "自由球員", Badge.club_color(club.id) if club else UIKit.MUTED))
 	if p.transfer_requested:
 		tags.add_child(UIKit.pill("要求離隊", UIKit.BAD))
+	if Loans.is_loaned(p):
+		var lf: Club = ww.clubs.get(p.loan["from"])
+		tags.add_child(UIKit.pill("租借自 %s" % (lf.short_name if lf else "?"), UIKit.WARN))
+	var ag = Agents.of(p)
+	var ap := UIKit.pill("經紀人 %s・%s" % [ag["name"], Agents.greed_word(ag["greed"])], UIKit.BAD if ag["greed"] >= 0.7 else UIKit.MUTED)
+	ap.tooltip_text = "談判態度影響薪資要求（%+d%%）與簽約佣金（年薪 %d%%）" % [int((Agents.wage_factor(p) - 1.0) * 100), int(4 + ag["greed"] * 8)]
+	tags.add_child(ap)
 	hv.add_child(tags)
 	hv.add_child(UIKit.label(p.real_name, 12, UIKit.MUTED))
 	head.add_child(hv)

@@ -72,7 +72,11 @@ func _show_detail() -> void:
 	detail.add_child(row2)
 	row2.add_child(UIKit.button("與選手談話", _talk))
 	row2.add_child(UIKit.button("提出續約（市價）", _renew))
-	row2.add_child(UIKit.button("解約", _release))
+	if Loans.is_loaned(p):
+		row2.add_child(UIKit.button("提前歸還（租借結束）", _release))
+	else:
+		row2.add_child(UIKit.button("租借出去（到本季結束）", _loan_out))
+		row2.add_child(UIKit.button("解約", _release))
 	var msg := UIKit.label("", 14, UIKit.WARN)
 	msg.name = "Msg"
 	detail.add_child(msg)
@@ -102,6 +106,17 @@ func _renew() -> void:
 	var r = session.offer_contract(selected_id, demand, 2, "starter" if session.club().lineup.values().has(p.id) else "rotation")
 	refresh()
 	_msg("續約 %s：%s" % [UIKit.money(demand), "接受" if r["accepted"] else "拒絕（%s）" % r["reason"]])
+
+
+func _loan_out() -> void:
+	var p: Player = w().players[selected_id]
+	var r = session.loan_out(selected_id)
+	if r.get("accepted", false):
+		selected_id = ""
+		refresh()
+		toast("%s 已租借到 %s" % [p.handle, w().clubs[r["club"]].short_name])
+	else:
+		_msg("無法租借：%s" % r.get("reason", ""))
 
 
 func _release() -> void:

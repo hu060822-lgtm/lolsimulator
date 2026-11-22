@@ -16,6 +16,7 @@ var reputation: float = 50.0         ## 0..100
 var fanbase: int = 50000
 var philosophy: String = "balanced"
 var roster: Array = []               ## player ids
+var loaned_out: Array = []           ## 租借出去的選手 ids（合約仍屬本隊）
 var coach_id: String = ""
 ## 預設戰術：plan 為整體方向，與 BP 及比賽中的決策連動
 var tactics: Dictionary = {"plan": "flexible", "aggression": 0.5}
@@ -75,7 +76,7 @@ func to_dict() -> Dictionary:
 	return {"id": id, "name": name, "short_name": short_name, "region": region,
 		"league_id": league_id, "is_human": is_human, "cash": cash, "wage_budget": wage_budget,
 		"reputation": reputation, "fanbase": fanbase, "philosophy": philosophy,
-		"roster": roster, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
+		"roster": roster, "loaned_out": loaned_out, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
 		"training_plan": training_plan, "history": history, "titles": titles, "world_titles": world_titles, "msi_titles": msi_titles, "intl_titles": intl_titles, "opinion": opinion, "board_confidence": board_confidence, "brand": brand, "crisis_flags": crisis_flags, "streak": streak,
 		"finance_log": finance_log, "scout_knowledge": scout_knowledge,
