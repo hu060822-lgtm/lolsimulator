@@ -37,7 +37,7 @@ func build() -> void:
 	UIKit.add_row(led, ["合計", UIKit.money(t["income"]), UIKit.money(t["expense"])])
 	left.add_child(led)
 	left.add_child(UIKit.label("歷年", 17))
-	var hist := UIKit.table(["年份", "收入", "支出", "淨額", "年末資金"], 140)
+	var hist := UIKit.table(["年份", "收入", "支出", "淨額", "年末資金"], 140, [0, 1, 2, 3, 4])
 	var h: Array = f["history"].duplicate()
 	h.reverse()
 	for e in h:

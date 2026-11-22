@@ -130,6 +130,8 @@ func _next_match_card(c: Club) -> PanelContainer:
 		var stage = {"regular": "例行賽", "playoffs": "季後賽", "final": "決賽"}.get(fx["stage"], fx["stage"])
 		if comp.tier == 0:
 			stage = comp.name + ("小組賽" if fx["stage"] == "regular" else ("決賽" if fx["stage"] == "final" else "淘汰賽"))
+		if fx.has("label"):
+			stage = (comp.short_name if comp.short_name != "" else comp.name) + " " + str(fx["label"])
 		var vs := UIKit.hbox(8)
 		vs.add_child(Badge.club(c, 40))
 		vs.add_child(UIKit.label("VS", 16, UIKit.MUTED))

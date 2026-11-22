@@ -170,14 +170,18 @@ func start_live_game(ds: DraftSession) -> Dictionary:
 
 ## 下達接下來這段時間的指示（"" = 交給指揮自行判斷），推進到下一個調整點。
 ## 比賽結束時回傳 {"done": true, "game": 結果}。
-func live_continue(order: String) -> Dictionary:
+## focus_target：指定目標（"dragon"／"baron"／"top"／"mid"／"bot"，"" = 取消，"__keep" = 不變）。
+func live_continue(order: String, focus_target: String = "__keep") -> Dictionary:
 	if live == null:
 		return {}
 	var at = live.next_shotcall()
 	var t: TeamContext = live.team(live_side)
 	t.orders = {}
+	t.focus = {}
 	if order != "" and at != -1:
 		t.orders[str(at)] = order
+	if focus_target != "__keep" and at != -1:
+		t.focus[str(at)] = focus_target
 	if at != -1:
 		live.run_until(at)  # 先打過這個調整點（指示在此生效），再停在下一個調整點前
 	return _live_pause()
@@ -276,8 +280,16 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 		"acknowledge":
 			msg["resolved"] = true
 			return {"note": "已讀"}
+		"accept_raise":
+			return Agents.resolve_raise(world, msg, true)
+		"refuse_raise":
+			return Agents.resolve_raise(world, msg, false)
 		"mediate", "back_first", "ignore":
 			return Relationships.resolve_conflict(world, msg, option)
+	if option.begins_with("press:"):
+		return PressConference.answer(world, msg, option.trim_prefix("press:"))
+	if option.begins_with("duo:") or option.begins_with("bond:") or option.begins_with("mentor:"):
+		return TeammateTalks.resolve(world, msg, option)
 	if option.begins_with("ev:"):
 		return RandomEvents.resolve(world, msg, option)
 	if option.begins_with("crisis:"):
@@ -317,8 +329,44 @@ func bid(player_id: String, fee: int, salary: int, years: int, role_promise: Str
 	return TransferMarket.make_transfer_offer(world, club(), world.players[player_id], fee, salary, years, role_promise)
 
 
+## 租入其他俱樂部的選手到本季結束；wage_share = 我方負擔的薪資比例。
+func loan_in(player_id: String, wage_share: float = 0.5) -> Dictionary:
+	return Loans.request(world, club(), world.players[player_id], wage_share)
+
+
+## 把自家選手租借出去：找願意讓他上場的俱樂部（優先同賽區）。
+func loan_out(player_id: String) -> Dictionary:
+	var p: Player = world.players[player_id]
+	if p.club_id != world.human_club_id or Loans.is_loaned(p):
+		return {"accepted": false, "reason": "只能租借自家選手"}
+	var best: Club = null
+	var best_score := -INF
+	for c in world.clubs.values():
+		if c.is_human:
+			continue
+		if not Loans.player_willing(world, p, c) or TransferMarket.import_blocked(world, c, p) or c.cash < Loans.loan_fee(world, p):
+			continue
+		var cur: Player = world.players.get(c.lineup.get(p.primary_role, ""))
+		var gap = p.current_ability(p.primary_role) - (cur.current_ability(p.primary_role) if cur else 0.0)
+		var score = gap + (20.0 if c.region == club().region else 0.0) + c.reputation * 0.1
+		if score > best_score:
+			best_score = score
+			best = c
+	if best == null:
+		return {"accepted": false, "reason": "沒有俱樂部能保證他的上場時間"}
+	var r = Loans.request(world, best, p, 0.6)
+	if r.get("accepted", false):
+		LineupSelector.pick(world, best)
+		r["club"] = best.id
+	return r
+
+
 func release_player(player_id: String) -> void:
-	TransferMarket.release(world, club(), world.players[player_id], "玩家解約")
+	var p: Player = world.players[player_id]
+	if Loans.is_loaned(p):
+		Loans.end(world, p)  # 租借來的選手：提前歸還
+		return
+	TransferMarket.release(world, club(), p, "玩家解約")
 
 
 func transfer_window_open() -> bool:

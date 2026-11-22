@@ -47,3 +47,35 @@ func test_draft_screen_plays_a_series() -> void:
 			d._new_game()
 	check(s.pending.is_empty(), "series finished through the UI")
 	sh.free()
+
+
+func test_draft_search_finds_bard() -> void:
+	var s := GameSession.new()
+	s.new_game("res://data/modules/lol_world", 4, "t_one")
+	var bard: Champion = s.world.champions.get("bard")
+	check(bard != null, "Bard is in the champion pool")
+	check(DraftScreen.champ_matches(bard, "巴德"), "search by Chinese name")
+	check(DraftScreen.champ_matches(bard, "bar"), "search by English prefix")
+	check(not DraftScreen.champ_matches(bard, "雷玟"), "non-matching search")
+
+
+func test_post_game_stats() -> void:
+	var s := GameSession.new()
+	s.new_game(MODULE_DIR, 4, "iron_lotus")
+	var guard := 0
+	while s.advance_day() and guard < 60:
+		guard += 1
+	var sh := Shell.new()
+	sh.setup(s, null)
+	var d := DraftScreen.new()
+	sh.open_screen(d, "draft")
+	d._auto_draft()
+	d._play()
+	var g: Dictionary = d.game
+	check_eq(g["gold_curve"].size(), int(g["duration"]) + 1, "one gold sample per minute")
+	for pid in g["players"]:
+		check(int(g["players"][pid]["damage"]) > 0, "damage estimate recorded")
+	var pg := PostGame.make(s, g)
+	check(pg.get_child_count() >= 2, "post-game panel builds")
+	pg.free()
+	sh.free()

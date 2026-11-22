@@ -19,7 +19,8 @@ var champs: Dictionary = {}        ## side -> [champion id × 5]
 var champ_db: Dictionary = {}      ## id -> Champion
 var head: float = 0.0              ## 目前播放到的格（可為小數，用於平滑移動）
 var target: float = 0.0
-var sec_per_frame: float = 0.6
+var sec_per_frame: float = 2.4
+var _paths: Dictionary = {}       ## "格:方:人" -> 沿路網的折線（快取）
 var _last_minute: int = -1
 
 const MAP_IMAGE := "res://assets/maps/summoners_rift.jpg"
@@ -62,6 +63,7 @@ func set_game(f: Array, c: Dictionary, db: Dictionary) -> void:
 	frames = f
 	champs = c
 	champ_db = db
+	_paths.clear()
 	queue_redraw()
 
 
@@ -108,7 +110,7 @@ func _emit_minute() -> void:
 
 func _area() -> Rect2:
 	var s = minf(size.x, size.y)
-	return Rect2((size.x - s) / 2.0, (size.y - s) / 2.0, s, s)
+	return Rect2((size.x - s) / 2.0, 0.0, s, s)  # 靠上，右欄較高時地圖不會浮在中間
 
 
 func _pt(r: Rect2, p) -> Vector2:
@@ -136,8 +138,10 @@ func _draw() -> void:
 	var i1 = clampi(i0 + 1, 0, frames.size() - 1)
 	var t = clampf(head - i0, 0.0, 1.0)
 	var f0: Dictionary = frames[i0]
-	var f1: Dictionary = frames[i1] if t > 0.0 else f0
+	var f1: Dictionary = frames[i1]
 	_draw_structures(r, f1 if t >= 0.5 else f0, bg != null, _fallen_nexus(i1 if t >= 0.5 else i0))
+	_draw_vision(r, f1 if t >= 0.5 else f0)
+	_draw_waves(r, f0, f1, t)
 	_draw_marks(r, font)
 	# 英雄小棋
 	for side in ["blue", "red"]:
@@ -149,8 +153,8 @@ func _draw() -> void:
 			var b: Array = p1[k] if k < p1.size() else a
 			var alive_now: bool = int(b[2]) == 1 if t >= 0.5 else int(a[2]) == 1
 			var pos: Vector2
-			if int(a[2]) == 1 and int(b[2]) == 1:
-				pos = _pt(r, a).lerp(_pt(r, b), _ease(t))
+			if int(a[2]) == 1 and int(b[2]) == 1 and i1 != i0:
+				pos = _pt(r, RiftGeometry.along(_path(i0, side, k, a, b), _ease(t)))
 			else:
 				pos = _pt(r, b if t >= 0.5 else a)
 			var cid: String = champs.get(side, [])[k] if k < champs.get(side, []).size() else ""
@@ -185,8 +189,17 @@ func _draw_procedural(r: Rect2) -> void:
 	draw_circle(_pt(r, RiftGeometry.BARON_PIT), s * 0.045, Color("2c1f3a"))
 
 
+## 兩格之間沿路網走的路徑；同一段路只計算一次。
+func _path(i0: int, side: String, k: int, a: Array, b: Array) -> PackedVector2Array:
+	var key = "%d:%s:%d" % [i0, side, k]
+	if not _paths.has(key):
+		_paths[key] = RiftGeometry.nav_path(Vector2(float(a[0]), float(a[1])), Vector2(float(b[0]), float(b[1])))
+	return _paths[key]
+
+
+## 起步與停下稍微放慢，中段等速前進。
 func _ease(t: float) -> float:
-	return t * t * (3.0 - 2.0 * t)
+	return lerpf(t, t * t * (3.0 - 2.0 * t), 0.5)
 
 
 ## 到第 idx 格為止主堡被摧毀的一方（沒有則為空字串）。
@@ -251,6 +264,57 @@ func _draw_structures_on_image(r: Rect2, f: Dictionary, fallen: String) -> void:
 				var d = rad * 0.6
 				draw_line(p - Vector2(d, d), p + Vector2(d, d), COL_DEAD, 2.5)
 				draw_line(p - Vector2(d, -d), p + Vector2(d, -d), COL_DEAD, 2.5)
+
+
+## 兵線：雙方小兵在交戰點兩側，交戰點隨線權在兩格之間平滑移動。
+func _draw_waves(r: Rect2, f0: Dictionary, f1: Dictionary, t: float) -> void:
+	if not f0.has("lf") or not f1.has("lf"):
+		return
+	var s = r.size.x
+	var lanes := ["top", "mid", "bot"]
+	var minute: float = float(f0["m"]) + t * (float(f1["m"]) - float(f0["m"]))
+	if minute < 1.5:
+		return
+	for li in 3:
+		var lane: String = lanes[li]
+		var front: float = lerpf(float(f0["lf"][li]), float(f1["lf"][li]), t)
+		# 兵會稍微前後擠壓，像在互相攻擊
+		var sway := sin(head * 2.2 + li * 1.7) * 0.006
+		for side in ["blue", "red"]:
+			var dir := -1.0 if side == "blue" else 1.0
+			var col: Color = COL_BLUE if side == "blue" else COL_RED
+			for k in 5:
+				var tt := front + dir * (0.028 + k * 0.013) + sway
+				var p := RiftGeometry.lane_point(lane, tt)
+				var off := Vector2(((k * 37 + li * 11) % 7 - 3) * 0.0022, ((k * 53 + li * 5) % 7 - 3) * 0.0022)
+				var q := _pt(r, p + off)
+				var rad: float = s * (0.009 if k < 3 else 0.012)  # 後排兩隻是較大的砲車兵
+				draw_circle(q, rad + 1.0, Color(0, 0, 0, 0.55))
+				draw_circle(q, rad, col.lightened(0.15))
+		# 交戰點的小火花
+		var fp := _pt(r, RiftGeometry.lane_point(lane, front + sway))
+		draw_circle(fp, s * 0.006, Color(1, 0.9, 0.6, 0.35 + 0.25 * sin(head * 6.0 + li)))
+
+
+## 守衛與視野範圍：視野好的一方插得更深、更多。
+func _draw_vision(r: Rect2, f: Dictionary) -> void:
+	if not f.has("vis"):
+		return
+	var s = r.size.x
+	var minute := int(f["m"])
+	if minute < 2:
+		return
+	for si in 2:
+		var side: String = "blue" if si == 0 else "red"
+		var col: Color = COL_BLUE if side == "blue" else COL_RED
+		for wp in RiftGeometry.ward_points(side, float(f["vis"][si]), minute):
+			var q := _pt(r, wp)
+			draw_circle(q, s * 0.075, Color(col, 0.07))
+			draw_arc(q, s * 0.075, 0, TAU, 40, Color(col, 0.22), 1.0, true)
+			var d: float = s * 0.009
+			var dia := PackedVector2Array([q + Vector2(0, -d * 1.4), q + Vector2(d, 0), q + Vector2(0, d * 1.4), q + Vector2(-d, 0)])
+			draw_colored_polygon(dia, Color("f2d36b") if side == "blue" else Color("ff8a5c"))
+			draw_polyline(PackedVector2Array([dia[0], dia[1], dia[2], dia[3], dia[0]]), Color(0, 0, 0, 0.6), 1.0)
 
 
 ## 最近 1.5 分鐘內的事件標記，越舊越淡。

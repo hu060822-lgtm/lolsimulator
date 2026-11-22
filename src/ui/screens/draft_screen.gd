@@ -13,6 +13,10 @@ var blue_col: VBoxContainer
 var red_col: VBoxContainer
 var center: VBoxContainer
 var role_filter: String = ""
+var search_text: String = ""
+var champ_grid: HFlowContainer
+var grid_act: String = ""
+var live_focus: String = "__keep"
 var pick_role: OptionButton
 var pre_order: int = 0
 var order_btns: Array = []
@@ -24,9 +28,53 @@ func build() -> void:
 	if series == null:
 		add_child(UIKit.label("今天沒有比賽。"))
 		return
-	header = UIKit.label("", 20)
-	add_child(header)
+	add_child(_build_header())
 	_new_game()
+
+
+## 系列賽計分列：雙方隊徽、名稱與大比分；下方一行小字是局數與狀態。
+var score_label: Label
+
+func _build_header() -> PanelContainer:
+	var p := PanelContainer.new()
+	var sb := UIKit._card(Color(UIKit.BG_2, 0.92), 10)
+	sb.border_color = Color(UIKit.GOLD_DIM, 0.8)
+	sb.border_width_bottom = 2
+	sb.content_margin_top = 10
+	sb.content_margin_bottom = 10
+	p.add_theme_stylebox_override("panel", sb)
+	var v := UIKit.vbox(2)
+	p.add_child(v)
+	var row := UIKit.hbox(14)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_child(row)
+	var na := UIKit.label(series.a.name, 20, UIKit.BLUE_SIDE.lightened(0.25))
+	na.add_theme_font_override("font", UIKit.head_font())
+	na.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	na.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	na.clip_text = true
+	row.add_child(na)
+	row.add_child(Badge.club(session.world.clubs.get(series.a.club_id), 46))
+	score_label = UIKit.label("0 : 0", 30, UIKit.GOLD_LIGHT)
+	score_label.add_theme_font_override("font", UIKit.head_font())
+	score_label.custom_minimum_size = Vector2(110, 0)
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	row.add_child(score_label)
+	row.add_child(Badge.club(session.world.clubs.get(series.b.club_id), 46))
+	var nb := UIKit.label(series.b.name, 20, UIKit.RED_SIDE.lightened(0.25))
+	nb.add_theme_font_override("font", UIKit.head_font())
+	nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nb.clip_text = true
+	row.add_child(nb)
+	header = UIKit.label("", 13, UIKit.GOLD)
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(header)
+	return p
+
+
+func _set_header(game_no: int, state: String) -> void:
+	score_label.text = "%d : %d" % [int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id])]
+	header.text = "第 %d 局・%s・%s" % [game_no, UIKit.bo_text(series.best_of), state]
 
 
 func _new_game() -> void:
@@ -82,7 +130,7 @@ func _advance_ai() -> void:
 func refresh() -> void:
 	if series == null or ds == null:
 		return
-	header.text = "第 %d 局　%s %d - %d %s　（%s）" % [series.games.size() + 1, UIKit.club_label(series.a), int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id]), UIKit.club_label(series.b), UIKit.bo_text(series.best_of)]
+	_set_header(series.games.size() + 1, "BP 階段")
 	_team_col(blue_col, "blue")
 	_team_col(red_col, "red")
 	UIKit.clear(center)
@@ -133,18 +181,43 @@ func refresh() -> void:
 		fr.add_child(UIKit.label("　給", 13, UIKit.MUTED))
 		pick_role = UIKit.option(open.map(func(r): return "%s %s" % [UIKit.ROLE_SHORT[r], ds.teams[hs].players[r].handle if ds.teams[hs].players.has(r) else "?"]), maxi(open.find(role_filter), 0))
 		fr.add_child(pick_role)
+	# 搜尋：中文名、英文名或縮寫皆可
+	var search := LineEdit.new()
+	search.placeholder_text = "搜尋英雄（中文／英文）"
+	search.text = search_text
+	search.clear_button_enabled = true
+	search.custom_minimum_size = Vector2(200, 0)
+	search.text_changed.connect(func(t): search_text = t; _fill_grid())
+	fr.add_child(search)
 	center.add_child(fr)
-	# 英雄格（頭像）
-	var grid := HFlowContainer.new()
-	grid.add_theme_constant_override("h_separation", 6)
-	grid.add_theme_constant_override("v_separation", 6)
-	var champs: Array = ds.champions.values().filter(func(c): return role_filter == "" or role_filter in c.roles)
-	champs.sort_custom(func(a, b): return a.name < b.name)
+	# 英雄格（頭像），依英文名排序，與頭像縮寫一致
+	champ_grid = HFlowContainer.new()
+	champ_grid.add_theme_constant_override("h_separation", 6)
+	champ_grid.add_theme_constant_override("v_separation", 6)
+	grid_act = act
+	center.add_child(champ_grid)
+	_fill_grid()
+
+
+static func champ_matches(c: Champion, q: String) -> bool:
+	q = q.strip_edges().to_lower()
+	if q == "":
+		return true
+	return c.name.to_lower().contains(q) or c.name_en.to_lower().contains(q) or c.id.to_lower().contains(q)
+
+
+func _fill_grid() -> void:
+	if champ_grid == null:
+		return
+	UIKit.clear(champ_grid)
+	var champs: Array = ds.champions.values().filter(func(c): return (role_filter == "" or role_filter in c.roles) and champ_matches(c, search_text))
+	champs.sort_custom(func(a, b): return (a.name_en if a.name_en != "" else a.name) < (b.name_en if b.name_en != "" else b.name))
 	for c in champs:
 		var meta = w().patch.meta(c.id)
 		var ring = UIKit.GOOD if meta >= 1 else (UIKit.BAD if meta <= -1 else UIKit.BORDER.lightened(0.3))
-		grid.add_child(ChampToken.card(c, _champ_info(c, act), ring, _choose.bind(c.id, ""), ds.unavailable.has(c.id)))
-	center.add_child(grid)
+		champ_grid.add_child(ChampToken.card(c, _champ_info(c, grid_act), ring, _choose.bind(c.id, ""), ds.unavailable.has(c.id)))
+	if champs.is_empty():
+		champ_grid.add_child(UIKit.muted("找不到符合的英雄"))
 
 
 ## 英雄卡下方的一行：熟練度（選角看我方、禁用看對手）＋版本強弱。
@@ -222,6 +295,7 @@ func _choose(champ_id: String, role: String) -> void:
 		toast("無法選擇：英雄不可用或位置不符")
 		return
 	ds.apply(champ_id, role, "玩家決定")
+	search_text = ""
 	_advance_ai()
 	refresh()
 
@@ -253,6 +327,10 @@ func _draft_summary() -> void:
 		orow.add_child(b)
 	center.add_child(orow)
 	center.add_child(UIKit.muted("指示會在 14、20、26… 分鐘的戰術調整時覆蓋選手的判斷。"))
+	var swap := UIKit.chip("換線：前 14 分鐘下路雙人組改走上路", func(): ds.teams[hs].lane_swap = not ds.teams[hs].lane_swap)
+	swap.button_pressed = ds.teams[hs].lane_swap
+	swap.tooltip_text = "避開不利的下路對線、搶上路塔；代價是早期小龍主導權較弱"
+	center.add_child(swap)
 	var brow := UIKit.hbox(8)
 	brow.add_child(UIKit.tile("WATCH", "觀戰", "看完整場比賽", _play, UIKit.ACCENT, 170))
 	brow.add_child(UIKit.tile("LIVE", "即時指揮", "每個戰術調整點暫停", _play_live, UIKit.WARN, 170))
@@ -329,7 +407,7 @@ func _open_center() -> void:
 	for c in get_children().slice(1):
 		remove_child(c)
 		c.queue_free()
-	header.text = "第 %d 局　%s %d - %d %s" % [series.games.size() + (0 if live_snap.is_empty() else 1), UIKit.club_label(series.a), int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id]), UIKit.club_label(series.b)]
+	_set_header(series.games.size() + (0 if live_snap.is_empty() else 1), "比賽中")
 	mc = MatchCenter.new().setup(session, hs)
 	mc.custom_minimum_size = Vector2(0, 560)
 	mc.reached_end.connect(_on_center_end)
@@ -348,12 +426,20 @@ func _on_center_end() -> void:
 func _play_live() -> void:
 	live_snap = {"pending": true}
 	_open_center()
-	header.text += "　・即時指揮"
+	header.text += "・即時指揮"
 	_apply_live(session.start_live_game(ds))
 
 
 func _live_order(order: String) -> void:
-	_apply_live(session.live_continue(order))
+	var f = live_focus
+	live_focus = "__keep"
+	_apply_live(session.live_continue(order, f))
+
+
+func _set_focus(f: String, btns: Array) -> void:
+	live_focus = f
+	for b in btns:
+		b.button_pressed = b.get_meta("focus") == f
 
 
 func _live_skip() -> void:
@@ -397,6 +483,22 @@ func _show_orders() -> void:
 	tags.add_child(UIKit.pill("目前：" + ORDER_INFO.get(snap["stances"][side], ["", snap["stances"][side]])[1], UIKit.ACCENT))
 	tags.add_child(UIKit.pill("分析師：" + _advice(gd, late_edge), UIKit.GOOD))
 	box.add_child(tags)
+	# 指定目標：選好後再點下方的打法
+	var cur_focus: String = str(snap.get("focus", {}).get(side, ""))
+	live_focus = "__keep"
+	var frow := HFlowContainer.new()
+	frow.add_theme_constant_override("h_separation", 6)
+	frow.add_child(UIKit.label("指定目標", 13, UIKit.MUTED))
+	var fbtns: Array = []
+	for f in ["", "dragon", "baron", "top", "mid", "bot"]:
+		var fb := UIKit.chip("不指定" if f == "" else MatchEngine.focus_name(f), func(): pass)
+		fb.set_meta("focus", f)
+		fb.button_pressed = f == cur_focus
+		fbtns.append(fb)
+		frow.add_child(fb)
+	for fb in fbtns:
+		fb.pressed.connect(_set_focus.bind(fb.get_meta("focus"), fbtns))
+	box.add_child(frow)
 	var grid := GridContainer.new()
 	grid.columns = 4
 	grid.add_theme_constant_override("h_separation", 6)
@@ -440,6 +542,7 @@ func _end_of_game() -> void:
 	if mvp:
 		banner.add_child(UIKit.pill("MVP　" + mvp.handle, UIKit.WARN))
 	v.add_child(banner)
+	v.add_child(PostGame.make(session, game))
 	v.add_child(MatchView.stats_table(session, game))
 	if series.is_done():
 		v.add_child(UIKit.primary("完成系列賽", _finish))

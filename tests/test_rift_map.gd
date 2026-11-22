@@ -34,3 +34,21 @@ func test_frame_positions_stay_on_map() -> void:
 			for q in f["pos"][side]:
 				check(q[0] >= 0.0 and q[0] <= 1.0 and q[1] >= 0.0 and q[1] <= 1.0, "position on map: %s" % str(q))
 	check(ResourceLoader.exists(RiftMap.MAP_IMAGE), "bundled map image imports")
+
+
+func test_nav_graph_connected_and_paths_follow_routes() -> void:
+	var n = RiftGeometry.NAV_NODES.size()
+	for i in n:
+		var route = RiftGeometry.node_route(0, i)
+		check(route.size() >= 1 and route[0] == 0 and route[-1] == i, "node %d reachable" % i)
+	# 藍方上路外塔 → 紅方下路外塔：不能直線穿過地圖中央的野區
+	var a = RiftGeometry.tower_point("blue", "top", 0)
+	var b = RiftGeometry.tower_point("red", "bot", 0)
+	var path = RiftGeometry.nav_path(a, b)
+	check(path.size() >= 4, "long trip uses several waypoints (%d)" % path.size())
+	var length := 0.0
+	for i in range(1, path.size()):
+		length += path[i - 1].distance_to(path[i])
+	check(length > a.distance_to(b) * 1.05, "route is longer than the straight line")
+	check(RiftGeometry.along(path, 0.0).distance_to(a) < 0.001 and RiftGeometry.along(path, 1.0).distance_to(b) < 0.001, "path starts and ends at the frames")
+	check(RiftGeometry.nav_path(a, a + Vector2(0.01, 0.0)).size() == 2, "short hop walks directly")

@@ -31,7 +31,7 @@ func refresh() -> void:
 		for opt in m.get("options", ["acknowledge"]):
 			row.add_child(UIKit.button(m.get("option_labels", {}).get(opt, UIKit.RESPONSE_NAMES.get(opt, opt)), _respond.bind(m["id"], opt)))
 		v.add_child(row)
-		list.add_child(UIKit.panel(v))
+		list.add_child(UIKit.accent_panel(v))
 	var log := UIKit.vbox(2)
 	log.add_child(UIKit.label("最近的回應紀錄", 16))
 	for e in w().log.entries.filter(func(x): return x["type"] in ["player_talk", "promise_kept", "promise_broken", "transfer", "offer_rejected"]).slice(-8):

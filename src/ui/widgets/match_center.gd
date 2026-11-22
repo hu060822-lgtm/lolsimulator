@@ -5,7 +5,7 @@ extends VBoxContainer
 
 signal reached_end
 
-const SPEEDS := {"1x": 0.9, "2x": 0.45, "4x": 0.18}
+const SPEEDS := {"1x": 2.4, "2x": 1.2, "4x": 0.6}  ## 每遊戲分鐘的秒數
 const BIG := ["teamfight", "baron", "elder", "end", "steal", "dragon", "order", "adapt", "split", "force_4v5"]
 const TAGS := {"teamfight": "團戰", "baron": "巴龍", "elder": "遠古龍", "dragon": "小龍", "grubs": "幼蟲", "herald": "預示者", "end": "勝利",
 	"steal": "搶龍", "structure": "推塔", "solo_kill": "單殺", "gank": "Gank", "lane_kill": "擊殺", "pick": "抓單", "counter_gank": "反蹲",
@@ -66,7 +66,7 @@ func setup(s: GameSession, ally_side: String) -> MatchCenter:
 		speed_btns[k] = b
 		ctl.add_child(b)
 	right.add_child(ctl)
-	_set_speed("2x")
+	_set_speed("1x")
 	return self
 
 
@@ -259,10 +259,10 @@ func _render_feed(minute: int) -> void:
 ## 精簡事件列：[時間] 標籤 文字；原因收進滑鼠提示。
 func event_line(e: Dictionary) -> String:
 	var side: String = e["sides"][0] if e["sides"].size() > 0 else ""
-	var col = "#4f8cff" if side == "blue" else ("#ff6b6b" if side == "red" else "#8a90a0")
+	var col = "#3d9bff" if side == "blue" else ("#ff5a6a" if side == "red" else "#8c95a4")
 	var tag: String = TAGS.get(e["type"], "")
 	var big = e["type"] in BIG
-	var txt = "[color=#6b7280]%02d'[/color] [bgcolor=%s][color=#0f1115] %s [/color][/bgcolor] %s%s%s" % [int(e["minute"]), col, tag, "[b]" if big else "", e["text"], "[/b]" if big else ""]
+	var txt = "[color=#6b7280]%02d'[/color] [bgcolor=%s33][color=%s] %s [/color][/bgcolor] %s%s%s" % [int(e["minute"]), col, col, tag, "[b]" if big else "", e["text"], "[/b]" if big else ""]
 	if e["causes"].size() > 0:
 		txt = "[hint=%s]%s[/hint]" % ["、".join(e["causes"]).replace("]", ")").replace("[", "("), txt]
 	return txt

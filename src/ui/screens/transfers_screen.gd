@@ -100,6 +100,8 @@ func _show_detail() -> void:
 	promise = UIKit.option(PROMISE_NAMES, 0)
 	form.add_child(promise)
 	detail.add_child(UIKit.primary("提出報價" if p.club_id != "" else "提出合約", _offer))
+	if p.club_id != "" and p.club_id != ww.human_club_id and not Loans.is_loaned(p):
+		detail.add_child(UIKit.button("租借到本季結束（租借費 %s，薪資雙方各付一半）" % UIKit.money(Loans.loan_fee(ww, p)), _loan_in))
 	result = UIKit.label("", 15, UIKit.WARN)
 	detail.add_child(result)
 	detail.add_child(UIKit.button("指派球探深入觀察（了解程度 +25%）", _scout))
@@ -130,6 +132,19 @@ func _offer() -> void:
 		shell.refresh_status()
 	else:
 		result.text = "失敗：%s" % r.get("reason", "")
+
+
+func _loan_in() -> void:
+	var p: Player = w().players[selected_id]
+	var r = session.loan_in(p.id, 0.5)
+	if r.get("accepted", false):
+		result.text = "成功！%s 租借加入到本季結束。" % p.handle
+		result.add_theme_color_override("font_color", UIKit.GOOD)
+		selected_id = ""
+		refresh()
+		shell.refresh_status()
+	else:
+		result.text = "租借失敗：%s" % r.get("reason", "")
 
 
 func _scout() -> void:

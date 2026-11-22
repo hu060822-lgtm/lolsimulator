@@ -34,9 +34,20 @@ func build() -> void:
 	add_child(margin)
 	var root := UIKit.vbox(12)
 	margin.add_child(root)
-	var title_row := UIKit.hbox(12)
-	title_row.add_child(UIKit.label("ESPORT: LOL SIMULATOR", 30, UIKit.TEXT))
-	title_row.add_child(UIKit.pill("Build a Legacy. Not Just a Team.", UIKit.ACCENT))
+	var title_row := UIKit.hbox(16)
+	var tv := UIKit.vbox(0)
+	var t1 := UIKit.label("ESPORT", 14, UIKit.GOLD)
+	t1.add_theme_font_override("font", UIKit.head_font())
+	tv.add_child(t1)
+	var t2 := UIKit.label("LOL SIMULATOR", 36, UIKit.GOLD_LIGHT)
+	t2.add_theme_font_override("font", UIKit.head_font())
+	t2.add_theme_color_override("font_shadow_color", Color(UIKit.GOLD, 0.35))
+	t2.add_theme_constant_override("shadow_offset_y", 2)
+	tv.add_child(t2)
+	title_row.add_child(tv)
+	var tag := UIKit.label("Build a Legacy. Not Just a Team.", 15, UIKit.MUTED)
+	tag.size_flags_vertical = Control.SIZE_SHRINK_END
+	title_row.add_child(tag)
 	root.add_child(title_row)
 	# 資料庫選擇
 	var mods := UIKit.hbox(8)
@@ -71,7 +82,7 @@ func build() -> void:
 	card_grid.add_theme_constant_override("h_separation", 8)
 	card_grid.add_theme_constant_override("v_separation", 8)
 	left.add_child(card_grid)
-	info = UIKit.rich("[color=#8a90a0]選擇一支俱樂部。聲望越低，資源越少、挑戰越大。[/color]")
+	info = UIKit.rich("[color=#8c95a4]選擇一支俱樂部。聲望越低，資源越少、挑戰越大。[/color]")
 	left.add_child(info)
 	_filter_league(str(leagues[0]["id"]) if not leagues.is_empty() else "")
 
@@ -160,7 +171,9 @@ func _filter_league(league_id: String) -> void:
 		v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 6)
 		v.alignment = BoxContainer.ALIGNMENT_CENTER
 		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var badge := Badge.make(str(c.get("short_name", "")), Badge.club_color(str(c["id"])), 48)
+		var badge := Badge.make(str(c.get("short_name", "")), Badge.club_color(str(c["id"])), 52)
+		badge.shield = true
+		badge.font_scale = 0.3
 		badge.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		v.add_child(badge)
@@ -193,7 +206,7 @@ func _seed() -> int:
 
 func _start_selected() -> void:
 	if selected_club == "":
-		info.text = "[color=#ff5c5c]請先選擇一支俱樂部。[/color]"
+		info.text = "[color=#ff5a6a]請先選擇一支俱樂部。[/color]"
 		return
 	start_with(selected_club, {})
 
@@ -218,7 +231,7 @@ func _start_custom() -> void:
 func start_with(club_id: String, custom: Dictionary) -> void:
 	var errors = session.new_game(module_dir, _seed(), club_id, custom)
 	if not errors.is_empty():
-		info.text = "[color=#ff5c5c]%s[/color]" % "\n".join(errors)
+		info.text = "[color=#ff5a6a]%s[/color]" % "\n".join(errors)
 		return
 	session.manual_draft = manual.button_pressed
 	shell.start_game()

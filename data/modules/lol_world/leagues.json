@@ -13,8 +13,8 @@
         "days_between_rounds": 3
       },
       "playoffs": {
-        "type": "single_elimination",
-        "teams": 4,
+        "type": "double_elimination",
+        "teams": 6,
         "best_of": 5
       },
       "wage_cap": 3200000,
@@ -23,7 +23,8 @@
         "msi": 2,
         "first_stand": 1
       },
-      "import_limit": 1
+      "import_limit": 1,
+      "franchise": true
     }
   },
   {
@@ -40,8 +41,8 @@
         "days_between_rounds": 6
       },
       "playoffs": {
-        "type": "single_elimination",
-        "teams": 4,
+        "type": "double_elimination",
+        "teams": 8,
         "best_of": 5
       },
       "wage_cap": 3600000,
@@ -50,7 +51,8 @@
         "msi": 2,
         "first_stand": 1
       },
-      "import_limit": 2
+      "import_limit": 2,
+      "franchise": true
     }
   },
   {
@@ -68,7 +70,7 @@
       },
       "playoffs": {
         "type": "single_elimination",
-        "teams": 4,
+        "teams": 6,
         "best_of": 5
       },
       "wage_cap": 2600000,
@@ -77,7 +79,8 @@
         "msi": 2,
         "first_stand": 1
       },
-      "import_limit": 2
+      "import_limit": 2,
+      "franchise": true
     }
   },
   {
@@ -95,7 +98,7 @@
       },
       "playoffs": {
         "type": "single_elimination",
-        "teams": 4,
+        "teams": 6,
         "best_of": 5
       },
       "wage_cap": 2200000,
@@ -104,7 +107,8 @@
         "msi": 2,
         "first_stand": 1
       },
-      "import_limit": 2
+      "import_limit": 2,
+      "franchise": true
     }
   },
   {
@@ -121,8 +125,8 @@
         "days_between_rounds": 4
       },
       "playoffs": {
-        "type": "single_elimination",
-        "teams": 4,
+        "type": "double_elimination",
+        "teams": 6,
         "best_of": 5
       },
       "wage_cap": 1700000,
@@ -132,7 +136,8 @@
         "first_stand": 1
       },
       "revenue_share": 180000,
-      "import_limit": 2
+      "import_limit": 2,
+      "franchise": true
     }
   },
   {
@@ -202,7 +207,9 @@
       "playoffs": {
         "type": "single_elimination",
         "teams": 4,
-        "best_of": 5
+        "best_of": 5,
+        "first_gap": 2,
+        "days_between": 2
       },
       "stakes": {
         "regular": 1.2,
@@ -221,7 +228,7 @@
     "format": {
       "timing": "midseason",
       "after_frac": 0.65,
-      "break_days": 22,
+      "break_days": 26,
       "scale": 0.6,
       "qualify_per_league": 2,
       "regular": {
@@ -230,9 +237,11 @@
         "days_between_rounds": 1
       },
       "playoffs": {
-        "type": "single_elimination",
-        "teams": 4,
-        "best_of": 5
+        "type": "double_elimination",
+        "teams": 8,
+        "best_of": 5,
+        "first_gap": 2,
+        "days_between": 2
       },
       "stakes": {
         "regular": 1.3,

@@ -36,9 +36,9 @@ func build() -> void:
 	_sync_chips()
 	var row := UIKit.hbox(12)
 	add_child(row)
-	standings = UIKit.table(["#", "隊伍", "勝", "敗", "小分", "小分差"], 300)
+	standings = UIKit.table(["#", "隊伍", "勝", "敗", "小分", "小分差"], 470, [1])
 	row.add_child(standings)
-	fixtures = UIKit.table(["日", "階段", "主隊", "客隊", "結果"], 300)
+	fixtures = UIKit.table(["日", "階段", "主隊", "客隊", "結果"], 470, [1, 4])
 	fixtures.item_selected.connect(_on_fixture)
 	row.add_child(fixtures)
 	review = UIKit.vbox(6)
@@ -63,13 +63,13 @@ func refresh() -> void:
 		var res := ""
 		if fx["played"]:
 			res = "%d-%d" % [int(fx["result"]["score"][fx["home"]]), int(fx["result"]["score"][fx["away"]])]
-		var it := UIKit.add_row(fixtures, [int(fx["day"]), stage_names.get(fx["stage"], fx["stage"]), ww.clubs[fx["home"]].short_name, ww.clubs[fx["away"]].short_name, res], fx["id"])
+		var it := UIKit.add_row(fixtures, [int(fx["day"]), str(fx.get("label", stage_names.get(fx["stage"], fx["stage"]))), ww.clubs[fx["home"]].short_name, ww.clubs[fx["away"]].short_name, res], fx["id"])
 		if fx["home"] == ww.human_club_id or fx["away"] == ww.human_club_id:
 			it.set_custom_color(2, UIKit.ACCENT)
 			it.set_custom_color(3, UIKit.ACCENT)
 	if lg.champion_id != "":
 		UIKit.clear(review)
-		review.add_child(UIKit.label("🏆 本季冠軍：%s" % ww.clubs[lg.champion_id].name, 18, UIKit.WARN))
+		review.add_child(UIKit.label("本季冠軍：%s" % ww.clubs[lg.champion_id].name, 18, UIKit.WARN))
 	else:
 		UIKit.clear(review)
 		review.add_child(UIKit.muted("點選有結果的玩家比賽，查看逐局回顧。"))
