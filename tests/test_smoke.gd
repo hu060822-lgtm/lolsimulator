@@ -24,3 +24,14 @@ func test_single_match_runs() -> void:
 	for e in g["events"]:
 		print("   [%02d'] %s  ← %s" % [e["minute"], e["text"], ", ".join(e["causes"])])
 	check(g["duration"] >= 20 and g["duration"] <= 60, "plausible duration")
+
+
+func test_champion_roster_complete() -> void:
+	var m = DataModule.load_from_dir(MODULE_DIR)
+	check_eq(m.champions.size(), 173, "full LoL champion roster")
+	var names := {}
+	for c in m.champions:
+		check(c.get("name_en", "") != "", "%s has English name" % c["id"])
+		check(c.get("class", "") in UIKit.CLASS_NAMES, "%s has a class" % c["id"])
+		names[c["name"]] = true
+	check_eq(names.size(), m.champions.size(), "Chinese names are unique")

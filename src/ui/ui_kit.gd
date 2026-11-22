@@ -15,6 +15,8 @@ const WARN := Color("f5b83d")
 const BLUE_SIDE := Color("4f8cff")
 const RED_SIDE := Color("ff6b6b")
 
+const CLASS_NAMES := {"tank": "坦克", "fighter": "戰士", "assassin": "刺客", "mage": "法師", "marksman": "射手", "enchanter": "輔助"}
+const TAG_NAMES := {"engage": "開戰", "disengage": "反開", "poke": "消耗", "pick": "抓單", "splitpush": "分推", "teamfight": "團戰", "peel": "保護", "frontline": "前排", "burst": "爆發", "dps": "持續輸出", "waveclear": "清線", "mobility": "機動", "siege": "攻城"}
 const ROLE_NAMES := {"TOP": "上路", "JUNGLE": "打野", "MID": "中路", "ADC": "下路", "SUPPORT": "輔助"}
 const PLAN_NAMES := {"flexible": "彈性（依陣容）", "early_aggression": "前期進攻", "late_scaling": "後期發育", "split_push": "分推", "teamfight": "團戰", "pick": "抓單", "poke_siege": "消耗圍塔", "protect": "保護後排"}
 const PHASE_NAMES := {"preseason": "季前賽", "regular": "例行賽", "playoffs": "季後賽", "offseason": "休賽季（轉會期）"}
@@ -228,3 +230,12 @@ static func club_label(c) -> String:
 	if c == null:
 		return "?"
 	return "%s（%s）" % [c.name, c.short_name] if c.short_name != "" else c.name
+
+
+## 英雄說明（tooltip 用）
+static func champion_info(c: Champion) -> String:
+	var tags: Array = c.tags.keys()
+	tags.sort_custom(func(a, b): return c.tags[a] > c.tags[b])
+	var parts = tags.map(func(t): return "%s %s" % [TAG_NAMES.get(t, t), "★".repeat(int(c.tags[t]))])
+	return "%s %s・%s・%s\n位置：%s\n強勢期：前 %d／中 %d／後 %d　對線 %d　難度 %d\n特性：%s" % [c.name, c.name_en, CLASS_NAMES.get(c.class_type, c.class_type), "物理" if c.damage == "AD" else "魔法",
+		"、".join(c.roles.map(func(r): return ROLE_NAMES.get(r, r))), int(c.early), int(c.mid), int(c.late), int(c.lane), int(c.difficulty), "、".join(parts)]

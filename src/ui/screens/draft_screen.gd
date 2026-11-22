@@ -110,6 +110,7 @@ func refresh() -> void:
 		var info = _champ_info(c, act)
 		var b := UIKit.button(info, _choose.bind(c.id, ""))
 		b.disabled = ds.unavailable.has(c.id)
+		b.tooltip_text = UIKit.champion_info(c)
 		b.custom_minimum_size = Vector2(128, 44)
 		b.add_theme_font_size_override("font_size", 13)
 		grid.add_child(b)
@@ -126,7 +127,7 @@ func _champ_info(c: Champion, act: String) -> String:
 		var p: Player = team.players.get(r)
 		if p:
 			best = maxf(best, p.mastery(c.id))
-	return "%s%s\n%s %d" % [c.name, arrow, "我方熟練" if act == "pick" else "對手熟練", int(best)]
+	return "%s%s\n%s・%s %d" % [c.name, arrow, UIKit.CLASS_NAMES.get(c.class_type, ""), "我方" if act == "pick" else "對手", int(best)]
 
 
 func _team_col(col: VBoxContainer, side: String) -> void:

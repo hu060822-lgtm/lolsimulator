@@ -1,6 +1,7 @@
 [
  {
   "id": "aatrox",
+  "class": "fighter",
   "name": "厄薩斯",
   "name_en": "Aatrox",
   "roles": [
@@ -23,6 +24,7 @@
  },
  {
   "id": "camille",
+  "class": "fighter",
   "name": "卡蜜兒",
   "name_en": "Camille",
   "roles": [
@@ -44,6 +46,7 @@
  },
  {
   "id": "darius",
+  "class": "fighter",
   "name": "達瑞斯",
   "name_en": "Darius",
   "roles": [
@@ -65,6 +68,7 @@
  },
  {
   "id": "fiora",
+  "class": "fighter",
   "name": "菲歐拉",
   "name_en": "Fiora",
   "roles": [
@@ -86,6 +90,7 @@
  },
  {
   "id": "garen",
+  "class": "fighter",
   "name": "蓋倫",
   "name_en": "Garen",
   "roles": [
@@ -107,6 +112,7 @@
  },
  {
   "id": "gnar",
+  "class": "fighter",
   "name": "吶兒",
   "name_en": "Gnar",
   "roles": [
@@ -129,6 +135,7 @@
  },
  {
   "id": "gragas",
+  "class": "fighter",
   "name": "古拉格斯",
   "name_en": "Gragas",
   "roles": [
@@ -153,6 +160,7 @@
  },
  {
   "id": "gwen",
+  "class": "fighter",
   "name": "關",
   "name_en": "Gwen",
   "roles": [
@@ -174,6 +182,7 @@
  },
  {
   "id": "irelia",
+  "class": "fighter",
   "name": "伊瑞莉雅",
   "name_en": "Irelia",
   "roles": [
@@ -197,6 +206,7 @@
  },
  {
   "id": "jax",
+  "class": "fighter",
   "name": "賈克斯",
   "name_en": "Jax",
   "roles": [
@@ -219,6 +229,7 @@
  },
  {
   "id": "jayce",
+  "class": "fighter",
   "name": "杰西",
   "name_en": "Jayce",
   "roles": [
@@ -241,6 +252,7 @@
  },
  {
   "id": "kennen",
+  "class": "mage",
   "name": "凱能",
   "name_en": "Kennen",
   "roles": [
@@ -262,6 +274,7 @@
  },
  {
   "id": "ksante",
+  "class": "tank",
   "name": "卡桑帝",
   "name_en": "K'Sante",
   "roles": [
@@ -284,6 +297,7 @@
  },
  {
   "id": "malphite",
+  "class": "tank",
   "name": "墨菲特",
   "name_en": "Malphite",
   "roles": [
@@ -306,6 +320,7 @@
  },
  {
   "id": "ornn",
+  "class": "tank",
   "name": "鄂爾",
   "name_en": "Ornn",
   "roles": [
@@ -327,6 +342,7 @@
  },
  {
   "id": "renekton",
+  "class": "fighter",
   "name": "雷尼克頓",
   "name_en": "Renekton",
   "roles": [
@@ -349,6 +365,7 @@
  },
  {
   "id": "riven",
+  "class": "fighter",
   "name": "雷玟",
   "name_en": "Riven",
   "roles": [
@@ -370,6 +387,7 @@
  },
  {
   "id": "rumble",
+  "class": "fighter",
   "name": "藍寶",
   "name_en": "Rumble",
   "roles": [
@@ -392,6 +410,7 @@
  },
  {
   "id": "sion",
+  "class": "tank",
   "name": "賽恩",
   "name_en": "Sion",
   "roles": [
@@ -413,6 +432,7 @@
  },
  {
   "id": "shen",
+  "class": "tank",
   "name": "慎",
   "name_en": "Shen",
   "roles": [
@@ -435,6 +455,7 @@
  },
  {
   "id": "leesin",
+  "class": "assassin",
   "name": "李星",
   "name_en": "Lee Sin",
   "roles": [
@@ -456,6 +477,7 @@
  },
  {
   "id": "elise",
+  "class": "mage",
   "name": "伊莉絲",
   "name_en": "Elise",
   "roles": [
@@ -476,6 +498,7 @@
  },
  {
   "id": "jarvaniv",
+  "class": "fighter",
   "name": "嘉文四世",
   "name_en": "Jarvan IV",
   "roles": [
@@ -497,6 +520,7 @@
  },
  {
   "id": "sejuani",
+  "class": "tank",
   "name": "史瓦妮",
   "name_en": "Sejuani",
   "roles": [
@@ -518,6 +542,7 @@
  },
  {
   "id": "vi",
+  "class": "fighter",
   "name": "菲艾",
   "name_en": "Vi",
   "roles": [
@@ -539,6 +564,7 @@
  },
  {
   "id": "khazix",
+  "class": "assassin",
   "name": "卡力斯",
   "name_en": "Kha'Zix",
   "roles": [
@@ -560,6 +586,7 @@
  },
  {
   "id": "graves",
+  "class": "fighter",
   "name": "葛雷夫",
   "name_en": "Graves",
   "roles": [
@@ -581,6 +608,7 @@
  },
  {
   "id": "nidalee",
+  "class": "assassin",
   "name": "奈德麗",
   "name_en": "Nidalee",
   "roles": [
@@ -602,6 +630,7 @@
  },
  {
   "id": "reksai",
+  "class": "assassin",
   "name": "雷珂煞",
   "name_en": "Rek'Sai",
   "roles": [
@@ -623,6 +652,7 @@
  },
  {
   "id": "xinzhao",
+  "class": "fighter",
   "name": "趙信",
   "name_en": "Xin Zhao",
   "roles": [
@@ -644,6 +674,7 @@
  },
  {
   "id": "viego",
+  "class": "fighter",
   "name": "維爾戈",
   "name_en": "Viego",
   "roles": [
@@ -665,6 +696,7 @@
  },
  {
   "id": "wukong",
+  "class": "fighter",
   "name": "悟空",
   "name_en": "Wukong",
   "roles": [
@@ -687,6 +719,7 @@
  },
  {
   "id": "maokai",
+  "class": "tank",
   "name": "茂凱",
   "name_en": "Maokai",
   "roles": [
@@ -710,6 +743,7 @@
  },
  {
   "id": "lillia",
+  "class": "mage",
   "name": "莉莉亞",
   "name_en": "Lillia",
   "roles": [
@@ -731,6 +765,7 @@
  },
  {
   "id": "kindred",
+  "class": "marksman",
   "name": "金德",
   "name_en": "Kindred",
   "roles": [
@@ -752,6 +787,7 @@
  },
  {
   "id": "nocturne",
+  "class": "fighter",
   "name": "夜曲",
   "name_en": "Nocturne",
   "roles": [
@@ -773,6 +809,7 @@
  },
  {
   "id": "hecarim",
+  "class": "fighter",
   "name": "赫克林",
   "name_en": "Hecarim",
   "roles": [
@@ -794,6 +831,7 @@
  },
  {
   "id": "zac",
+  "class": "tank",
   "name": "札克",
   "name_en": "Zac",
   "roles": [
@@ -815,6 +853,7 @@
  },
  {
   "id": "rengar",
+  "class": "assassin",
   "name": "雷葛爾",
   "name_en": "Rengar",
   "roles": [
@@ -835,6 +874,7 @@
  },
  {
   "id": "ekko",
+  "class": "assassin",
   "name": "艾克",
   "name_en": "Ekko",
   "roles": [
@@ -857,6 +897,7 @@
  },
  {
   "id": "taliyah",
+  "class": "mage",
   "name": "塔莉雅",
   "name_en": "Taliyah",
   "roles": [
@@ -880,6 +921,7 @@
  },
  {
   "id": "poppy",
+  "class": "tank",
   "name": "波比",
   "name_en": "Poppy",
   "roles": [
@@ -904,6 +946,7 @@
  },
  {
   "id": "ahri",
+  "class": "mage",
   "name": "阿璃",
   "name_en": "Ahri",
   "roles": [
@@ -925,6 +968,7 @@
  },
  {
   "id": "azir",
+  "class": "mage",
   "name": "阿祈爾",
   "name_en": "Azir",
   "roles": [
@@ -947,6 +991,7 @@
  },
  {
   "id": "orianna",
+  "class": "mage",
   "name": "奧莉安娜",
   "name_en": "Orianna",
   "roles": [
@@ -969,6 +1014,7 @@
  },
  {
   "id": "syndra",
+  "class": "mage",
   "name": "星朵拉",
   "name_en": "Syndra",
   "roles": [
@@ -990,6 +1036,7 @@
  },
  {
   "id": "leblanc",
+  "class": "assassin",
   "name": "勒布朗",
   "name_en": "LeBlanc",
   "roles": [
@@ -1011,6 +1058,7 @@
  },
  {
   "id": "zed",
+  "class": "assassin",
   "name": "劫",
   "name_en": "Zed",
   "roles": [
@@ -1033,6 +1081,7 @@
  },
  {
   "id": "yasuo",
+  "class": "fighter",
   "name": "犽宿",
   "name_en": "Yasuo",
   "roles": [
@@ -1055,6 +1104,7 @@
  },
  {
   "id": "yone",
+  "class": "fighter",
   "name": "犽凝",
   "name_en": "Yone",
   "roles": [
@@ -1078,6 +1128,7 @@
  },
  {
   "id": "viktor",
+  "class": "mage",
   "name": "維克特",
   "name_en": "Viktor",
   "roles": [
@@ -1099,6 +1150,7 @@
  },
  {
   "id": "ryze",
+  "class": "fighter",
   "name": "雷茲",
   "name_en": "Ryze",
   "roles": [
@@ -1122,6 +1174,7 @@
  },
  {
   "id": "cassiopeia",
+  "class": "mage",
   "name": "卡莎碧雅",
   "name_en": "Cassiopeia",
   "roles": [
@@ -1143,6 +1196,7 @@
  },
  {
   "id": "corki",
+  "class": "marksman",
   "name": "庫奇",
   "name_en": "Corki",
   "roles": [
@@ -1164,6 +1218,7 @@
  },
  {
   "id": "galio",
+  "class": "tank",
   "name": "加里歐",
   "name_en": "Galio",
   "roles": [
@@ -1187,6 +1242,7 @@
  },
  {
   "id": "akali",
+  "class": "assassin",
   "name": "阿卡莉",
   "name_en": "Akali",
   "roles": [
@@ -1209,6 +1265,7 @@
  },
  {
   "id": "sylas",
+  "class": "fighter",
   "name": "賽勒斯",
   "name_en": "Sylas",
   "roles": [
@@ -1232,6 +1289,7 @@
  },
  {
   "id": "twistedfate",
+  "class": "mage",
   "name": "逆命",
   "name_en": "Twisted Fate",
   "roles": [
@@ -1252,6 +1310,7 @@
  },
  {
   "id": "annie",
+  "class": "mage",
   "name": "安妮",
   "name_en": "Annie",
   "roles": [
@@ -1274,6 +1333,7 @@
  },
  {
   "id": "lissandra",
+  "class": "mage",
   "name": "麗珊卓",
   "name_en": "Lissandra",
   "roles": [
@@ -1296,6 +1356,7 @@
  },
  {
   "id": "vex",
+  "class": "mage",
   "name": "薇可絲",
   "name_en": "Vex",
   "roles": [
@@ -1318,6 +1379,7 @@
  },
  {
   "id": "zoe",
+  "class": "mage",
   "name": "柔依",
   "name_en": "Zoe",
   "roles": [
@@ -1339,6 +1401,7 @@
  },
  {
   "id": "swain",
+  "class": "fighter",
   "name": "斯溫",
   "name_en": "Swain",
   "roles": [
@@ -1361,6 +1424,7 @@
  },
  {
   "id": "anivia",
+  "class": "mage",
   "name": "艾妮維亞",
   "name_en": "Anivia",
   "roles": [
@@ -1383,6 +1447,7 @@
  },
  {
   "id": "veigar",
+  "class": "mage",
   "name": "維迦",
   "name_en": "Veigar",
   "roles": [
@@ -1404,6 +1469,7 @@
  },
  {
   "id": "lux",
+  "class": "mage",
   "name": "拉克絲",
   "name_en": "Lux",
   "roles": [
@@ -1427,6 +1493,7 @@
  },
  {
   "id": "xerath",
+  "class": "mage",
   "name": "齊勒斯",
   "name_en": "Xerath",
   "roles": [
@@ -1449,6 +1516,7 @@
  },
  {
   "id": "ziggs",
+  "class": "mage",
   "name": "希格斯",
   "name_en": "Ziggs",
   "roles": [
@@ -1471,6 +1539,7 @@
  },
  {
   "id": "vladimir",
+  "class": "mage",
   "name": "弗拉迪米爾",
   "name_en": "Vladimir",
   "roles": [
@@ -1492,6 +1561,7 @@
  },
  {
   "id": "katarina",
+  "class": "assassin",
   "name": "卡特蓮娜",
   "name_en": "Katarina",
   "roles": [
@@ -1513,6 +1583,7 @@
  },
  {
   "id": "neeko",
+  "class": "mage",
   "name": "妮可",
   "name_en": "Neeko",
   "roles": [
@@ -1535,6 +1606,7 @@
  },
  {
   "id": "malzahar",
+  "class": "mage",
   "name": "馬爾札哈",
   "name_en": "Malzahar",
   "roles": [
@@ -1555,6 +1627,7 @@
  },
  {
   "id": "qiyana",
+  "class": "assassin",
   "name": "姬亞娜",
   "name_en": "Qiyana",
   "roles": [
@@ -1577,6 +1650,7 @@
  },
  {
   "id": "jinx",
+  "class": "marksman",
   "name": "吉茵珂絲",
   "name_en": "Jinx",
   "roles": [
@@ -1598,6 +1672,7 @@
  },
  {
   "id": "caitlyn",
+  "class": "marksman",
   "name": "凱特琳",
   "name_en": "Caitlyn",
   "roles": [
@@ -1619,6 +1694,7 @@
  },
  {
   "id": "ezreal",
+  "class": "marksman",
   "name": "伊澤瑞爾",
   "name_en": "Ezreal",
   "roles": [
@@ -1639,6 +1715,7 @@
  },
  {
   "id": "kaisa",
+  "class": "marksman",
   "name": "凱莎",
   "name_en": "Kai'Sa",
   "roles": [
@@ -1660,6 +1737,7 @@
  },
  {
   "id": "aphelios",
+  "class": "marksman",
   "name": "亞菲利歐",
   "name_en": "Aphelios",
   "roles": [
@@ -1681,6 +1759,7 @@
  },
  {
   "id": "xayah",
+  "class": "marksman",
   "name": "剎雅",
   "name_en": "Xayah",
   "roles": [
@@ -1702,6 +1781,7 @@
  },
  {
   "id": "varus",
+  "class": "marksman",
   "name": "法洛士",
   "name_en": "Varus",
   "roles": [
@@ -1724,6 +1804,7 @@
  },
  {
   "id": "jhin",
+  "class": "marksman",
   "name": "燼",
   "name_en": "Jhin",
   "roles": [
@@ -1745,6 +1826,7 @@
  },
  {
   "id": "ashe",
+  "class": "marksman",
   "name": "艾希",
   "name_en": "Ashe",
   "roles": [
@@ -1768,6 +1850,7 @@
  },
  {
   "id": "lucian",
+  "class": "marksman",
   "name": "路西恩",
   "name_en": "Lucian",
   "roles": [
@@ -1790,6 +1873,7 @@
  },
  {
   "id": "draven",
+  "class": "marksman",
   "name": "達瑞文",
   "name_en": "Draven",
   "roles": [
@@ -1810,6 +1894,7 @@
  },
  {
   "id": "tristana",
+  "class": "marksman",
   "name": "崔絲塔娜",
   "name_en": "Tristana",
   "roles": [
@@ -1832,6 +1917,7 @@
  },
  {
   "id": "missfortune",
+  "class": "marksman",
   "name": "好運姐",
   "name_en": "Miss Fortune",
   "roles": [
@@ -1853,6 +1939,7 @@
  },
  {
   "id": "sivir",
+  "class": "marksman",
   "name": "希維爾",
   "name_en": "Sivir",
   "roles": [
@@ -1874,6 +1961,7 @@
  },
  {
   "id": "kalista",
+  "class": "marksman",
   "name": "克黎思妲",
   "name_en": "Kalista",
   "roles": [
@@ -1896,6 +1984,7 @@
  },
  {
   "id": "zeri",
+  "class": "marksman",
   "name": "婕莉",
   "name_en": "Zeri",
   "roles": [
@@ -1916,6 +2005,7 @@
  },
  {
   "id": "vayne",
+  "class": "marksman",
   "name": "汎",
   "name_en": "Vayne",
   "roles": [
@@ -1938,6 +2028,7 @@
  },
  {
   "id": "twitch",
+  "class": "marksman",
   "name": "圖奇",
   "name_en": "Twitch",
   "roles": [
@@ -1959,6 +2050,7 @@
  },
  {
   "id": "samira",
+  "class": "marksman",
   "name": "煞蜜拉",
   "name_en": "Samira",
   "roles": [
@@ -1980,6 +2072,7 @@
  },
  {
   "id": "senna",
+  "class": "marksman",
   "name": "姍娜",
   "name_en": "Senna",
   "roles": [
@@ -2002,6 +2095,7 @@
  },
  {
   "id": "thresh",
+  "class": "tank",
   "name": "瑟雷西",
   "name_en": "Thresh",
   "roles": [
@@ -2024,6 +2118,7 @@
  },
  {
   "id": "nautilus",
+  "class": "tank",
   "name": "納帝魯斯",
   "name_en": "Nautilus",
   "roles": [
@@ -2045,6 +2140,7 @@
  },
  {
   "id": "leona",
+  "class": "tank",
   "name": "雷歐娜",
   "name_en": "Leona",
   "roles": [
@@ -2066,6 +2162,7 @@
  },
  {
   "id": "rakan",
+  "class": "enchanter",
   "name": "銳空",
   "name_en": "Rakan",
   "roles": [
@@ -2088,6 +2185,7 @@
  },
  {
   "id": "alistar",
+  "class": "tank",
   "name": "亞歷斯塔",
   "name_en": "Alistar",
   "roles": [
@@ -2109,6 +2207,7 @@
  },
  {
   "id": "braum",
+  "class": "tank",
   "name": "布郎姆",
   "name_en": "Braum",
   "roles": [
@@ -2130,6 +2229,7 @@
  },
  {
   "id": "lulu",
+  "class": "enchanter",
   "name": "露璐",
   "name_en": "Lulu",
   "roles": [
@@ -2151,6 +2251,7 @@
  },
  {
   "id": "janna",
+  "class": "enchanter",
   "name": "珍娜",
   "name_en": "Janna",
   "roles": [
@@ -2171,6 +2272,7 @@
  },
  {
   "id": "karma",
+  "class": "enchanter",
   "name": "卡瑪",
   "name_en": "Karma",
   "roles": [
@@ -2194,6 +2296,7 @@
  },
  {
   "id": "bard",
+  "class": "enchanter",
   "name": "巴德",
   "name_en": "Bard",
   "roles": [
@@ -2216,6 +2319,7 @@
  },
  {
   "id": "renata",
+  "class": "enchanter",
   "name": "睿娜妲",
   "name_en": "Renata Glasc",
   "roles": [
@@ -2237,6 +2341,7 @@
  },
  {
   "id": "rell",
+  "class": "tank",
   "name": "銳兒",
   "name_en": "Rell",
   "roles": [
@@ -2258,6 +2363,7 @@
  },
  {
   "id": "yuumi",
+  "class": "enchanter",
   "name": "悠咪",
   "name_en": "Yuumi",
   "roles": [
@@ -2278,6 +2384,7 @@
  },
  {
   "id": "nami",
+  "class": "enchanter",
   "name": "娜米",
   "name_en": "Nami",
   "roles": [
@@ -2300,6 +2407,7 @@
  },
  {
   "id": "soraka",
+  "class": "enchanter",
   "name": "索拉卡",
   "name_en": "Soraka",
   "roles": [
@@ -2320,6 +2428,7 @@
  },
  {
   "id": "blitzcrank",
+  "class": "tank",
   "name": "布里茨",
   "name_en": "Blitzcrank",
   "roles": [
@@ -2340,6 +2449,7 @@
  },
  {
   "id": "pyke",
+  "class": "assassin",
   "name": "派克",
   "name_en": "Pyke",
   "roles": [
@@ -2361,6 +2471,7 @@
  },
  {
   "id": "tahmkench",
+  "class": "tank",
   "name": "貪啃奇",
   "name_en": "Tahm Kench",
   "roles": [
@@ -2382,6 +2493,7 @@
  },
  {
   "id": "milio",
+  "class": "enchanter",
   "name": "米里歐",
   "name_en": "Milio",
   "roles": [
@@ -2397,6 +2509,1370 @@
   "tags": {
    "peel": 3,
    "disengage": 2
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "akshan",
+  "class": "fighter",
+  "name": "埃可尚",
+  "name_en": "Akshan",
+  "roles": [
+   "MID",
+   "ADC"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "pick": 2,
+   "mobility": 2,
+   "burst": 1,
+   "dps": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "ambessa",
+  "class": "fighter",
+  "name": "安比薩",
+  "name_en": "Ambessa",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "engage": 2,
+   "mobility": 2,
+   "dps": 2
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "amumu",
+  "class": "tank",
+  "name": "阿姆姆",
+  "name_en": "Amumu",
+  "roles": [
+   "JUNGLE",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "engage": 3,
+   "frontline": 3,
+   "teamfight": 3
+  },
+  "difficulty": 2
+ },
+ {
+  "id": "aurelionsol",
+  "class": "mage",
+  "name": "翱銳龍獸",
+  "name_en": "Aurelion Sol",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 3,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "teamfight": 2,
+   "waveclear": 3,
+   "poke": 1,
+   "siege": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "aurora",
+  "class": "mage",
+  "name": "歐羅拉",
+  "name_en": "Aurora",
+  "roles": [
+   "MID",
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "burst": 2,
+   "mobility": 2,
+   "pick": 1,
+   "teamfight": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "belveth",
+  "class": "fighter",
+  "name": "貝爾薇斯",
+  "name_en": "Bel'Veth",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "dps": 3,
+   "mobility": 2,
+   "splitpush": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "brand",
+  "class": "mage",
+  "name": "布蘭德",
+  "name_en": "Brand",
+  "roles": [
+   "SUPPORT",
+   "MID"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "teamfight": 3,
+   "poke": 2,
+   "burst": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "briar",
+  "class": "fighter",
+  "name": "布蕾爾",
+  "name_en": "Briar",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "engage": 2,
+   "dps": 2,
+   "pick": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "chogath",
+  "class": "tank",
+  "name": "科加斯",
+  "name_en": "Cho'Gath",
+  "roles": [
+   "TOP",
+   "MID"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "frontline": 3,
+   "pick": 1,
+   "teamfight": 2
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "diana",
+  "class": "fighter",
+  "name": "黛安娜",
+  "name_en": "Diana",
+  "roles": [
+   "JUNGLE",
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "burst": 2,
+   "teamfight": 3
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "drmundo",
+  "class": "tank",
+  "name": "蒙多醫生",
+  "name_en": "Dr. Mundo",
+  "roles": [
+   "TOP",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "frontline": 3,
+   "dps": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "evelynn",
+  "class": "assassin",
+  "name": "伊芙琳",
+  "name_en": "Evelynn",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "pick": 3,
+   "burst": 3
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "fiddlesticks",
+  "class": "mage",
+  "name": "費德提克",
+  "name_en": "Fiddlesticks",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "teamfight": 3,
+   "burst": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "fizz",
+  "class": "assassin",
+  "name": "飛斯",
+  "name_en": "Fizz",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "burst": 3,
+   "mobility": 3,
+   "pick": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "gangplank",
+  "class": "fighter",
+  "name": "剛普朗克",
+  "name_en": "Gangplank",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "teamfight": 2,
+   "waveclear": 2,
+   "splitpush": 2,
+   "poke": 1
+  },
+  "difficulty": 9
+ },
+ {
+  "id": "heimerdinger",
+  "class": "mage",
+  "name": "漢默丁格",
+  "name_en": "Heimerdinger",
+  "roles": [
+   "MID",
+   "TOP",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 8,
+  "damage": "AP",
+  "tags": {
+   "poke": 2,
+   "siege": 2,
+   "waveclear": 3
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "hwei",
+  "class": "mage",
+  "name": "赫威",
+  "name_en": "Hwei",
+  "roles": [
+   "MID",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "poke": 3,
+   "teamfight": 2,
+   "pick": 1
+  },
+  "difficulty": 9
+ },
+ {
+  "id": "illaoi",
+  "class": "fighter",
+  "name": "伊羅旖",
+  "name_en": "Illaoi",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "frontline": 1,
+   "teamfight": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "ivern",
+  "class": "enchanter",
+  "name": "埃爾文",
+  "name_en": "Ivern",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 3,
+  "damage": "AP",
+  "tags": {
+   "peel": 3,
+   "disengage": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "karthus",
+  "class": "mage",
+  "name": "卡爾瑟斯",
+  "name_en": "Karthus",
+  "roles": [
+   "JUNGLE",
+   "MID"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "teamfight": 2,
+   "dps": 2,
+   "waveclear": 2
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "kassadin",
+  "class": "mage",
+  "name": "卡薩丁",
+  "name_en": "Kassadin",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 3,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 3,
+  "damage": "AP",
+  "tags": {
+   "burst": 2,
+   "mobility": 3,
+   "pick": 1
+  },
+  "difficulty": 8
+ },
+ {
+  "id": "kayle",
+  "class": "mage",
+  "name": "凱爾",
+  "name_en": "Kayle",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 3,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 3,
+  "damage": "AP",
+  "tags": {
+   "dps": 3,
+   "peel": 1,
+   "splitpush": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "kayn",
+  "class": "assassin",
+  "name": "慨影",
+  "name_en": "Kayn",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 4,
+  "damage": "AD",
+  "tags": {
+   "pick": 2,
+   "burst": 2,
+   "mobility": 2
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "kled",
+  "class": "fighter",
+  "name": "克雷德",
+  "name_en": "Kled",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "engage": 3,
+   "dps": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "kogmaw",
+  "class": "marksman",
+  "name": "寇格魔",
+  "name_en": "Kog'Maw",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "dps": 3,
+   "siege": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "locke",
+  "class": "assassin",
+  "name": "洛克",
+  "name_en": "Locke",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "burst": 3,
+   "pick": 3
+  },
+  "difficulty": 8
+ },
+ {
+  "id": "masteryi",
+  "class": "fighter",
+  "name": "易大師",
+  "name_en": "Master Yi",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "dps": 3,
+   "mobility": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "mel",
+  "class": "mage",
+  "name": "梅爾",
+  "name_en": "Mel",
+  "roles": [
+   "MID",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "poke": 2,
+   "burst": 2,
+   "peel": 2
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "mordekaiser",
+  "class": "fighter",
+  "name": "魔鬥凱薩",
+  "name_en": "Mordekaiser",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "frontline": 2,
+   "dps": 2,
+   "pick": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "morgana",
+  "class": "mage",
+  "name": "魔甘娜",
+  "name_en": "Morgana",
+  "roles": [
+   "SUPPORT",
+   "MID"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "pick": 2,
+   "peel": 2,
+   "teamfight": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "naafiri",
+  "class": "assassin",
+  "name": "娜菲芮",
+  "name_en": "Naafiri",
+  "roles": [
+   "MID"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "burst": 3,
+   "pick": 2,
+   "mobility": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "nasus",
+  "class": "fighter",
+  "name": "納瑟斯",
+  "name_en": "Nasus",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 3,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 3,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "frontline": 2
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "nilah",
+  "class": "marksman",
+  "name": "淣菈",
+  "name_en": "Nilah",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "teamfight": 2,
+   "engage": 1,
+   "mobility": 1
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "nunu",
+  "class": "fighter",
+  "name": "努努和威朗普",
+  "name_en": "Nunu & Willump",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "pick": 2,
+   "frontline": 2
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "olaf",
+  "class": "fighter",
+  "name": "歐拉夫",
+  "name_en": "Olaf",
+  "roles": [
+   "TOP",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 8,
+   "mid": 7,
+   "late": 4
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "frontline": 1,
+   "engage": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "pantheon",
+  "class": "fighter",
+  "name": "潘森",
+  "name_en": "Pantheon",
+  "roles": [
+   "TOP",
+   "SUPPORT",
+   "MID"
+  ],
+  "curve": {
+   "early": 9,
+   "mid": 7,
+   "late": 4
+  },
+  "lane": 8,
+  "damage": "AD",
+  "tags": {
+   "pick": 2,
+   "burst": 2,
+   "engage": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "quinn",
+  "class": "fighter",
+  "name": "葵恩",
+  "name_en": "Quinn",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 8,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 2,
+   "pick": 2,
+   "mobility": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "rammus",
+  "class": "tank",
+  "name": "拉姆斯",
+  "name_en": "Rammus",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "engage": 3,
+   "frontline": 3,
+   "pick": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "seraphine",
+  "class": "enchanter",
+  "name": "瑟菈紛",
+  "name_en": "Seraphine",
+  "roles": [
+   "SUPPORT",
+   "MID"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "teamfight": 3,
+   "peel": 2,
+   "poke": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "sett",
+  "class": "fighter",
+  "name": "賽特",
+  "name_en": "Sett",
+  "roles": [
+   "TOP",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "engage": 2,
+   "frontline": 2,
+   "teamfight": 2
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "shaco",
+  "class": "assassin",
+  "name": "薩科",
+  "name_en": "Shaco",
+  "roles": [
+   "JUNGLE",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 6,
+   "late": 5
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "pick": 3,
+   "burst": 2
+  },
+  "difficulty": 8
+ },
+ {
+  "id": "shyvana",
+  "class": "fighter",
+  "name": "希瓦娜",
+  "name_en": "Shyvana",
+  "roles": [
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 4,
+  "damage": "AP",
+  "tags": {
+   "dps": 2,
+   "teamfight": 2,
+   "frontline": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "singed",
+  "class": "fighter",
+  "name": "辛吉德",
+  "name_en": "Singed",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "frontline": 2,
+   "splitpush": 2,
+   "disengage": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "skarner",
+  "class": "tank",
+  "name": "史加納",
+  "name_en": "Skarner",
+  "roles": [
+   "JUNGLE",
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "engage": 3,
+   "pick": 2,
+   "frontline": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "smolder",
+  "class": "marksman",
+  "name": "史矛德",
+  "name_en": "Smolder",
+  "roles": [
+   "ADC",
+   "MID"
+  ],
+  "curve": {
+   "early": 3,
+   "mid": 6,
+   "late": 9
+  },
+  "lane": 5,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "poke": 2,
+   "siege": 1,
+   "waveclear": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "sona",
+  "class": "enchanter",
+  "name": "索娜",
+  "name_en": "Sona",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 4,
+   "mid": 6,
+   "late": 8
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "peel": 2,
+   "teamfight": 2,
+   "poke": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "talon",
+  "class": "assassin",
+  "name": "塔隆",
+  "name_en": "Talon",
+  "roles": [
+   "MID",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "burst": 3,
+   "pick": 2,
+   "mobility": 2
+  },
+  "difficulty": 7
+ },
+ {
+  "id": "taric",
+  "class": "tank",
+  "name": "塔里克",
+  "name_en": "Taric",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "peel": 3,
+   "engage": 1,
+   "frontline": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "teemo",
+  "class": "mage",
+  "name": "提摩",
+  "name_en": "Teemo",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 6,
+   "late": 6
+  },
+  "lane": 7,
+  "damage": "AP",
+  "tags": {
+   "poke": 2,
+   "splitpush": 1,
+   "pick": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "trundle",
+  "class": "fighter",
+  "name": "特朗德",
+  "name_en": "Trundle",
+  "roles": [
+   "JUNGLE",
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "splitpush": 2,
+   "siege": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "tryndamere",
+  "class": "fighter",
+  "name": "泰達米爾",
+  "name_en": "Tryndamere",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "dps": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "udyr",
+  "class": "fighter",
+  "name": "烏迪爾",
+  "name_en": "Udyr",
+  "roles": [
+   "JUNGLE",
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 5,
+  "damage": "AP",
+  "tags": {
+   "frontline": 2,
+   "engage": 1,
+   "dps": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "urgot",
+  "class": "fighter",
+  "name": "烏爾加特",
+  "name_en": "Urgot",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "frontline": 2,
+   "dps": 2,
+   "pick": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "velkoz",
+  "class": "mage",
+  "name": "威寇茲",
+  "name_en": "Vel'Koz",
+  "roles": [
+   "MID",
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "poke": 3,
+   "burst": 2,
+   "siege": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "volibear",
+  "class": "fighter",
+  "name": "弗力貝爾",
+  "name_en": "Volibear",
+  "roles": [
+   "TOP",
+   "JUNGLE"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "engage": 2,
+   "frontline": 2,
+   "dps": 1
+  },
+  "difficulty": 4
+ },
+ {
+  "id": "warwick",
+  "class": "fighter",
+  "name": "沃維克",
+  "name_en": "Warwick",
+  "roles": [
+   "JUNGLE",
+   "TOP"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 5
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "pick": 2,
+   "dps": 2,
+   "engage": 1
+  },
+  "difficulty": 3
+ },
+ {
+  "id": "yorick",
+  "class": "fighter",
+  "name": "約瑞科",
+  "name_en": "Yorick",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "splitpush": 3,
+   "siege": 2
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "yunara",
+  "class": "marksman",
+  "name": "尤娜拉",
+  "name_en": "Yunara",
+  "roles": [
+   "ADC"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 7,
+   "late": 8
+  },
+  "lane": 6,
+  "damage": "AD",
+  "tags": {
+   "dps": 3,
+   "mobility": 1
+  },
+  "difficulty": 5
+ },
+ {
+  "id": "zaahen",
+  "class": "fighter",
+  "name": "薩亨",
+  "name_en": "Zaahen",
+  "roles": [
+   "TOP"
+  ],
+  "curve": {
+   "early": 6,
+   "mid": 7,
+   "late": 7
+  },
+  "lane": 7,
+  "damage": "AD",
+  "tags": {
+   "dps": 2,
+   "frontline": 2,
+   "engage": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "zilean",
+  "class": "enchanter",
+  "name": "極靈",
+  "name_en": "Zilean",
+  "roles": [
+   "SUPPORT",
+   "MID"
+  ],
+  "curve": {
+   "early": 5,
+   "mid": 6,
+   "late": 7
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "peel": 3,
+   "poke": 1,
+   "disengage": 1
+  },
+  "difficulty": 6
+ },
+ {
+  "id": "zyra",
+  "class": "mage",
+  "name": "枷蘿",
+  "name_en": "Zyra",
+  "roles": [
+   "SUPPORT"
+  ],
+  "curve": {
+   "early": 7,
+   "mid": 7,
+   "late": 6
+  },
+  "lane": 6,
+  "damage": "AP",
+  "tags": {
+   "poke": 2,
+   "teamfight": 2,
+   "peel": 1
   },
   "difficulty": 4
  }

@@ -59,7 +59,11 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 		var ch: Champion = ww.champions.get(cid)
 		var m = p.mastery(cid)
 		var meta = ww.patch.meta(cid)
-		right.add_child(UIKit.label("%-12s %d %s" % [ch.name if ch else cid, int(m) if (own or knowledge > 0.4) else int(round(m / 10.0) * 10), "▲" if meta >= 1 else ("▼" if meta <= -1 else "")], 14, UIKit.skill_color(m)))
+		var l2 := UIKit.label("%-12s %d %s" % [ch.name if ch else cid, int(m) if (own or knowledge > 0.4) else int(round(m / 10.0) * 10), "▲" if meta >= 1 else ("▼" if meta <= -1 else "")], 14, UIKit.skill_color(m))
+		l2.mouse_filter = Control.MOUSE_FILTER_PASS
+		if ch:
+			l2.tooltip_text = UIKit.champion_info(ch)
+		right.add_child(l2)
 	right.add_child(UIKit.label("合約與生涯", 16))
 	if p.contract:
 		right.add_child(UIKit.label("年薪 %s・到 %d 年・%s" % [UIKit.money(p.contract.salary), p.contract.end_year, p.contract.role_promise], 14))
