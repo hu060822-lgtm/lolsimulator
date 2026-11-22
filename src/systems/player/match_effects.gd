@@ -35,6 +35,7 @@ static func apply_series(w: WorldState, series: Dictionary, stakes: float) -> vo
 			var champ: String = s["champion"]
 			p.champion_pool[champ] = minf(p.mastery(champ) + 0.5, 100.0)
 			played[pid] = true
+			Scouting.observe(w, pid, 0.12)
 		if g["mvp"] != "":
 			w.players[g["mvp"]].reputation += 0.3
 	# 出場機會：所有隊內選手都記錄「隊伍出賽」，只有上場者記錄「先發」——供選手自主行為判斷

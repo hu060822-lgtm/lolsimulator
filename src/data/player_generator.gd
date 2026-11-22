@@ -96,6 +96,15 @@ static func _make_handle(w: WorldState, rng: SimRng) -> String:
 		h += str(rng.pick(parts)).to_lower()
 	if rng.chance(0.15):
 		h += str(rng.range_i(1, 99))
+	# 避免同名：已存在的 ID 加上數字
+	var taken := {}
+	for p in w.players.values():
+		taken[p.handle] = true
+	var base := h
+	var n := 2
+	while taken.has(h):
+		h = "%s%d" % [base, n]
+		n += 1
 	return h
 
 

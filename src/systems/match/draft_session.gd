@@ -49,6 +49,24 @@ func open_roles(side: String) -> Array:
 	return Attr.ROLES.filter(func(r): return not picks[side].has(r))
 
 
+## 玩家操作前的合法性檢查。
+func can_apply(champ_id: String, role: String = "") -> bool:
+	if is_done() or unavailable.has(champ_id) or not champions.has(champ_id):
+		return false
+	if SEQUENCE[step][1] == "ban":
+		return true
+	var side: String = SEQUENCE[step][0]
+	return role in open_roles(side) and role in champions[champ_id].roles
+
+
+func current_side() -> String:
+	return SEQUENCE[step][0] if not is_done() else ""
+
+
+func current_action() -> String:
+	return SEQUENCE[step][1] if not is_done() else ""
+
+
 func apply(champ_id: String, role: String = "", reason: String = "manual") -> void:
 	var side: String = SEQUENCE[step][0]
 	var action: String = SEQUENCE[step][1]
@@ -104,13 +122,30 @@ func _mastery(team: TeamContext, role: String, champ_id: String) -> float:
 
 
 func _best_pick(side: String) -> Dictionary:
+	return _rank_picks(side, rng)[0]
+
+
+func _best_ban(side: String) -> Dictionary:
+	return _rank_bans(side, rng)[0]
+
+
+## 給 UI 的分析師建議：使用獨立的 RNG，不影響比賽本身的隨機序列。
+## 建議同樣帶有雜訊——BP 品質差的團隊，分析師的建議也比較不可靠。
+func suggestions(side: String, n: int = 5) -> Array:
+	var r := SimRng.new(hash([step, side, picks[side].size(), bans[side].size()]))
+	var action: String = SEQUENCE[step][1] if not is_done() else "pick"
+	var list: Array = _rank_picks(side, r) if action == "pick" else _rank_bans(side, r)
+	return list.slice(0, n)
+
+
+func _rank_picks(side: String, r: SimRng) -> Array:
 	var team: TeamContext = teams[side]
 	var enemy: TeamContext = teams[other(side)]
 	var q = team.draft_quality()
 	var noise_sd = 0.12 * (1.0 - q)
 	var enemy_comp = _comp_of(other(side))
 	var picks_made: int = picks[side].size()
-	var best = {"score": -INF, "champion": "", "role": "", "reason": ""}
+	var out: Array = []
 	for role in open_roles(side):
 		var lane_opp_id: String = picks[other(side)].get(role, "")
 		for c in champions.values():
@@ -129,19 +164,20 @@ func _best_pick(side: String) -> Dictionary:
 			# 越早的選擇越需要「安全」（不易被針對），越晚越重視針對與陣容契合
 			var lateness = picks_made / 4.0
 			var score = 0.44 * m + 0.18 * meta + (0.14 + 0.10 * lateness) * fit + (0.06 + 0.08 * lateness) * counter + 0.08 * lane
-			score += rng.normal(0.0, noise_sd)
-			if score > best["score"]:
+			score += r.normal(0.0, noise_sd)
+			if true:
 				var why: Array = []
 				if m >= 0.85: why.append("拿手英雄(熟練度 %d)" % int(m * 100))
 				if meta >= 0.5: why.append("版本強勢")
 				if counter > 0.1: why.append("剋制對手陣容")
 				if lane > 0.15: why.append("對線優勢")
 				if fit > 0.7: why.append("符合戰術方向")
-				best = {"score": score, "champion": c.id, "role": role, "reason": "、".join(why) if why.size() > 0 else "綜合評估"}
-	return best
+				out.append({"score": score, "champion": c.id, "role": role, "reason": "、".join(why) if why.size() > 0 else "綜合評估"})
+	out.sort_custom(func(x, y): return x["score"] > y["score"])
+	return out
 
 
-func _best_ban(side: String) -> Dictionary:
+func _rank_bans(side: String, r: SimRng) -> Array:
 	var team: TeamContext = teams[side]
 	var enemy: TeamContext = teams[other(side)]
 	var q = team.draft_quality()
@@ -149,7 +185,7 @@ func _best_ban(side: String) -> Dictionary:
 	var my_comp = _comp_of(side)
 	var enemy_open = open_roles(other(side))
 	var bias: Dictionary = ban_bias[side]
-	var best = {"score": -INF, "champion": "", "reason": ""}
+	var out: Array = []
 	for c in champions.values():
 		if unavailable.has(c.id):
 			continue
@@ -168,16 +204,22 @@ func _best_ban(side: String) -> Dictionary:
 		var anti := 0.0
 		if picks[side].size() > 0:
 			anti = -CompAnalyzer.counter_score(my_comp, CompAnalyzer.analyze([c])) * 0.5
-		var score = threat + anti + float(bias.get(c.id, 0.0)) + rng.normal(0.0, noise_sd)
-		if score > best["score"]:
+		var score = threat + anti + float(bias.get(c.id, 0.0)) + r.normal(0.0, noise_sd)
+		if true:
 			var p: Player = enemy.players.get(target_role)
 			var reason = "針對 %s 的拿手英雄" % (p.handle if p else target_role)
 			if bias.get(c.id, 0.0) > 0.0:
 				reason = "上一局對手的關鍵英雄"
 			elif anti > 0.05:
 				reason = "剋制我方陣容"
-			best = {"score": score, "champion": c.id, "reason": reason}
-	return best
+			out.append({"score": score, "champion": c.id, "reason": reason, "role": ""})
+	out.sort_custom(func(x, y): return x["score"] > y["score"])
+	if out.is_empty():
+		for c in champions.values():
+			if not unavailable.has(c.id):
+				out.append({"score": 0.0, "champion": c.id, "reason": "剩餘英雄", "role": ""})
+				break
+	return out
 
 
 func result() -> Dictionary:

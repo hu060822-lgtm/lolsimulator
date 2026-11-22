@@ -448,7 +448,7 @@ func _contest(obj: String, near_lanes: Array) -> void:
 			"stall": bias = -0.20
 			"split": bias = -0.05
 		if obj == "baron":
-			bias -= 0.15
+			bias -= 0.30
 		if obj == "elder" or (obj == "dragon" and dragons[other(side)] == 3):
 			bias += 0.25  # 必須阻止對手拿下龍魂/遠古龍
 		want[side] = perceived + bias + team(side).aggression * 0.1 - 0.05
@@ -531,9 +531,9 @@ func _award_objective(side: String, obj: String, causes: Array) -> void:
 
 func _schedule_next(obj: String) -> void:
 	if obj == "dragon" or obj == "elder":
-		next_dragon = minute + (5 if obj == "dragon" else 6)
+		next_dragon = minute + 6
 	elif obj == "baron":
-		next_baron = minute + 6
+		next_baron = minute + 7
 
 
 # ---------------------------------------------------------------- 中後期決策
@@ -638,7 +638,7 @@ func _macro() -> void:
 			var w: String = f["winner"]
 			if minute >= next_baron - 0 and minute >= 20 and f["margin"] >= 3 and baron_until[w] < minute:
 				_award_objective(w, "baron", ["團戰勝利後轉巴龍"])
-				next_baron = minute + 6
+				next_baron = minute + 7
 			_push(w, f["margin"] - 1 + (1 if baron_until[w] >= minute else 0), "團戰勝利後推進")
 
 
@@ -716,9 +716,12 @@ func _passive_siege() -> void:
 func _teamfight(where: String, initiator: String) -> Dictionary:
 	var causes: Array = []
 	var participants := {}
-	var debuffs := {}
 	for side in SIDES:
 		participants[side] = _alive(side)
+	# 一方無人可戰（全員陣亡或回城）：不構成團戰
+	if participants["blue"].is_empty() or participants["red"].is_empty():
+		var only = "blue" if participants["red"].is_empty() else "red"
+		return {"winner": only, "margin": participants[only].size(), "kills": {"blue": 0, "red": 0}}
 	var mult = {"blue": _side_multiplier("blue"), "red": _side_multiplier("red")}
 	var pb_final = _sum_power(participants["blue"]) * mult["blue"]
 	var pr_final = _sum_power(participants["red"]) * mult["red"]
@@ -798,6 +801,9 @@ func _teamfight(where: String, initiator: String) -> Dictionary:
 	if disengaged != "":
 		causes.append("%s 及時撤退止損" % team(disengaged).name)
 	var text = "%s團戰：%s %d 換 %d 獲勝" % [where, team(win).name, kills[win], kills[other(win)]]
+	if kills["blue"] + kills["red"] == 0:
+		text = "%s對峙：雙方互有試探，%s 取得位置優勢" % [where, team(win).name]
+		margin = 0
 	_event("teamfight", text, [win], causes, [], {"kills": kills.duplicate(), "margin": margin})
 	return {"winner": win, "margin": margin, "kills": kills}
 

@@ -26,6 +26,7 @@ var training_plan: Dictionary = {}
 var history: Array = []              ## [{year, league_id, position, playoff_result, titles}]
 var titles: int = 0
 var finance_log: Array = []
+var scout_knowledge: Dictionary = {}  ## player_id -> 0..1（僅玩家俱樂部使用）
 
 
 static func from_dict(d: Dictionary) -> Club:
@@ -47,4 +48,4 @@ func to_dict() -> Dictionary:
 		"roster": roster, "coach_id": coach_id, "tactics": tactics, "lineup": lineup,
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
 		"training_plan": training_plan, "history": history, "titles": titles,
-		"finance_log": finance_log}
+		"finance_log": finance_log, "scout_knowledge": scout_knowledge}
