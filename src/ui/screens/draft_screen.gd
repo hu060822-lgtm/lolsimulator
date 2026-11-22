@@ -76,7 +76,7 @@ func refresh() -> void:
 	# 分析師建議（帶誤差）
 	var sug = ds.suggestions(hs, 5)
 	var sv := UIKit.vbox(2)
-	sv.add_child(UIKit.muted("分析師建議（禁選品質 %d%%，建議不一定正確）" % int(ds.teams[hs].draft_quality() * 100)))
+	sv.add_child(UIKit.muted("分析師建議（BP 品質 %d%%，建議不一定正確）" % int(ds.teams[hs].draft_quality() * 100)))
 	for s in sug:
 		var ch: Champion = ds.champions[s["champion"]]
 		var b := UIKit.button("%s%s　— %s" % [ch.name, ("（%s）" % UIKit.ROLE_NAMES[s["role"]]) if s["role"] != "" else "", s["reason"]], _choose.bind(s["champion"], s["role"]))
@@ -114,7 +114,7 @@ func refresh() -> void:
 		b.add_theme_font_size_override("font_size", 13)
 		grid.add_child(b)
 	center.add_child(grid)
-	center.add_child(UIKit.button("交給教練團完成剩下的禁選", _auto_draft))
+	center.add_child(UIKit.button("交給教練團完成剩下的 BP", _auto_draft))
 
 
 func _champ_info(c: Champion, act: String) -> String:
@@ -140,7 +140,7 @@ func _team_col(col: VBoxContainer, side: String) -> void:
 		col.add_child(UIKit.label("%s %s" % [UIKit.ROLE_NAMES[r], p.handle if p else "?"], 14))
 		col.add_child(UIKit.label("　" + (ds.champions[cid].name + "（熟練 %d）" % int(p.mastery(cid)) if cid != "" and p else "—"), 14, UIKit.TEXT if cid != "" else UIKit.MUTED))
 	col.add_child(HSeparator.new())
-	col.add_child(UIKit.muted("禁選紀錄"))
+	col.add_child(UIKit.muted("BP 紀錄"))
 	for e in ds.log:
 		if e["side"] == side:
 			col.add_child(UIKit.label("%s %s：%s" % ["禁" if e["action"] == "ban" else "選", ds.champions[e["champion"]].name, e["reason"]], 12, UIKit.MUTED))
@@ -177,7 +177,7 @@ func _auto_draft() -> void:
 
 func _draft_summary() -> void:
 	var r = ds.result()
-	center.add_child(UIKit.label("禁選完成", 18, UIKit.ACCENT))
+	center.add_child(UIKit.label("BP 完成", 18, UIKit.ACCENT))
 	for side in ["blue", "red"]:
 		center.add_child(UIKit.label("%s（%s）" % [ds.teams[side].short_name, UIKit.PLAN_NAMES.get(r["plan"][side], r["plan"][side])], 15, UIKit.BLUE_SIDE if side == "blue" else UIKit.RED_SIDE))
 		center.add_child(UIKit.rich(MatchView.comp_text(r["comp"][side])))
@@ -268,7 +268,7 @@ func _end_of_game() -> void:
 	if series.is_done():
 		v.add_child(UIKit.primary("完成系列賽", _finish))
 	else:
-		v.add_child(UIKit.primary("下一局禁選 ▶", _new_game))
+		v.add_child(UIKit.primary("下一局 BP ▶", _new_game))
 	add_child(v)
 
 

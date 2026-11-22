@@ -12,7 +12,7 @@ func refresh() -> void:
 		remove_child(c)
 		c.queue_free()
 	var ww = w()
-	var t := UIKit.table(["年份", "聯賽", "冠軍", "最佳選手", "版本"], 260)
+	var t := UIKit.table(["年份", "聯賽", "冠軍", "MVP", "版本"], 260)
 	for s in ww.history["seasons"]:
 		for lid in s["leagues"]:
 			var L: Dictionary = s["leagues"][lid]

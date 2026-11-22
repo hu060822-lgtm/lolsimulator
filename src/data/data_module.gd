@@ -51,7 +51,7 @@ func validate() -> void:
 	for role in Attr.ROLES:
 		var count = champions.filter(func(c): return role in c.get("roles", [])).size()
 		if count < 4:
-			errors.append("位置 %s 的英雄少於 4 名，禁選無法進行" % role)
+			errors.append("位置 %s 的英雄少於 4 名，BP 無法進行" % role)
 	var league_ids := {}
 	for l in leagues:
 		league_ids[l.get("id", "")] = true

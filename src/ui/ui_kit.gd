@@ -18,8 +18,8 @@ const RED_SIDE := Color("ff6b6b")
 const ROLE_NAMES := {"TOP": "上路", "JUNGLE": "打野", "MID": "中路", "ADC": "下路", "SUPPORT": "輔助"}
 const PLAN_NAMES := {"flexible": "彈性（依陣容）", "early_aggression": "前期進攻", "late_scaling": "後期發育", "split_push": "分推", "teamfight": "團戰", "pick": "抓單", "poke_siege": "消耗圍塔", "protect": "保護後排"}
 const PHASE_NAMES := {"preseason": "季前賽", "regular": "例行賽", "playoffs": "季後賽", "offseason": "休賽季（轉會期）"}
-const TRAINING_NAMES := {"solo_queue": "單排積分", "champion_practice": "英雄練習", "scrims": "練習賽", "tactical_review": "戰術檢討", "vod_review": "錄影分析", "draft_practice": "禁選演練", "team_building": "團隊建立", "mental_coaching": "心理輔導", "physical": "體能訓練", "rest": "休息"}
-const SKILL_NAMES := {"mechanics": "操作", "laning": "對線", "map_awareness": "地圖意識", "positioning": "站位", "teamfighting": "團戰", "decision_making": "決策", "adaptability": "適應力", "consistency": "穩定性", "clutch": "關鍵表現", "wave_management": "兵線理解", "resource_trading": "資源交換", "vision": "視野控制", "shotcalling": "指揮", "draft_iq": "禁選理解"}
+const TRAINING_NAMES := {"solo_queue": "Solo Queue", "champion_practice": "英雄練習", "scrims": "Scrims 練習賽", "tactical_review": "戰術檢討", "vod_review": "VOD 分析", "draft_practice": "BP 演練", "team_building": "團隊建立", "mental_coaching": "心理輔導", "physical": "體能訓練", "rest": "休息"}
+const SKILL_NAMES := {"mechanics": "操作", "laning": "對線", "map_awareness": "地圖意識", "positioning": "站位", "teamfighting": "團戰", "decision_making": "決策", "adaptability": "適應力", "consistency": "穩定性", "clutch": "關鍵表現", "wave_management": "兵線理解", "resource_trading": "資源交換", "vision": "視野控制", "shotcalling": "指揮", "draft_iq": "BP 理解"}
 const TRAIT_NAMES := {"ambition": "野心", "loyalty": "忠誠", "professionalism": "職業態度", "composure": "抗壓性", "teamwork": "團隊合作", "communication": "溝通", "discipline": "紀律", "temperament": "情緒穩定"}
 const GOAL_NAMES := {"WIN_TITLES": "爭奪冠軍", "PLAYING_TIME": "上場時間", "DEVELOP": "個人成長", "MONEY": "高薪", "RETIRE_AT_CLUB": "在母隊退役", "GO_ABROAD": "海外發展", "STABILITY": "穩定"}
 const RESPONSE_NAMES := {"promise_playing_time": "承諾給予上場時間", "explain_situation": "解釋球隊狀況", "demand_patience": "要求他保持耐心", "transfer_list": "放上轉會名單", "dismiss": "不予理會", "accept_offer": "接受報價", "reject_offer": "拒絕報價", "acknowledge": "知道了"}
@@ -218,9 +218,9 @@ static func philosophy_name(p: String) -> String:
 	return {"win_now": "立即爭冠", "develop": "培養新人", "balanced": "平衡", "moneyball": "性價比"}.get(p, p)
 
 
-## 系列賽賽制：Bo3 → 三戰兩勝
+## 系列賽賽制
 static func bo_text(n: int) -> String:
-	return {1: "單場決勝", 3: "三戰兩勝", 5: "五戰三勝", 7: "七戰四勝"}.get(n, "%d 戰制" % n)
+	return "Bo%d" % n
 
 
 ## 俱樂部顯示：全名（縮寫）

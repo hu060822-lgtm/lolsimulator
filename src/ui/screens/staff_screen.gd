@@ -3,7 +3,7 @@ class_name StaffScreen
 extends UIScreen
 
 const STYLE_NAMES := {"aggressive": "積極進攻", "macro": "運營", "early_game": "前期", "scaling": "後期發育", "flexible": "彈性", "discipline": "紀律"}
-const ATTRS := {"tactical": "戰術", "drafting": "禁選", "development": "培養", "man_management": "管理", "adaptability": "臨場調整", "scouting": "眼光", "fitness": "體能心理"}
+const ATTRS := {"tactical": "戰術", "drafting": "BP", "development": "培養", "man_management": "管理", "adaptability": "臨場調整", "scouting": "眼光", "fitness": "體能心理"}
 
 var role_opt: OptionButton
 var market: Tree

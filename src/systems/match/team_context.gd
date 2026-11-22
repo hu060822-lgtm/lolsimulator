@@ -55,7 +55,7 @@ func avg_trait(t: String) -> float:
 	return MathX.mean(vals)
 
 
-## 禁選品質 0..1：教練 BP 能力、選手 禁選理解、隊伍 禁選演練熟悉度。
+## BP 品質 0..1：教練 BP 能力、選手 BP 理解、隊伍 BP 演練熟悉度。
 func draft_quality() -> float:
 	return (coach_stat("drafting") * 0.55 + avg_skill("draft_iq") * 0.25 + draft_familiarity * 0.20) / 100.0
 

@@ -34,7 +34,7 @@ func refresh() -> void:
 	row.add_child(_card("聯賽排名", "第 %d 名（%d 勝 %d 敗）" % [pos, int(st["w"]), int(st["l"])]))
 	var bill = TransferMarket.wage_bill(ww, c)
 	row.add_child(_card("財務", "資金 %s\n薪資 %s / 預算 %s" % [UIKit.money(c.cash), UIKit.money(bill), UIKit.money(c.wage_budget)]))
-	row.add_child(_card("團隊", "默契 %.0f\n禁選熟悉度 %.0f" % [c.chemistry, c.draft_familiarity]))
+	row.add_child(_card("團隊", "默契 %.0f\nBP 熟悉度 %.0f" % [c.chemistry, c.draft_familiarity]))
 	for ch in row.get_children():
 		ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	# 先發狀態

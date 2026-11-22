@@ -28,7 +28,7 @@ func build() -> void:
 	var root := UIKit.vbox(14)
 	margin.add_child(root)
 	root.add_child(UIKit.label("ESPORT: LOL SIMULATOR", 30, UIKit.TEXT))
-	root.add_child(UIKit.muted("打造傳奇，不只是一支隊伍。　｜　資料庫：虛構世界"))
+	root.add_child(UIKit.muted("Build a Legacy. Not Just a Team.　｜　資料庫：虛構俱樂部 + LoL 英雄"))
 	var cols := UIKit.hbox(16)
 	cols.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(cols)
@@ -69,7 +69,7 @@ func build() -> void:
 	seed_row.add_child(seed_edit)
 	right.add_child(seed_row)
 	manual = CheckBox.new()
-	manual.text = "親自進行禁選（關閉則由教練團代為禁選）"
+	manual.text = "親自進行 BP（關閉則由教練團代為 BP）"
 	manual.button_pressed = true
 	right.add_child(manual)
 	right.add_child(UIKit.primary("接管所選俱樂部", _start_selected))

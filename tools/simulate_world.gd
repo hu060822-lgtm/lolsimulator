@@ -32,5 +32,5 @@ func _init() -> void:
 	legends.sort_custom(func(a, b): return a.career["titles"] > b.career["titles"])
 	print("\n多冠選手：")
 	for p in legends.slice(0, 10):
-		print("  %-12s %-8s 冠軍 %d  最佳選手 %d  出賽 %d  %s" % [p.handle, p.primary_role, p.career["titles"], p.career.get("mvps", 0), p.career["games"], "已退役(%d)" % p.retired_year if p.retired else "現役"])
+		print("  %-12s %-8s 冠軍 %d  MVP %d  出賽 %d  %s" % [p.handle, p.primary_role, p.career["titles"], p.career.get("mvps", 0), p.career["games"], "已退役(%d)" % p.retired_year if p.retired else "現役"])
 	quit()

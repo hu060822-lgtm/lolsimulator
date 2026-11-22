@@ -365,19 +365,19 @@ func _resolve_gank(side: String, lane: String, countered: bool) -> void:
 		var laner = _pick_lane_unit(side, lane)
 		var killer = jg if rng.chance(0.5) or laner == null else laner
 		var assists: Array = [jg] if killer != jg else ([laner] if laner else [])
-		var causes: Array = ["抓人成功率 %d%%" % int(p * 100)]
+		var causes: Array = ["Gank 成功率 %d%%" % int(p * 100)]
 		if priority[side][lane] > 0.2:
 			causes.append("%s路線權讓隊友能跟上" % _lane_name(lane))
 		if vision[side] > vision[other(side)] + 0.1:
 			causes.append("視野優勢")
-		_kill(side, killer, target, assists, "gank", "%s 打野 %s 成功抓%s路，擊殺 %s" % [team(side).short_name, _h(jg), _lane_name(lane), _h(target)], causes)
+		_kill(side, killer, target, assists, "gank", "%s 打野 %s 成功 Gank %s路，擊殺 %s" % [team(side).short_name, _h(jg), _lane_name(lane), _h(target)], causes)
 		lane_tilt[other(side)][lane] -= 0.12  # 交出閃現/被壓線
 	else:
 		lane_tilt[other(side)][lane] -= 0.04   # 交出閃現逃生
 		if detail:
-			_event("gank_fail", "%s 打野 %s 抓%s路失敗，%s 交閃逃生" % [team(side).short_name, _h(jg), _lane_name(lane), _h(target)], [side], ["成功率 %d%%，仍被躲過" % int(p * 100)])
+			_event("gank_fail", "%s 打野 %s Gank %s路失敗，%s 交閃逃生" % [team(side).short_name, _h(jg), _lane_name(lane), _h(target)], [side], ["成功率 %d%%，仍被躲過" % int(p * 100)])
 		if rng.chance(0.12):
-			_kill(other(side), target, jg, [], "gank_punished", "%s 反蹲成功，擊殺 %s" % [_h(target), _h(jg)], ["抓人時機不佳"])
+			_kill(other(side), target, jg, [], "gank_punished", "%s 反打 Gank，擊殺 %s" % [_h(target), _h(jg)], ["Gank 時機不佳"])
 
 
 func _resolve_invade(side: String, enemy_plan: String) -> void:
@@ -389,7 +389,7 @@ func _resolve_invade(side: String, enemy_plan: String) -> void:
 		jg["gold"] += 180.0
 		ejg["gold"] -= 120.0
 		if detail:
-			_event("invade", "%s 打野 %s 趁對手抓人時反野，竊取野怪資源" % [team(side).short_name, _h(jg)], [side], ["中路線權", "掌握敵方打野位置"])
+			_event("invade", "%s 打野 %s 趁對手 Gank 時反野，竊取野怪資源" % [team(side).short_name, _h(jg)], [side], ["中路線權", "掌握敵方打野位置"])
 		return
 	if rng.chance(mine / (mine + theirs) * 0.6):
 		_kill(side, jg, ejg, [], "invade_kill", "%s 打野 %s 反野成功，擊殺 %s" % [team(side).short_name, _h(jg), _h(ejg)], ["打野戰力優勢", "中路線權支援"])
@@ -793,9 +793,9 @@ func _teamfight(where: String, initiator: String) -> Dictionary:
 		causes.append("團隊執行力較佳")
 	var gd = _team_gold(win) - _team_gold(other(win))
 	if gd > 2500:
-		causes.append("經濟領先 %.1f千" % (gd / 1000.0))
+		causes.append("經濟領先 %.1fk" % (gd / 1000.0))
 	elif gd < -2500:
-		causes.append("經濟落後 %.1f千 仍打贏" % (-gd / 1000.0))
+		causes.append("經濟落後 %.1fk 仍打贏" % (-gd / 1000.0))
 	var share_w = (pb_final if win == "blue" else pr_final) / (pb_final + pr_final)
 	causes.append("開戰前戰力 %d%% : %d%%" % [int(share_w * 100.0), 100 - int(share_w * 100.0)])
 	if disengaged != "":
