@@ -57,3 +57,25 @@ func test_draft_search_finds_bard() -> void:
 	check(DraftScreen.champ_matches(bard, "巴德"), "search by Chinese name")
 	check(DraftScreen.champ_matches(bard, "bar"), "search by English prefix")
 	check(not DraftScreen.champ_matches(bard, "雷玟"), "non-matching search")
+
+
+func test_post_game_stats() -> void:
+	var s := GameSession.new()
+	s.new_game(MODULE_DIR, 4, "iron_lotus")
+	var guard := 0
+	while s.advance_day() and guard < 60:
+		guard += 1
+	var sh := Shell.new()
+	sh.setup(s, null)
+	var d := DraftScreen.new()
+	sh.open_screen(d, "draft")
+	d._auto_draft()
+	d._play()
+	var g: Dictionary = d.game
+	check_eq(g["gold_curve"].size(), int(g["duration"]) + 1, "one gold sample per minute")
+	for pid in g["players"]:
+		check(int(g["players"][pid]["damage"]) > 0, "damage estimate recorded")
+	var pg := PostGame.make(s, g)
+	check(pg.get_child_count() >= 2, "post-game panel builds")
+	pg.free()
+	sh.free()

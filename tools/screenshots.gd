@@ -62,6 +62,10 @@ func _run() -> void:
 	d._live_skip()
 	d.mc.skip_to_end()
 	await _shot("06_match")
+	var sc: ScrollContainer = sh.content.get_parent()
+	await _frames(2)
+	sc.scroll_vertical = int(sc.get_v_scroll_bar().max_value)
+	await _shot("06_post_game")
 	# 推進到世界賽與賽季結束
 	app.session.manual_draft = false
 	var w: WorldState = app.session.world

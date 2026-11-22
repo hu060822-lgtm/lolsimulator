@@ -542,6 +542,7 @@ func _end_of_game() -> void:
 	if mvp:
 		banner.add_child(UIKit.pill("MVP　" + mvp.handle, UIKit.WARN))
 	v.add_child(banner)
+	v.add_child(PostGame.make(session, game))
 	v.add_child(MatchView.stats_table(session, game))
 	if series.is_done():
 		v.add_child(UIKit.primary("完成系列賽", _finish))

@@ -17,6 +17,8 @@ const TOWER_T := [0.36, 0.24, 0.13, 0.08]
 const FOUNTAIN := {"blue": Vector2(0.055, 0.940), "red": Vector2(0.945, 0.055)}
 const NEXUS := {"blue": Vector2(0.111, 0.887), "red": Vector2(0.891, 0.104)}
 const NEXUS_TOWERS := {"blue": [Vector2(0.126, 0.841), Vector2(0.156, 0.875)], "red": [Vector2(0.852, 0.112), Vector2(0.882, 0.142)]}
+## 藍方常見插眼點（由安全到深入）；紅方以地圖中心對稱。
+const WARD_SPOTS := [Vector2(0.300, 0.520), Vector2(0.560, 0.790), Vector2(0.625, 0.655), Vector2(0.365, 0.335), Vector2(0.470, 0.470), Vector2(0.800, 0.860), Vector2(0.175, 0.200), Vector2(0.700, 0.560), Vector2(0.450, 0.230)]
 const DRAGON_PIT := Vector2(0.674, 0.703)
 const BARON_PIT := Vector2(0.322, 0.293)
 const RIVER := [Vector2(0.186, 0.195), Vector2(0.322, 0.293), Vector2(0.500, 0.493), Vector2(0.674, 0.703), Vector2(0.820, 0.801)]
@@ -49,6 +51,17 @@ static func lane_point(lane: String, t: float) -> Vector2:
 			return pts[i - 1].lerp(pts[i], d / maxf(seg, 0.0001))
 		d -= seg
 	return pts[-1]
+
+
+## side 方在視野值 v（0..1）下放出的守衛位置。
+static func ward_points(side: String, v: float, minute: int) -> Array:
+	var n := clampi(2 + int(round(v * 5.0)), 2, WARD_SPOTS.size())
+	var out := []
+	var shift := (minute / 3) % 2  # 每 3 分鐘換一批插眼點，看起來有在更新視野
+	for i in n:
+		var p: Vector2 = WARD_SPOTS[mini(i + (shift if i >= 2 else 0), WARD_SPOTS.size() - 1)]
+		out.append(p if side == "blue" else Vector2(1, 1) - p)
+	return out
 
 
 ## 第 index 座塔（0 = 外塔，3 = 兵營）的位置。

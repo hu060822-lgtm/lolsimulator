@@ -38,7 +38,7 @@ static func event_line(session: GameSession, g: Dictionary, e: Dictionary) -> St
 
 static func stats_table(session: GameSession, g: Dictionary) -> Tree:
 	var ww = session.world
-	var t := UIKit.table(["選手", "隊伍", "英雄", "K/D/A", "經濟", "失誤", "評分"], 260)
+	var t := UIKit.table(["選手", "隊伍", "英雄", "K/D/A", "經濟", "失誤", "評分"], 260, [0, 2])
 	var ids: Array = g["players"].keys()
 	ids.sort_custom(func(a, b): return (g["players"][a]["side"] + str(Attr.ROLES.find(g["players"][a]["role"]))) < (g["players"][b]["side"] + str(Attr.ROLES.find(g["players"][b]["role"]))))
 	for pid in ids:
@@ -57,6 +57,8 @@ static func series_summary(session: GameSession, games: Array) -> VBoxContainer:
 	for i in games.size():
 		var g: Dictionary = games[i]
 		v.add_child(UIKit.label("第 %d 局：%s 勝（%d 分鐘・擊殺 %d-%d）" % [i + 1, ww.clubs[g["winner_club"]].short_name, int(g["duration"]), int(g["kills"]["blue"]), int(g["kills"]["red"])], 16))
+		if g.has("players") and not g["players"].is_empty():
+			v.add_child(PostGame.make(session, g))
 		var r := UIKit.rich()
 		var lines: Array = []
 		for e in g["events"]:

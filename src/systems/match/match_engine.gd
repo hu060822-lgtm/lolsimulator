@@ -46,6 +46,7 @@ var events: Array = []
 var winner: String = ""
 ## 戰況地圖：每分鐘一格，記錄十名選手位置、擊殺／物件／推塔標記與建築狀態（只在 detail 模式）。
 var frames: Array = []
+var gold_curve: Array = []        ## 每分鐘的經濟差（藍 - 紅），賽後圖表用
 var _where: String = ""           ## 目前事件發生的地點（lane:top、obj:dragon、jungle:blue…）
 var _involved: Dictionary = {}    ## "blue0" -> 地點，本分鐘參與事件的選手
 var _marks: Array = []
@@ -86,6 +87,7 @@ const SHOTCALL_MINUTES := [14, 20, 26, 32, 38, 44, 50, 56]
 func begin() -> void:
 	_setup()
 	minute = 0
+	gold_curve = [0]
 	_record_frame()
 
 
@@ -98,6 +100,7 @@ func run_until(stop_minute: int) -> bool:
 	while not is_over() and minute < mini(stop_minute, MAX_MINUTE):
 		minute += 1
 		_tick()
+		gold_curve.append(int(_team_gold("blue") - _team_gold("red")))
 		_record_frame()
 	return is_over()
 
@@ -1150,6 +1153,15 @@ func _arch_name(a: String) -> String:
 	return {"engage": "開戰", "pick": "抓單", "poke": "消耗", "protect": "保護後排", "split": "分推", "teamfight": "團戰"}.get(a, a)
 
 
+## 對英雄傷害（估算）：經濟、參與擊殺與英雄類型決定，射手法師高、坦克輔助低。
+const DAMAGE_CLASS := {"marksman": 1.3, "mage": 1.25, "assassin": 1.15, "fighter": 1.0, "tank": 0.6, "enchanter": 0.45}
+
+func _damage_estimate(u: Dictionary) -> int:
+	var cls: String = u["champ"].class_type if u["champ"] else "fighter"
+	var base: float = u["gold"] * 0.95 + u["kills"] * 900.0 + u["assists"] * 380.0
+	return int(base * DAMAGE_CLASS.get(cls, 1.0) * (0.92 + float(absi(hash(str(u["idx"]) + cls + str(minute))) % 17) / 100.0))
+
+
 func _build_result() -> Dictionary:
 	var stats := {}
 	for side in SIDES:
@@ -1163,7 +1175,7 @@ func _build_result() -> Dictionary:
 			rating += 0.6 if side == winner else -0.3
 			stats[p.id] = {"side": side, "role": u["role"], "champion": u["champ"].id if u["champ"] else "",
 				"kills": u["kills"], "deaths": u["deaths"], "assists": u["assists"], "gold": int(u["gold"]),
-				"mistakes": u["mistakes"], "rating": clampf(rating, 1.0, 10.0)}
+				"mistakes": u["mistakes"], "rating": clampf(rating, 1.0, 10.0), "damage": _damage_estimate(u)}
 	var mvp := ""
 	var best := -1.0
 	for pid in stats:
@@ -1183,7 +1195,7 @@ func _build_result() -> Dictionary:
 		"dragons": dragons.duplicate(), "barons": barons.duplicate(),
 		"towers_destroyed": {"blue": _structures_lost("red"), "red": _structures_lost("blue")},
 		"stances": stance.duplicate(), "events": events, "players": stats, "mvp": mvp,
-		"frames": frames, "champs": _champ_ids(),
+		"frames": frames, "champs": _champ_ids(), "gold_curve": gold_curve,
 		"draft": {"bans": draft["bans"], "picks": draft["picks"], "log": draft["log"] if detail else [], "plan": draft["plan"],
 			"primary": {"blue": comp["blue"]["primary"], "red": comp["red"]["primary"]}},
 	}
@@ -1285,7 +1297,9 @@ func _record_frame() -> void:
 	for side in SIDES:
 		kda[side] = units[side].map(func(u): return [u["kills"], u["deaths"], u["assists"]])
 	frames.append({"m": minute, "pos": pos, "marks": _marks, "kda": kda, "st": {"blue": structures["blue"].duplicate(), "red": structures["red"].duplicate()},
-		"gd": int(_team_gold("blue") - _team_gold("red"))})
+		"gd": int(_team_gold("blue") - _team_gold("red")),
+		"lf": [snappedf(_front("top"), 0.001), snappedf(_front("mid"), 0.001), snappedf(_front("bot"), 0.001)],
+		"vis": [snappedf(vision["blue"], 0.01), snappedf(vision["red"], 0.01)]})
 	_marks = []
 	_involved = {}
 	_where = ""
