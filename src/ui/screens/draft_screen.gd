@@ -72,8 +72,17 @@ func _build_header() -> PanelContainer:
 	return p
 
 
-func _set_header(game_no: int, state: String) -> void:
-	score_label.text = "%d : %d" % [int(series.wins[series.a.club_id]), int(series.wins[series.b.club_id])]
+## hide_last：本局已模擬完但還在播放時，不把這一局算進大比分，避免開場就看到結果。
+func _set_header(game_no: int, state: String, hide_last: bool = false) -> void:
+	var wa := int(series.wins[series.a.club_id])
+	var wb := int(series.wins[series.b.club_id])
+	if hide_last and not series.games.is_empty():
+		var last_winner: String = series.games[-1]["winner_club"]
+		if last_winner == series.a.club_id:
+			wa -= 1
+		elif last_winner == series.b.club_id:
+			wb -= 1
+	score_label.text = "%d : %d" % [wa, wb]
 	header.text = "第 %d 局・%s・%s" % [game_no, UIKit.bo_text(series.best_of), state]
 
 
@@ -407,7 +416,7 @@ func _open_center() -> void:
 	for c in get_children().slice(1):
 		remove_child(c)
 		c.queue_free()
-	_set_header(series.games.size() + (0 if live_snap.is_empty() else 1), "比賽中")
+	_set_header(series.games.size() + (0 if live_snap.is_empty() else 1), "比賽中", live_snap.is_empty())
 	mc = MatchCenter.new().setup(session, hs)
 	mc.custom_minimum_size = Vector2(0, 560)
 	mc.reached_end.connect(_on_center_end)
@@ -535,6 +544,7 @@ func _end_of_game() -> void:
 	v.name = "EndBox"
 	var ww = w()
 	var won: bool = game["winner_club"] == ww.human_club_id
+	_set_header(series.games.size(), "比賽結束")
 	var banner := UIKit.hbox(12)
 	banner.add_child(UIKit.label("勝利！" if won else "落敗", 26, UIKit.GOOD if won else UIKit.BAD))
 	banner.add_child(UIKit.label("%s 獲勝　%d 分鐘" % [UIKit.club_label(ww.clubs[game["winner_club"]]), int(game["duration"])], 17))

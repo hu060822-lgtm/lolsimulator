@@ -22,6 +22,8 @@ var target: float = 0.0
 var sec_per_frame: float = 2.4
 var _paths: Dictionary = {}       ## "格:方:人" -> 沿路網的折線（快取）
 var _last_minute: int = -1
+## 每格的前 ARRIVE 段用來移動，之後停在定位；事件標記與文字在抵達時出現，避免棋子「慢半拍」。
+const ARRIVE := 0.6
 
 const MAP_IMAGE := "res://assets/maps/summoners_rift.jpg"
 static var _bg: Texture2D = null
@@ -87,7 +89,12 @@ func last_index() -> int:
 func current_minute() -> int:
 	if frames.is_empty():
 		return 0
-	return int(frames[clampi(int(head), 0, frames.size() - 1)]["m"])
+	return int(frames[current_index()]["m"])
+
+
+## 目前顯示中的格（棋子抵達後就算進入下一格）。
+func current_index() -> int:
+	return clampi(int(floor(head + 1.0 - ARRIVE)), 0, maxi(frames.size() - 1, 0))
 
 
 func _process(delta: float) -> void:
@@ -139,26 +146,61 @@ func _draw() -> void:
 	var t = clampf(head - i0, 0.0, 1.0)
 	var f0: Dictionary = frames[i0]
 	var f1: Dictionary = frames[i1]
-	_draw_structures(r, f1 if t >= 0.5 else f0, bg != null, _fallen_nexus(i1 if t >= 0.5 else i0))
+	_draw_structures(r, f1 if t >= ARRIVE else f0, bg != null, _fallen_nexus(i1 if t >= ARRIVE else i0))
 	_draw_vision(r, f1 if t >= 0.5 else f0)
 	_draw_waves(r, f0, f1, t)
 	_draw_marks(r, font)
 	# 英雄小棋
+	var tp := token_positions()
 	for side in ["blue", "red"]:
 		var col = COL_BLUE if side == "blue" else COL_RED
+		for k in f0["pos"][side].size():
+			var e: Array = tp[side + str(k)]
+			var cid: String = champs.get(side, [])[k] if k < champs.get(side, []).size() else ""
+			ChampToken.draw(self, _pt(r, e[0]), s * 0.033, champ_db.get(cid), col, e[1], font)
+
+
+## 目前播放進度下每顆棋子的位置（0..1 地圖座標）與是否存活：{"blue0": [Vector2, bool]}。
+func token_positions() -> Dictionary:
+	var out := {}
+	if frames.is_empty():
+		return out
+	var i0 = clampi(int(floor(head)), 0, frames.size() - 1)
+	var i1 = clampi(i0 + 1, 0, frames.size() - 1)
+	var t = clampf(head - i0, 0.0, 1.0)
+	var f0: Dictionary = frames[i0]
+	var f1: Dictionary = frames[i1]
+	for side in ["blue", "red"]:
 		var p0: Array = f0["pos"][side]
 		var p1: Array = f1["pos"][side]
 		for k in p0.size():
 			var a: Array = p0[k]
 			var b: Array = p1[k] if k < p1.size() else a
-			var alive_now: bool = int(b[2]) == 1 if t >= 0.5 else int(a[2]) == 1
+			var was_alive := int(a[2]) == 1
+			var is_alive := int(b[2]) == 1
 			var pos: Vector2
-			if int(a[2]) == 1 and int(b[2]) == 1 and i1 != i0:
-				pos = _pt(r, RiftGeometry.along(_path(i0, side, k, a, b), _ease(t)))
+			var alive_now: bool
+			if i1 == i0:
+				pos = Vector2(float(a[0]), float(a[1]))
+				alive_now = was_alive
+			elif was_alive:
+				# 存活或在這一分鐘陣亡：都先走到下一格的位置（陣亡者的位置是倒下的地點）
+				var path := _path(i0, side, k, a, b)
+				pos = RiftGeometry.along(path, _ease(_travel(t, path)))
+				alive_now = is_alive or t < ARRIVE
+			elif is_alive:
+				# 復活：從泉水（不是倒下的地點）沿路走到下一個位置
+				var fq: Vector2 = RiftGeometry.FOUNTAIN[side]
+				var path := _path(i0, side, k, [fq.x, fq.y, 0], b)
+				pos = RiftGeometry.along(path, _ease(_travel(t, path)))
+				alive_now = true
 			else:
-				pos = _pt(r, b if t >= 0.5 else a)
-			var cid: String = champs.get(side, [])[k] if k < champs.get(side, []).size() else ""
-			ChampToken.draw(self, pos, s * 0.033, champ_db.get(cid), col, alive_now, font)
+				# 持續陣亡：倒下的地點 → 泉水，不畫移動過程
+				var q: Array = b if t >= 0.5 else a
+				pos = Vector2(float(q[0]), float(q[1]))
+				alive_now = false
+			out[side + str(k)] = [pos, alive_now]
+	return out
 
 
 func _draw_procedural(r: Rect2) -> void:
@@ -197,9 +239,19 @@ func _path(i0: int, side: String, k: int, a: Array, b: Array) -> PackedVector2Ar
 	return _paths[key]
 
 
-## 起步與停下稍微放慢，中段等速前進。
+## 這一格內的移動進度：短距離（交戰中走位）在前 ARRIVE 段完成；長距離換線則用掉整格，
+## 速度上限約每格 1.1 張地圖，接近真實跑速，不會一閃而過。
+func _travel(t: float, path: PackedVector2Array) -> float:
+	var length := 0.0
+	for i in range(1, path.size()):
+		length += path[i - 1].distance_to(path[i])
+	var span := clampf(length / 1.1, ARRIVE, 1.0)
+	return clampf(t / span, 0.0, 1.0)
+
+
+## 幾乎等速前進：格與格之間不會「停一下再起步」，看起來是連續移動。
 func _ease(t: float) -> float:
-	return lerpf(t, t * t * (3.0 - 2.0 * t), 0.5)
+	return lerpf(t, t * t * (3.0 - 2.0 * t), 0.15)
 
 
 ## 到第 idx 格為止主堡被摧毀的一方（沒有則為空字串）。
@@ -323,10 +375,10 @@ func _draw_marks(r: Rect2, font: Font) -> void:
 	var lo = maxi(int(floor(head - 1.5)), 0)
 	var hi = mini(int(floor(head + 0.999)), frames.size() - 1)
 	for i in range(lo, hi + 1):
-		var age = head - i
-		if age < -0.5:
+		var age = head - i + (1.0 - ARRIVE)  # 棋子抵達時（age = 0）才出現
+		if age < 0.0:
 			continue
-		var alpha = clampf(1.0 - maxf(age, 0.0) / 1.5, 0.0, 1.0)
+		var alpha = clampf(1.0 - age / 1.5, 0.0, 1.0)
 		for mk in frames[i]["marks"]:
 			var col = COL_BLUE if mk["side"] == "blue" else COL_RED
 			var p = _pt(r, mk["p"])

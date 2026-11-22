@@ -578,8 +578,10 @@ func _contest(obj: String, near_lanes: Array) -> void:
 func _trade(side: String, given_up: String, near_lanes: Array) -> void:
 	var far := "top" if "bot" in near_lanes else "bot"
 	_where = "lane:" + far
+	# 只有那一路的選手與打野過去，其他人留在原地（地圖上不會整隊瞬間橫越）
 	for u in _alive(side):
-		_involve(u)
+		if _lane_of(u["role"]) == far or u["role"] == "JUNGLE" or (minute >= 14 and u["role"] == "MID"):
+			_involve(u)
 	if minute >= 14:
 		siege[side][far] += 0.8
 		if detail:
@@ -593,10 +595,21 @@ func _trade(side: String, given_up: String, near_lanes: Array) -> void:
 			_event("trade", "%s 放棄%s，轉而在%s路取得鍍層與野區資源" % [team(side).short_name, _obj_name(given_up), _lane_name(far)], [side], ["資源交換"])
 
 
+## 前期只有鄰近的選手去拿物件（小龍：中下野；幼蟲、預示者：上中野）；中後期或巴龍、遠古龍全隊集結。
+func _near_objective(u: Dictionary, obj: String) -> bool:
+	if minute >= 20 or obj in ["baron", "elder"]:
+		return true
+	var lane := _lane_of(u["role"])
+	if u["role"] == "JUNGLE" or lane == "mid":
+		return true
+	return lane == "bot" if obj == "dragon" else lane == "top"
+
+
 func _award_objective(side: String, obj: String, causes: Array) -> void:
 	if detail:
 		for u in _alive(side):
-			_involve(u, "obj:" + obj)
+			if _near_objective(u, obj):
+				_involve(u, "obj:" + obj)
 		_marks.append({"t": obj, "side": side, "p": _loc_point("obj:" + obj)})
 	match obj:
 		"dragon":
@@ -1045,6 +1058,7 @@ func _kill(side: String, killer: Dictionary, victim: Dictionary, assists: Array,
 	victim["impact"] -= 0.7
 	var respawn = 0 if minute < 18 else (1 if minute < 32 else 2)
 	victim["dead_until"] = minute + respawn + 1 if respawn > 0 else minute + 1
+	victim["died_at"] = minute
 	if detail:
 		_involve(killer)
 		_involve(victim)
@@ -1210,6 +1224,10 @@ func _champ_ids() -> Dictionary:
 	return out
 
 
+func _died_now(u: Dictionary) -> bool:
+	return int(u.get("died_at", -1)) == minute
+
+
 func _involve(u: Dictionary, loc: String = "") -> void:
 	if not detail or not u.has("side"):
 		return
@@ -1282,7 +1300,10 @@ func _record_frame() -> void:
 			var key = side + str(u["idx"])
 			var alive: bool = u["dead_until"] <= minute
 			var p: Vector2
-			if not alive:
+			if not alive and _involved.has(key) and u["dead_until"] > minute and _died_now(u):
+				# 這一分鐘剛陣亡：留在倒下的地點，下一格才回泉水
+				p = _loc_point(_involved[key]) + RiftGeometry.spread(u["idx"] + (5 if side == "red" else 0), 10, 0.045)
+			elif not alive:
 				p = RiftGeometry.FOUNTAIN[side] + RiftGeometry.spread(u["idx"], 5, 0.02)
 			elif _involved.has(key):
 				p = _loc_point(_involved[key]) + RiftGeometry.spread(u["idx"] + (5 if side == "red" else 0), 10, 0.045)
