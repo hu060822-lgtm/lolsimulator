@@ -16,7 +16,8 @@ var prize_pool: int = 500000
 ## 當季
 var fixtures: Array = []    ## [{id, day, stage, round, home, away, best_of, played, result}]
 var standings: Dictionary = {}  ## club_id -> {w, l, gw, gl}
-var playoff_bracket: Array = []
+var playoff_bracket: Array = []   ## [0] = 季後賽種子；完成後再加上前四名
+var bracket: Array = []           ## 季後賽對戰表：[{id, a, b, r, label, final, top4, fixture}]
 var champion_id: String = ""
 var season_complete: bool = false
 
@@ -37,5 +38,5 @@ static func from_dict(d: Dictionary) -> League:
 func to_dict() -> Dictionary:
 	return {"id": id, "name": name, "short_name": short_name, "region": region, "tier": tier, "club_ids": club_ids,
 		"format": format, "prize_pool": prize_pool, "fixtures": fixtures,
-		"standings": standings, "playoff_bracket": playoff_bracket,
+		"standings": standings, "playoff_bracket": playoff_bracket, "bracket": bracket,
 		"champion_id": champion_id, "season_complete": season_complete}

@@ -234,8 +234,8 @@ static func _close_international(w: WorldState, season: Dictionary, it: League =
 static func _promotion_relegation(w: WorldState, season: Dictionary) -> void:
 	season["movements"] = []
 	for top in w.leagues.values():
-		if top.tier != 1:
-			continue
+		if top.tier != 1 or top.format.get("franchise", false):
+			continue  # 聯盟制（例：LCK、LPL）不升降級
 		for low in w.leagues.values():
 			if low.tier != 2 or low.region != top.region or low.champion_id == "":
 				continue

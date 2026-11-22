@@ -74,6 +74,7 @@ static func _reset(lg: League) -> void:
 	lg.fixtures = []
 	lg.standings = {}
 	lg.playoff_bracket = []
+	lg.bracket = []
 	lg.champion_id = ""
 	lg.season_complete = false
 	for cid in lg.club_ids:
@@ -384,37 +385,150 @@ static func sorted_standings(lg: League) -> Array:
 	return ids
 
 
+## 季後賽：依 format.playoffs 產生對戰表（單淘汰 2/4/6/8 隊、雙敗 4/6/8 隊），
+## 每輪打完才排下一輪。對戰來源：S3 = 第 3 種子、W:x = x 場勝者、L:x = x 場敗者。
 static func start_playoffs(w: WorldState, lg: League) -> void:
 	var fmt: Dictionary = lg.format.get("playoffs", {})
 	var n := int(fmt.get("teams", 4))
 	var seeds = sorted_standings(lg).slice(0, n)
+	n = seeds.size()
 	lg.playoff_bracket = [seeds]
-	_schedule_round(w, lg, seeds, w.day + 3)
+	lg.bracket = bracket_template(str(fmt.get("type", "single_elimination")), n)
+	for m in lg.bracket:
+		m["fixture"] = ""
+	_schedule_ready(w, lg, int(fmt.get("first_gap", 3)))
 
 
-static func _schedule_round(w: WorldState, lg: League, teams: Array, day: int) -> void:
+static func bracket_template(kind: String, n: int) -> Array:
+	var T: Array = []
+	var m = func(id: String, a: String, b: String, r: int, label: String, extra: Dictionary = {}) -> void:
+		var d = {"id": id, "a": a, "b": b, "r": r, "label": label, "final": false, "top4": false}
+		d.merge(extra, true)
+		T.append(d)
+	if kind == "double_elimination" and n >= 8:
+		m.call("u1", "S1", "S8", 1, "勝部第一輪")
+		m.call("u2", "S4", "S5", 1, "勝部第一輪")
+		m.call("u3", "S2", "S7", 1, "勝部第一輪")
+		m.call("u4", "S3", "S6", 1, "勝部第一輪")
+		m.call("u5", "W:u1", "W:u2", 2, "勝部第二輪")
+		m.call("u6", "W:u3", "W:u4", 2, "勝部第二輪")
+		m.call("l1", "L:u1", "L:u2", 2, "敗部第一輪")
+		m.call("l2", "L:u3", "L:u4", 2, "敗部第一輪")
+		m.call("u7", "W:u5", "W:u6", 3, "勝部決賽", {"top4": true})
+		m.call("l3", "W:l1", "L:u6", 3, "敗部第二輪")
+		m.call("l4", "W:l2", "L:u5", 3, "敗部第二輪")
+		m.call("l5", "W:l3", "W:l4", 4, "敗部第三輪", {"top4": true})
+		m.call("l6", "W:l5", "L:u7", 5, "敗部決賽")
+		m.call("gf", "W:u7", "W:l6", 6, "總決賽", {"final": true})
+	elif kind == "double_elimination" and n >= 4:
+		var s1 = "S1"
+		var s2 = "S2"
+		var s3 = "S3"
+		var s4 = "S4"
+		if n >= 6:  # 第 3～6 種子先打單淘汰，勝者進入四隊雙敗
+			m.call("q1", "S3", "S6", 1, "季後賽第一輪")
+			m.call("q2", "S4", "S5", 1, "季後賽第一輪")
+			s3 = "W:q1"
+			s4 = "W:q2"
+		var r0 = 1 if n >= 6 else 0
+		m.call("u1", s1, s4, r0 + 1, "勝部準決賽", {"top4": true})
+		m.call("u2", s2, s3, r0 + 1, "勝部準決賽", {"top4": true})
+		m.call("u3", "W:u1", "W:u2", r0 + 2, "勝部決賽")
+		m.call("l1", "L:u1", "L:u2", r0 + 2, "敗部第一輪")
+		m.call("l2", "W:l1", "L:u3", r0 + 3, "敗部決賽")
+		m.call("gf", "W:u3", "W:l2", r0 + 4, "總決賽", {"final": true})
+	elif n >= 8:
+		m.call("q1", "S1", "S8", 1, "八強")
+		m.call("q2", "S4", "S5", 1, "八強")
+		m.call("q3", "S2", "S7", 1, "八強")
+		m.call("q4", "S3", "S6", 1, "八強")
+		m.call("s1", "W:q1", "W:q2", 2, "四強", {"top4": true})
+		m.call("s2", "W:q3", "W:q4", 2, "四強", {"top4": true})
+		m.call("f", "W:s1", "W:s2", 3, "決賽", {"final": true})
+	elif n >= 6:
+		m.call("q1", "S3", "S6", 1, "季後賽第一輪")
+		m.call("q2", "S4", "S5", 1, "季後賽第一輪")
+		m.call("s1", "S1", "W:q2", 2, "四強", {"top4": true})
+		m.call("s2", "S2", "W:q1", 2, "四強", {"top4": true})
+		m.call("f", "W:s1", "W:s2", 3, "決賽", {"final": true})
+	elif n >= 4:
+		m.call("s1", "S1", "S4", 1, "四強", {"top4": true})
+		m.call("s2", "S2", "S3", 1, "四強", {"top4": true})
+		m.call("f", "W:s1", "W:s2", 2, "決賽", {"final": true})
+	else:
+		m.call("f", "S1", "S2", 1, "決賽", {"final": true})
+	return T
+
+
+static func _bracket_fixture(lg: League, m: Dictionary) -> Dictionary:
+	if str(m.get("fixture", "")) == "":
+		return {}
+	for f in lg.fixtures:
+		if f["id"] == m["fixture"]:
+			return f
+	return {}
+
+
+## 解析對戰來源，尚未決定時回傳空字串。
+static func _resolve(lg: League, src: String) -> String:
+	if src.begins_with("S"):
+		var seeds: Array = lg.playoff_bracket[0]
+		var i = int(src.substr(1)) - 1
+		return seeds[i] if i < seeds.size() else ""
+	var parts = src.split(":")
+	for m in lg.bracket:
+		if m["id"] == parts[1]:
+			var f = _bracket_fixture(lg, m)
+			if f.is_empty() or not f["played"]:
+				return ""
+			var win: String = f["result"]["winner"]
+			if parts[0] == "W":
+				return win
+			return f["away"] if win == f["home"] else f["home"]
+	return ""
+
+
+static func _schedule_ready(w: WorldState, lg: League, gap: int) -> void:
 	var bo := int(lg.format.get("playoffs", {}).get("best_of", 5))
-	var stage := "final" if teams.size() == 2 else "playoffs"
-	var rnd = lg.playoff_bracket.size()
-	for i in teams.size() / 2:
-		var hi: String = teams[i]
-		var lo: String = teams[teams.size() - 1 - i]
-		lg.fixtures.append(_with_stakes(lg, {"id": "%s_%d_po%d_%s_%s" % [lg.id, w.year, rnd, hi, lo], "day": day, "stage": stage,
-			"round": rnd, "home": hi, "away": lo, "best_of": bo, "played": false, "result": {}}))
+	for m in lg.bracket:
+		if str(m["fixture"]) != "":
+			continue
+		var a = _resolve(lg, m["a"])
+		var b = _resolve(lg, m["b"])
+		if a == "" or b == "":
+			continue
+		var fid = "%s_%d_po_%s" % [lg.id, w.year, m["id"]]
+		m["fixture"] = fid
+		lg.fixtures.append(_with_stakes(lg, {"id": fid, "day": w.day + gap, "stage": "final" if m["final"] else "playoffs",
+			"round": int(m["r"]), "label": m["label"], "home": a, "away": b, "best_of": bo, "played": false, "result": {}}))
 
 
 static func _advance_playoffs(w: WorldState, lg: League) -> void:
-	var rnd = lg.playoff_bracket.size()
-	var current = lg.fixtures.filter(func(f): return f["stage"] != "regular" and int(f["round"]) == rnd)
-	if current.is_empty() or current.any(func(f): return not f["played"]):
+	if lg.bracket.is_empty():
 		return
-	var winners: Array = current.map(func(f): return f["result"]["winner"])
-	if winners.size() == 1:
-		lg.champion_id = winners[0]
-		lg.season_complete = true
-		return
-	lg.playoff_bracket.append(winners)
-	_schedule_round(w, lg, winners, w.day + 4)
+	# 本輪全部打完才排下一輪
+	for m in lg.bracket:
+		var f = _bracket_fixture(lg, m)
+		if not f.is_empty() and not f["played"]:
+			return
+	for m in lg.bracket:
+		if m["final"]:
+			var f = _bracket_fixture(lg, m)
+			if not f.is_empty() and f["played"]:
+				lg.champion_id = f["result"]["winner"]
+				lg.season_complete = true
+				var top4: Array = []
+				for t in lg.bracket:
+					if t["top4"]:
+						var tf = _bracket_fixture(lg, t)
+						if not tf.is_empty():
+							for cid in [tf["home"], tf["away"]]:
+								if not top4.has(cid):
+									top4.append(cid)
+				if top4.size() == 4:
+					lg.playoff_bracket.append(top4)
+				return
+	_schedule_ready(w, lg, int(lg.format.get("playoffs", {}).get("days_between", 4)))
 
 
 static func next_match_day(w: WorldState, club_id: String) -> int:
