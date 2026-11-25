@@ -46,6 +46,22 @@ func _run() -> void:
 			t2.get_root().get_child(2).select(0)
 			sh.page._on_select()
 		await _shot("03_" + id)
+		if id == "transfers" and sh.page.fee and sh.page.fee.editable:
+			sh.page.fee.value = 10000
+			sh.page._offer()
+			var tsc: ScrollContainer = sh.content.get_parent()
+			await _frames(2)
+			tsc.scroll_vertical = int(tsc.get_v_scroll_bar().max_value)
+			await _shot("03_transfers_counter")
+			tsc.scroll_vertical = 0
+	# 賽前情報（對手打法、勝率因素、克制建議）
+	sh.open_prep()
+	await _shot("04_prep")
+	var prep: MatchPrepScreen = sh.page
+	var b = app.session.match_briefing()
+	if b.get("recommended", "") != "":
+		prep._set_plan(b["recommended"])
+		await _shot("04_prep_countered")
 	sh.open_match()
 	await _shot("04_draft")
 	var d: DraftScreen = sh.page
@@ -66,6 +82,18 @@ func _run() -> void:
 	await _frames(2)
 	sc.scroll_vertical = int(sc.get_v_scroll_bar().max_value)
 	await _shot("06_post_game")
+	# 下一場：快速模擬
+	sh.after_match()
+	app.session.advance_to_next_match()
+	if app.session.has_match_ready():
+		sh.open_prep()
+		var prep2: MatchPrepScreen = sh.page
+		prep2._quick_sim()
+		sc.scroll_vertical = 0
+		await _shot("06_quick_sim")
+	# 收件匣（需決策／例行、交給助理）
+	sh.open("inbox")
+	await _shot("12_inbox")
 	# 推進到世界賽與賽季結束
 	app.session.manual_draft = false
 	var w: WorldState = app.session.world

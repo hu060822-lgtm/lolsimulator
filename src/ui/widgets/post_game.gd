@@ -34,6 +34,9 @@ func _build() -> void:
 	cp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cp.size_flags_stretch_ratio = 1.6
 	top.add_child(cp)
+	var keys = key_panel(session, game)
+	if keys:
+		add_child(keys)
 	var dmg := UIKit.hbox(10)
 	for side in ["blue", "red"]:
 		dmg.add_child(_damage_panel(side))
@@ -54,7 +57,7 @@ func _mvp_card(pid: String) -> PanelContainer:
 	var s: Dictionary = game["players"][pid]
 	var pl: Player = ww.players.get(pid)
 	var ch: Champion = ww.champions.get(s["champion"])
-	var v := UIKit.vbox(4)
+	var v = UIKit.vbox(4)
 	var tag := UIKit.label("MVP", 13, UIKit.GOLD)
 	tag.add_theme_font_override("font", UIKit.head_font())
 	v.add_child(tag)
@@ -84,7 +87,7 @@ func _mvp_card(pid: String) -> PanelContainer:
 func _damage_panel(side: String) -> PanelContainer:
 	var ww = session.world
 	var col := _side_color(side)
-	var v := UIKit.vbox(4)
+	var v = UIKit.vbox(4)
 	var c := _club_of(side)
 	v.add_child(UIKit.label("%s　傷害佔比" % (c.short_name if c else side), 14, col))
 	var rows: Array = []
@@ -108,3 +111,27 @@ func _damage_panel(side: String) -> PanelContainer:
 	var p := UIKit.panel(v)
 	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return p
+
+
+## 勝負關鍵：把打法相剋、BP、經濟、物件、失誤整理成幾個標籤，讓玩家知道這局為什麼贏／輸。
+static func key_panel(s: GameSession, g: Dictionary) -> PanelContainer:
+	var ww = s.world
+	var my_side = "blue" if g.get("blue_club", "") == ww.human_club_id else ("red" if g.get("red_club", "") == ww.human_club_id else "")
+	if my_side == "":
+		return null
+	var keys: Array = MatchBriefing.key_factors(g, my_side)
+	if keys.is_empty():
+		return null
+	var v = UIKit.vbox(6)
+	var won: bool = g.get("winner", "") == my_side
+	v.add_child(UIKit.label("勝負關鍵　" + ("勝利" if won else "落敗"), 14, UIKit.GOOD if won else UIKit.BAD))
+	var flow = HFlowContainer.new()
+	flow.add_theme_constant_override("h_separation", 8)
+	flow.add_theme_constant_override("v_separation", 6)
+	for k in keys:
+		var t: String = k["text"]
+		if k.has("player_id") and ww.players.has(k["player_id"]):
+			t = "%s %s" % [ww.players[k["player_id"]].handle, t]
+		flow.add_child(UIKit.pill(("▲ " if k["good"] else "▼ ") + t, UIKit.GOOD if k["good"] else UIKit.BAD))
+	v.add_child(flow)
+	return UIKit.panel(v)

@@ -7,6 +7,11 @@ extends RefCounted
 static func weekly(w: WorldState, club: Club) -> void:
 	if not LineupSelector.is_valid(w, club) or w.rng.chance(0.25):
 		LineupSelector.pick(w, club)
+	# 招牌打法：每季依先發的英雄池決定；連敗時教練可能改打法
+	if int(club.tactics.get("style_year", 0)) != w.year:
+		choose_style(w, club, 0)
+	elif club.streak <= -4 and w.rng.chance(0.3):
+		choose_style(w, club, 1)
 	# 不滿的選手：AI 會回應（解釋或承諾），長期不滿則掛牌
 	for pid in club.roster.duplicate():
 		var p: Player = w.players[pid]
@@ -205,3 +210,33 @@ static func review_coach(w: WorldState, club: Club, position: int, teams: int) -
 		StaffSystem.ai_fill(w, club)
 		var coach: Staff = w.staff.get(club.coach_id)
 		w.log.add("coach_fired", w.day, [club.id], {"old": old.name if old else "", "new": coach.name if coach else ""}, ["排名第 %d，低於預期" % position])
+
+
+## AI 俱樂部的招牌打法：取先發各自最拿手的兩隻英雄，找最契合的戰術方向。
+## rank = 0 取最契合者；1 = 換成第二契合（連敗後求變）。玩家可在賽前情報看到並針對。
+static func choose_style(w: WorldState, club: Club, rank: int = 0) -> String:
+	if club.is_human:
+		return str(club.tactics.get("plan", "flexible"))
+	var champs: Array = []
+	for role in club.lineup:
+		var p: Player = w.players.get(club.lineup[role])
+		if p == null:
+			continue
+		for cid in p.top_champions(2):
+			if w.champions.has(cid):
+				champs.append(w.champions[cid])
+	var plan = "flexible"
+	if champs.size() >= 5:
+		var comp = CompAnalyzer.analyze(champs)
+		var ranked: Array = StyleMatchup.CYCLE.duplicate()
+		ranked.sort_custom(func(a, b): return CompAnalyzer.plan_fit(a, comp) > CompAnalyzer.plan_fit(b, comp))
+		var old: String = str(club.tactics.get("plan", "flexible"))
+		plan = ranked[mini(rank, ranked.size() - 1)]
+		if rank > 0 and plan == old:
+			plan = ranked[0]
+	var prev: String = str(club.tactics.get("plan", "flexible"))
+	club.tactics["plan"] = plan
+	club.tactics["style_year"] = w.year
+	if rank > 0 and prev != plan:
+		w.log.add("style_change", w.day, [club.id], {"from": prev, "to": plan}, ["連敗後調整打法"])
+	return plan

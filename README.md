@@ -20,6 +20,8 @@ Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）
 - 財務帳本與贊助合約、教練團（五個職位）與員工市場
 - 關係網絡（隊友、教練、衝突事件、老將指導）與選手心理（連勝連敗、局間情緒、大賽經驗）
 - 資料模組與引擎分離。預設模組 `lol_world`：對標真實電競（LCK／LPL／LEC／LTA／LCP、First Stand、MSI、世界賽瑞士輪），俱樂部與知名選手採致敬名，可自行匯入真名名單；另有原創的 `fictional_base`
+- 賽前情報與打法互剋：對手的招牌打法、勝率因素拆解、克制建議，可一鍵快速模擬；賽後列出勝負關鍵
+- 談判回價、豪門挖角與選手野心、例行事項交給助理
 - 召喚峽谷即時戰況地圖：以真實峽谷俯視圖為底圖（`assets/maps/summoners_rift.jpg`，可放 `user://rift_map.png` 替換），英雄頭像小棋、建築存亡、擊殺／推塔／龍與巴龍標記、計分板（頭像在本機首次執行時下載）
 
 ## 文件
@@ -39,6 +41,7 @@ Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）
 | [docs/rules/10-world-competitions-media.md](docs/rules/10-world-competitions-media.md) | MSI、世界賽、賽區、次級聯賽與升降級、媒體輿論、隨機事件、長期平衡 |
 | [docs/rules/11-phase4-management.md](docs/rules/11-phase4-management.md) | 即時戰術指揮、對話、組織危機、法律事件、品牌 |
 | [docs/rules/12-real-esports-ui-map.md](docs/rules/12-real-esports-ui-map.md) | 真實電競資料庫、致敬名與真名名單、戰況地圖、介面改版 |
+| [docs/rules/13-match-prep-and-depth.md](docs/rules/13-match-prep-and-depth.md) | 賽前情報、打法互剋、快速模擬、談判回價、挖角、委派 |
 | [docs/data-modules.md](docs/data-modules.md) | 資料模組格式（真實／虛構／自訂資料庫） |
 | [docs/roadmap.md](docs/roadmap.md) | 開發路線圖 |
 

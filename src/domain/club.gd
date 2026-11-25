@@ -40,6 +40,7 @@ var staff: Dictionary = {}           ## 職位 -> staff_id（主教練仍用 coa
 var sponsors: Array = []             ## 生效中的贊助合約
 var sponsor_offers: Array = []       ## 待選擇的贊助報價（玩家）
 var scout_knowledge: Dictionary = {}  ## player_id -> 0..1（僅玩家俱樂部使用）
+var settings: Dictionary = {}         ## 玩家偏好（例：delegate = 例行事項交給助理）
 
 
 static func from_dict(d: Dictionary) -> Club:
@@ -80,4 +81,4 @@ func to_dict() -> Dictionary:
 		"chemistry": chemistry, "draft_familiarity": draft_familiarity,
 		"training_plan": training_plan, "history": history, "titles": titles, "world_titles": world_titles, "msi_titles": msi_titles, "intl_titles": intl_titles, "opinion": opinion, "board_confidence": board_confidence, "brand": brand, "crisis_flags": crisis_flags, "streak": streak,
 		"finance_log": finance_log, "scout_knowledge": scout_knowledge,
-		"ledger": ledger, "staff": staff, "sponsors": sponsors, "sponsor_offers": sponsor_offers}
+		"ledger": ledger, "staff": staff, "sponsors": sponsors, "sponsor_offers": sponsor_offers, "settings": settings}

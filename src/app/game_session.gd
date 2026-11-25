@@ -49,6 +49,8 @@ func advance_day() -> bool:
 		return false
 	var before = world.inbox.size()
 	var results = WorldSimulator.advance_day(world)
+	if Delegation.enabled(club()):
+		delegate_routine(1)
 	for r in results:
 		if r["series"]["winner"] == world.human_club_id or r["series"]["loser"] == world.human_club_id:
 			last_result = r
@@ -227,6 +229,16 @@ func finish_match() -> Dictionary:
 	return r
 
 
+## 賽前情報（明天的比賽）：對手打法、近況、勝率因素。沒有比賽時回傳空字典。
+func match_briefing() -> Dictionary:
+	var found = LeagueEngine.find_fixture(world, world.human_club_id, world.day + 1)
+	if found.is_empty():
+		return {}
+	var b = MatchBriefing.build(world, found["fixture"], world.human_club_id)
+	b["competition"] = found["league"].name
+	return b
+
+
 ## 不手動 BP，直接由教練團處理整場系列賽。
 func auto_play_match() -> Dictionary:
 	begin_match()
@@ -298,6 +310,20 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 	var r = respond_to_player(msg["player_id"], option)
 	msg["resolved"] = true
 	return r
+
+
+## 例行事項交給助理處理。回傳處理了幾則。
+func delegate_routine(min_age: int = 0) -> int:
+	var n = 0
+	for m in Delegation.pending(world, min_age):
+		respond_to_message(m["id"], Delegation.choice(world, m))
+		m["delegated"] = true
+		n += 1
+	return n
+
+
+func set_delegate(on: bool) -> void:
+	club().settings["delegate"] = on
 
 
 func find_message(msg_id: String) -> Dictionary:

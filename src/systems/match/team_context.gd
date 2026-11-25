@@ -12,6 +12,7 @@ var staff_ratings: Dictionary = {}  ## 教練團綜合能力（主教練 + 專�
 var players: Dictionary = {}   ## role -> Player
 var coach: Staff = null
 var plan: String = "flexible"  ## 戰術方向（Tactics）
+var is_human: bool = false
 var aggression: float = 0.5    ## 0..1
 var chemistry: float = 50.0
 var draft_familiarity: float = 40.0
@@ -39,6 +40,7 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 	for k in ["tactical", "drafting", "adaptability", "man_management"]:
 		t.staff_ratings[k] = StaffSystem.rating(w, club, k)
 	t.plan = club.tactics.get("plan", "flexible")
+	t.is_human = club.is_human
 	t.aggression = float(club.tactics.get("aggression", 0.5))
 	t.chemistry = club.chemistry
 	t.relation_bonus = Relationships.team_average(w, club, club.lineup.values()) * 0.15

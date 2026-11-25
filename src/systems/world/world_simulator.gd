@@ -78,6 +78,7 @@ static func weekly(w: WorldState) -> void:
 			ClubAI.weekly(w, club)
 		_finance_week(w, club)
 	Scouting.weekly(w)
+	Poaching.weekly(w)
 	for pid in w.free_agents:
 		var p: Player = w.players[pid]
 		Development.weekly(w, p, {}, null)

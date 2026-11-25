@@ -25,6 +25,7 @@ var minute: int = 0
 var units: Dictionary = {}        ## side -> Array[Dictionary]（依 Attr.ROLES 排序）
 var comp: Dictionary = {}         ## side -> 陣容分析
 var counter: Dictionary = {}      ## side -> 對對手的原型剋制值
+var style_edge: Dictionary = {"blue": 0.0, "red": 0.0}  ## 打法互剋（StyleMatchup）帶來的戰力修正
 var stance: Dictionary = {"blue": "control", "red": "control"}
 var focus: Dictionary = {"blue": "", "red": ""}   ## 玩家指定的目標（物件或兵線）
 var _prep: Dictionary = {"blue": 0.0, "red": 0.0}  ## 針對指定物件提前布置（視野、集結）帶來的團戰加成
@@ -88,6 +89,12 @@ func begin() -> void:
 	_setup()
 	minute = 0
 	gold_curve = [0]
+	for side in SIDES:
+		if style_edge[side] > 0.0:
+			var mine: String = draft["plan"][side]
+			var theirs: String = draft["plan"][other(side)]
+			_event("style", "打法相剋：%s 的「%s」剋制 %s 的「%s」" % [team(side).short_name, _plan_name(mine), team(other(side)).short_name, _plan_name(theirs)],
+				[side], [StyleMatchup.reason(mine, theirs)])
 	_record_frame()
 
 
@@ -162,6 +169,7 @@ func _setup() -> void:
 		stance[side] = _initial_stance(side)
 	for side in SIDES:
 		counter[side] = CompAnalyzer.counter_score(comp[side], comp[other(side)])
+		style_edge[side] = StyleMatchup.edge(str(draft["plan"].get(side, "")), str(draft["plan"].get(other(side), "")))
 	_update_vision()
 
 
@@ -230,6 +238,7 @@ func _side_multiplier(side: String) -> float:
 	var t = team(side)
 	var m: float = 1.0 + float(_prep[side])
 	m *= 1.0 + Tuning.f("comp_counter_weight") * counter[side] * 3.0
+	m *= 1.0 + float(style_edge[side]) * (1.0 if minute < 26 else 0.5)
 	m *= 1.0 + Tuning.f("comp_fit_weight") * (comp[side]["fit"] - 1.0)
 	m *= 1.0 + Tuning.f("execution_spread") * (t.execution() - 0.5)
 	m *= 1.0 + 0.015 * dragons[side]
@@ -1159,6 +1168,13 @@ static func focus_name(f: String) -> String:
 	return {"dragon": "小龍", "baron": "巴龍", "top": "上路推進", "mid": "中路推進", "bot": "下路推進"}.get(f, f)
 
 
+const PLAN_NAMES := {"flexible": "彈性", "early_aggression": "前期進攻", "late_scaling": "後期發育", "split_push": "分推", "teamfight": "團戰", "pick": "抓單", "poke_siege": "消耗圍塔", "protect": "保護後排"}
+
+
+static func _plan_name(p: String) -> String:
+	return PLAN_NAMES.get(p, p)
+
+
 func _stance_name(s: String) -> String:
 	return {"press": "主動進攻", "stall": "拖後期", "control": "物件控制", "split": "分推", "pick": "抓單", "siege": "消耗圍塔"}.get(s, s)
 
@@ -1208,7 +1224,7 @@ func _build_result() -> Dictionary:
 		"gold": {"blue": int(_team_gold("blue")), "red": int(_team_gold("red"))},
 		"dragons": dragons.duplicate(), "barons": barons.duplicate(),
 		"towers_destroyed": {"blue": _structures_lost("red"), "red": _structures_lost("blue")},
-		"stances": stance.duplicate(), "events": events, "players": stats, "mvp": mvp,
+		"stances": stance.duplicate(), "style_edge": style_edge.duplicate(), "comp_counter": counter.duplicate(), "events": events, "players": stats, "mvp": mvp,
 		"frames": frames, "champs": _champ_ids(), "gold_curve": gold_curve,
 		"draft": {"bans": draft["bans"], "picks": draft["picks"], "log": draft["log"] if detail else [], "plan": draft["plan"],
 			"primary": {"blue": comp["blue"]["primary"], "red": comp["red"]["primary"]}},

@@ -132,6 +132,29 @@ func _offer() -> void:
 		shell.refresh_status()
 	else:
 		result.text = "失敗：%s" % r.get("reason", "")
+		_show_counter(r)
+
+
+## 回價：賣方開出轉會費、或選手（經紀人）開出能接受的年薪與出場承諾，一鍵帶入後重新報價。
+func _show_counter(r: Dictionary) -> void:
+	var box = UIKit.hbox(8)
+	box.name = "Counter"
+	var old = detail.get_node_or_null("Counter")
+	if old:
+		old.queue_free()
+	if r.has("counter_fee"):
+		box.add_child(UIKit.label("賣方回價：轉會費 %s" % UIKit.money(int(r["counter_fee"])), 14, UIKit.GOLD_LIGHT))
+		box.add_child(UIKit.button("接受回價並重新報價", func(): fee.value = int(r["counter_fee"]); _offer()))
+	elif r.has("counter"):
+		var c: Dictionary = r["counter"]
+		if c.get("refuse", false):
+			box.add_child(UIKit.label("經紀人：「現在的條件我們不考慮。」（球隊競爭力或地區不符他的期待）", 14, UIKit.BAD))
+		else:
+			var role_i = PROMISES.find(c["role_promise"])
+			box.add_child(UIKit.label("經紀人回價：年薪 %s・%s" % [UIKit.money(int(c["salary"])), PROMISE_NAMES[role_i]], 14, UIKit.GOLD_LIGHT))
+			box.add_child(UIKit.button("接受回價", func(): salary.value = int(c["salary"]); promise.select(role_i); _offer()))
+	if box.get_child_count() > 0:
+		detail.add_child(box)
 
 
 func _loan_in() -> void:

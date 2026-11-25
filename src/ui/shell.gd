@@ -217,7 +217,7 @@ func refresh_status() -> void:
 		UIKit.clear(crest_box)
 		crest_box.add_child(Badge.club(c, 44))
 	nav["inbox"].text = "收件匣　%d" % unread if unread > 0 else "收件匣"
-	continue_btn.text = "進入 BP ▶" if session.has_match_ready() else "繼續 ▶"
+	continue_btn.text = "賽前情報 ▶" if session.has_match_ready() else "繼續 ▶"
 
 
 func toast(text: String) -> void:
@@ -227,7 +227,7 @@ func toast(text: String) -> void:
 func _on_continue() -> void:
 	toast("")
 	if session.has_match_ready():
-		open_match()
+		open_prep()
 		return
 	session.advance_to_next_match()
 	if session.has_match_ready():
@@ -245,6 +245,11 @@ func _on_week() -> void:
 	if page:
 		page.refresh()
 	refresh_status()
+
+
+## 比賽日：先看賽前情報（對手、勝率因素、克制建議），再選擇親自 BP 或快速模擬。
+func open_prep() -> void:
+	open_screen(MatchPrepScreen.new(), "prep")
 
 
 func open_match() -> void:

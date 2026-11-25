@@ -79,6 +79,9 @@ static func offer_contract(w: WorldState, club: Club, p: Player, salary: int, ye
 			if parts[k] < parts[worst]:
 				worst = k
 		reason = {"money": "薪資不足", "competitive": "球隊競爭力不足", "playing": "出場承諾不夠", "loyalty": "不願意留在這支隊伍", "home": "不想離開家鄉賽區"}.get(worst, worst)
+	var counter = {}
+	if not accepted and club.is_human:
+		counter = counter_terms(w, p, club, role_promise, threshold)
 	w.log.add("contract_offer", w.day, [p.id, club.id], {"salary": salary, "years": years, "accepted": accepted, "utility": u}, [reason] if reason != "" else ["條件符合期待"])
 	if accepted:
 		var c := Contract.new()
@@ -92,7 +95,25 @@ static func offer_contract(w: WorldState, club: Club, p: Player, salary: int, ye
 		var agent_fee = Agents.fee(p, salary)
 		if agent_fee > 0:
 			Finance.spend(club, "agent_fees", agent_fee)
-	return {"accepted": accepted, "reason": reason, "utility": u}
+	var out = {"accepted": accepted, "reason": reason, "utility": u}
+	if not counter.is_empty():
+		out["counter"] = counter
+	return out
+
+
+## 選手（經紀人）的回價：能讓他點頭的最低年薪與出場承諾。
+## 回傳 {salary, role_promise}；任何條件都不肯 → {"refuse": true}。
+static func counter_terms(w: WorldState, p: Player, club: Club, role_promise: String, threshold: float) -> Dictionary:
+	var demand = wage_demand(w, p)
+	var roles: Array = [role_promise]
+	if role_promise != "starter":
+		roles.append("starter")
+	for role in roles:
+		for i in 13:
+			var sal = int(demand * (0.9 + 0.05 * i) / 1000.0) * 1000
+			if contract_utility(w, p, club, sal, role)["utility"] > threshold + 0.02:
+				return {"salary": sal, "role_promise": role}
+	return {"refuse": true}
 
 
 ## 外援名額：聯賽 format.import_limit（未設定＝不限）。非本賽區出身的選手算外援。
@@ -152,7 +173,12 @@ static func make_transfer_offer(w: WorldState, buyer: Club, p: Player, fee: int,
 			"text": "%s 對 %s 提出 %d 的轉會報價" % [buyer.name, p.handle, fee], "resolved": false,
 			"options": ["accept_offer", "reject_offer"]})
 		return {"accepted": false, "reason": "等待玩家回覆"}
-	if fee < asking_price(w, seller, p) or buyer.cash < fee:
+	if buyer.cash < fee:
+		return {"accepted": false, "reason": "資金不足"}
+	var ask = asking_price(w, seller, p)
+	if fee < ask:
+		if buyer.is_human:
+			return {"accepted": false, "reason": "賣方拒絕轉會費", "counter_fee": ask}
 		return {"accepted": false, "reason": "賣方拒絕轉會費"}
 	var r = offer_contract(w, buyer, p, salary, years, role_promise)
 	if r["accepted"]:
@@ -223,6 +249,9 @@ static func respond_to_offer(w: WorldState, msg: Dictionary, accept: bool) -> Di
 		if p.transfer_requested:
 			p.happiness -= 0.2
 			p.trust_in_management -= 8.0
+		var note = Poaching.on_rejected(w, msg, p)
+		if note != "":
+			return {"accepted": false, "reason": "已拒絕", "note": note}
 		return {"accepted": false, "reason": "已拒絕"}
 	if buyer.cash < int(msg["fee"]):
 		return {"accepted": false, "reason": "買方資金不足"}
