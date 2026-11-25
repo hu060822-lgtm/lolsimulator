@@ -72,10 +72,24 @@ func _run() -> void:
 	d._play_live()
 	d.mc.skip_to_end()
 	await _shot("06_live_tactics")
-	d._live_order("control")
-	d.mc.skip_to_end()
+	# 關鍵抉擇：找到第一張抉擇卡，拍下卡片與做完決定後的畫面
+	var shot_decision := false
+	var g := 0
+	while not d.live_snap.is_empty() and g < 8:
+		g += 1
+		var decs: Array = d.live_snap.get("decisions", [])
+		if not decs.is_empty() and not shot_decision:
+			await _shot("06_live_decision")
+			d._decide(decs[0]["id"], decs[0]["options"][0]["id"])
+			d.mc.skip_to_end()
+			await _shot("06_live_decision_result")
+			shot_decision = true
+			break
+		d._live_order("control")
+		d.mc.skip_to_end()
 	await _shot("06_live_map")
-	d._live_skip()
+	if not d.live_snap.is_empty():
+		d._live_skip()
 	d.mc.skip_to_end()
 	await _shot("06_match")
 	var sc: ScrollContainer = sh.content.get_parent()
@@ -117,6 +131,12 @@ func _run() -> void:
 	await _shot("09_history")
 	sh.open("dashboard")
 	await _shot("10_dashboard_offseason")
+	# 經理生涯：休賽季的執教邀請（成績不夠亮眼時，示範用直接產生一封）
+	if not w.inbox.any(func(m): return m.get("kind") in ["job_offer", "fired"] and not m.get("resolved", false)):
+		ManagerCareer.data(w)["reputation"] = 75.0
+		ManagerCareer._offers(w, w.human_club())
+	sh.open("inbox")
+	await _shot("13_job_offer")
 	sh.open("finance")
 	await _shot("11_finance_brand")
 	quit()

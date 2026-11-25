@@ -334,6 +334,7 @@ static func complete_fixture(w: WorldState, lg: League, fx: Dictionary, series: 
 	if detail:
 		fx["result"]["games"] = series["games"]
 	MatchEffects.apply_series(w, series, stakes_of(fx))
+	record_picks(w, series)
 	if fx["stage"] == "regular":
 		_record(lg, series)
 	Media.on_match(w, lg, fx, series)
@@ -541,3 +542,22 @@ static func next_match_day(w: WorldState, club_id: String) -> int:
 				if best == -1 or int(fx["day"]) < best:
 					best = int(fx["day"])
 	return best
+
+
+## 正式賽英雄使用紀錄（對手研究的依據）：每打一場系列賽，舊紀錄衰減 15%。
+static func record_picks(w: WorldState, series: Dictionary) -> void:
+	var touched := {}
+	for g in series.get("games", []):
+		for side in ["blue", "red"]:
+			var c: Club = w.clubs.get(g.get(side + "_club", ""))
+			if c == null:
+				continue
+			if not touched.has(c.id):
+				touched[c.id] = true
+				for cid in c.pick_history.keys():
+					c.pick_history[cid] = float(c.pick_history[cid]) * 0.85
+					if c.pick_history[cid] < 0.05:
+						c.pick_history.erase(cid)
+			for role in g.get("draft", {}).get("picks", {}).get(side, {}):
+				var cid: String = g["draft"]["picks"][side][role]
+				c.pick_history[cid] = float(c.pick_history.get(cid, 0.0)) + 1.0

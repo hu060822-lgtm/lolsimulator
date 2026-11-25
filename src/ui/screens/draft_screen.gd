@@ -239,7 +239,11 @@ func _champ_info(c: Champion, act: String) -> String:
 		var p: Player = team.players.get(r)
 		if p:
 			best = maxf(best, p.mastery(c.id))
-	return "%s %d %s" % ["熟" if act == "pick" else "敵", int(best), arrow]
+	var seen = team.exposure(c.id)
+	if act != "pick" and seen < 0.2 and not team.pick_history.is_empty():
+		return "敵 ? %s" % arrow  # 對手沒在正式賽用過：情報只能推測
+	var star = "★" if act == "pick" and best >= 70.0 and seen < 0.2 else ""
+	return "%s %d%s %s" % ["熟" if act == "pick" else "敵", int(best), star, arrow]
 
 
 func _team_col(col: VBoxContainer, side: String) -> void:
@@ -442,6 +446,7 @@ func _play_live() -> void:
 func _live_order(order: String) -> void:
 	var f = live_focus
 	live_focus = "__keep"
+	last_decision = {}
 	_apply_live(session.live_continue(order, f))
 
 
@@ -452,6 +457,7 @@ func _set_focus(f: String, btns: Array) -> void:
 
 
 func _live_skip() -> void:
+	last_decision = {}
 	_apply_live(session.live_finish())
 
 
@@ -492,6 +498,14 @@ func _show_orders() -> void:
 	tags.add_child(UIKit.pill("目前：" + ORDER_INFO.get(snap["stances"][side], ["", snap["stances"][side]])[1], UIKit.ACCENT))
 	tags.add_child(UIKit.pill("分析師：" + _advice(gd, late_edge), UIKit.GOOD))
 	box.add_child(tags)
+	if not last_decision.is_empty():
+		var ok: bool = last_decision.get("success", false)
+		var res := UIKit.label(("✔ " if ok else "✘ ") + str(last_decision.get("text", "")), 16, UIKit.GOOD if ok else UIKit.BAD)
+		res.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		box.add_child(UIKit.accent_panel(res, UIKit.GOOD if ok else UIKit.BAD))
+	var decs: Array = snap.get("decisions", [])
+	if not decs.is_empty():
+		box.add_child(_decision_card(decs[0]))
 	# 指定目標：選好後再點下方的打法
 	var cur_focus: String = str(snap.get("focus", {}).get(side, ""))
 	live_focus = "__keep"
@@ -522,6 +536,48 @@ func _show_orders() -> void:
 	fin.custom_minimum_size.y = 62
 	grid.add_child(fin)
 	box.add_child(grid)
+
+
+## 關鍵抉擇卡：標題、情境、2～3 個選項（成功率與風險）。
+func _decision_card(d: Dictionary) -> PanelContainer:
+	var v := UIKit.vbox(6)
+	var head := UIKit.hbox(8)
+	head.add_child(UIKit.pill("關鍵抉擇", UIKit.WARN))
+	head.add_child(UIKit.label(d["title"], 17, UIKit.GOLD_LIGHT))
+	v.add_child(head)
+	v.add_child(UIKit.label(d["text"], 13, UIKit.MUTED))
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 6)
+	for o in d["options"]:
+		var c: float = o["chance"]
+		var risk: String = o["risk"]
+		var col: Color = UIKit.BAD if risk == "high" else (UIKit.WARN if risk == "mid" else UIKit.GOOD)
+		var code := ("成功率 %d%%" % roundi(c * 100.0)) if c >= 0.0 else "確定"
+		var b := UIKit.tile(code, o["label"], o["desc"], _decide.bind(d["id"], o["id"]), col, 260)
+		b.custom_minimum_size.y = 70
+		b.name = "Decide_" + o["id"]
+		row.add_child(b)
+	v.add_child(row)
+	return UIKit.accent_panel(v, UIKit.WARN)
+
+
+var last_decision: Dictionary = {}
+
+
+func _decide(decision_id: String, option: String) -> void:
+	var r: Dictionary = session.live_decide(decision_id, option)
+	toast(str(r.get("text", "")))
+	last_decision = r
+	var snap: Dictionary = r.get("snap", {})
+	if snap.is_empty():
+		return
+	if snap.get("done", false):
+		_apply_live(snap)
+		return
+	live_snap = snap
+	mc.load(snap)
+	_show_orders()
 
 
 static func _advice(gd: int, late_edge: float) -> String:

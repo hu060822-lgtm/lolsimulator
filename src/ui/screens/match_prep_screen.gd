@@ -151,6 +151,25 @@ func _advice(b: Dictionary) -> PanelContainer:
 		rr.add_child(UIKit.button("改打「%s」" % UIKit.PLAN_NAMES.get(rec, rec), _set_plan.bind(rec)))
 		rr.add_child(UIKit.label(b["recommended_reason"], 13, UIKit.TEXT))
 		v.add_child(rr)
+	var ww = w()
+	if not b["my_exposed"].is_empty():
+		var er := UIKit.hbox(6)
+		er.add_child(UIKit.label("對手研究過", 13, UIKit.MUTED))
+		for cid in b["my_exposed"]:
+			var tok = ChampToken.make(ww.champions.get(cid), UIKit.BAD, 28)
+			tok.tooltip_text = "%s：你最近正式賽常用，很可能被禁" % ww.champions[cid].name
+			er.add_child(tok)
+		er.add_child(UIKit.label("最近常用，很可能被禁或被針對", 12, UIKit.MUTED))
+		v.add_child(er)
+	if not b["my_pockets"].is_empty():
+		var pr := UIKit.hbox(6)
+		pr.add_child(UIKit.label("秘密武器", 13, UIKit.MUTED))
+		for e in b["my_pockets"]:
+			var tok2 = ChampToken.make(ww.champions.get(e["champion"]), UIKit.GOOD, 28)
+			tok2.tooltip_text = "%s 的%s（熟練度 %d），對手沒看過" % [e["player"], ww.champions[e["champion"]].name, int(e["mastery"])]
+			pr.add_child(tok2)
+		pr.add_child(UIKit.label("沒在正式賽亮過的拿手英雄，拿出來時狀態 +4%", 12, UIKit.MUTED))
+		v.add_child(pr)
 	var avoid: Array = b["avoid"].map(func(p): return UIKit.PLAN_NAMES.get(p, p))
 	if not avoid.is_empty():
 		v.add_child(UIKit.muted("避免：%s（會被對手的打法剋制）。" % "、".join(avoid)))

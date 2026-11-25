@@ -41,6 +41,7 @@ static func build(w: WorldState, fx: Dictionary, me_id: String) -> Dictionary:
 		"opp_form": recent_form(w, opp_id), "my_form": recent_form(w, me_id),
 		"opp_star": star_player(w, opp), "opp_champs": signature_champions(w, opp, 4),
 		"opp_streak": opp.streak,
+		"my_exposed": most_played(w, me, 3), "my_pockets": pocket_picks(w, me, 4),
 	}
 
 
@@ -148,7 +149,42 @@ static func star_player(w: WorldState, club: Club) -> Dictionary:
 	return {"id": best.id, "handle": best.handle, "role": best_role, "champions": best.top_champions(3)}
 
 
+## 近期正式賽最常用的英雄（對手最可能研究並禁用）。
+static func most_played(w: WorldState, club: Club, n: int) -> Array:
+	var ids: Array = club.pick_history.keys().filter(func(c): return float(club.pick_history[c]) >= 1.0)
+	ids.sort_custom(func(a, b): return club.pick_history[a] > club.pick_history[b])
+	return ids.slice(0, n)
+
+
+## 秘密武器：先發熟練度 70 以上、但近期沒在正式賽用過的英雄。
+static func pocket_picks(w: WorldState, club: Club, n: int) -> Array:
+	var out: Array = []
+	for role in Attr.ROLES:
+		var p: Player = w.players.get(club.lineup.get(role, ""))
+		if p == null:
+			continue
+		for cid in p.top_champions(6):
+			if p.mastery(cid) >= 70.0 and float(club.pick_history.get(cid, 0.0)) < 0.5 and w.champions.has(cid):
+				var ch: Champion = w.champions[cid]
+				if role in ch.roles:
+					out.append({"champion": cid, "role": role, "player": p.handle, "mastery": p.mastery(cid)})
+					break
+	out.sort_custom(func(a, b): return a["mastery"] > b["mastery"])
+	return out.slice(0, n)
+
+
+## 對手的拿手英雄：有正式賽紀錄就看紀錄（情報），否則才用熟練度推測。
 static func signature_champions(w: WorldState, club: Club, n: int) -> Array:
+	var seen := most_played(w, club, n)
+	if seen.size() >= n:
+		var roles := {}
+		for role in club.lineup:
+			var p: Player = w.players.get(club.lineup[role])
+			if p:
+				for cid in seen:
+					if p.mastery(cid) > 0 and not roles.has(cid):
+						roles[cid] = role
+		return seen.map(func(cid): return {"champion": cid, "role": roles.get(cid, "")})
 	var scored: Array = []
 	for role in club.lineup:
 		var p: Player = w.players.get(club.lineup[role])
@@ -174,6 +210,14 @@ static func key_factors(game: Dictionary, my_side: String) -> Array:
 		out.append({"text": "打法剋制：%s 壓過對手的%s（%s）" % [MatchEngine._plan_name(mine), MatchEngine._plan_name(theirs), StyleMatchup.reason(mine, theirs)], "good": true})
 	elif float(se.get(my_side, 0.0)) < 0.0:
 		out.append({"text": "打法被剋：對手的%s 剋制我方%s（%s）" % [MatchEngine._plan_name(theirs), MatchEngine._plan_name(mine), StyleMatchup.reason(mine, theirs)], "good": false})
+	for ev in game.get("events", []):
+		if ev.get("type", "") == "surprise":
+			var ours: bool = my_side in ev.get("sides", [])
+			out.append({"text": ("秘密武器奏效" if ours else "被對手的秘密武器打個措手不及"), "good": ours})
+			break
+	for dl in game.get("decisions", []):
+		if dl.get("side", "") == my_side:
+			out.append({"text": "抉擇「%s」%s" % [dl["label"], "成功" if dl["success"] else "失敗"], "good": dl["success"]})
 	var cc: float = float(game.get("comp_counter", {}).get(my_side, 0.0))
 	if absf(cc) > 0.03:
 		out.append({"text": "BP：陣容%s對手" % ("剋制" if cc > 0 else "被"), "good": cc > 0})
@@ -203,4 +247,4 @@ static func key_factors(game: Dictionary, my_side: String) -> Array:
 			worst = pid
 	if worst != "":
 		out.append({"text": "失誤：%d 次關鍵失誤" % worst_m, "good": false, "player_id": worst})
-	return out.slice(0, 5)
+	return out.slice(0, 6)

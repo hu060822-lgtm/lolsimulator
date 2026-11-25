@@ -141,6 +141,8 @@ static func end_season(w: WorldState) -> void:
 		var g: int = p.season_stats.get("games", 0)
 		if g > 0 or p.club_id != "":
 			p.history.append({"year": w.year, "club_id": p.club_id, "games": g, "wins": p.season_stats.get("wins", 0), "avg_rating": snappedf(p.avg_season_rating(), 0.01)})
+	if w.human_club_id != "":
+		ManagerCareer.season_review(w)
 	_promotion_relegation(w, season)
 	w.history["seasons"].append(season)
 	Media.on_season_end(w, season)
@@ -383,6 +385,7 @@ static func _expire_contracts(w: WorldState) -> void:
 
 static func _new_season(w: WorldState) -> void:
 	w.year += 1
+	ManagerCareer.preseason_cleanup(w)
 	var hc: Club = w.human_club()
 	if hc:
 		Finance.auto_sign_remaining(w, hc)

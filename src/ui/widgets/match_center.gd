@@ -6,11 +6,11 @@ extends VBoxContainer
 signal reached_end
 
 const SPEEDS := {"1x": 2.4, "2x": 1.2, "4x": 0.6}  ## 每遊戲分鐘的秒數
-const BIG := ["teamfight", "baron", "elder", "end", "steal", "dragon", "order", "adapt", "split", "force_4v5"]
+const BIG := ["decision", "style", "surprise", "teamfight", "baron", "elder", "end", "steal", "dragon", "order", "adapt", "split", "force_4v5"]
 const TAGS := {"teamfight": "團戰", "baron": "巴龍", "elder": "遠古龍", "dragon": "小龍", "grubs": "幼蟲", "herald": "預示者", "end": "勝利",
 	"steal": "搶龍", "structure": "推塔", "solo_kill": "單殺", "gank": "Gank", "lane_kill": "擊殺", "pick": "抓單", "counter_gank": "反蹲",
 	"punished_mistake": "失誤", "mistake": "失誤", "gank_fail": "Gank", "invade": "反野", "invade_kill": "反野", "invade_punished": "反野",
-	"order": "指令", "adapt": "調整", "split": "分推", "force_4v5": "團戰", "split_caught": "抓分推", "trade": "交換", "gank_punished": "反打"}
+	"order": "指令", "decision": "抉擇", "style": "相剋", "surprise": "秘密武器", "adapt": "調整", "split": "分推", "force_4v5": "團戰", "split_caught": "抓分推", "trade": "交換", "gank_punished": "反打"}
 
 var session: GameSession
 var data: Dictionary = {}

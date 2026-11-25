@@ -42,6 +42,7 @@ Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）
 | [docs/rules/11-phase4-management.md](docs/rules/11-phase4-management.md) | 即時戰術指揮、對話、組織危機、法律事件、品牌 |
 | [docs/rules/12-real-esports-ui-map.md](docs/rules/12-real-esports-ui-map.md) | 真實電競資料庫、致敬名與真名名單、戰況地圖、介面改版 |
 | [docs/rules/13-match-prep-and-depth.md](docs/rules/13-match-prep-and-depth.md) | 賽前情報、打法互剋、快速模擬、談判回價、挖角、委派 |
+| [docs/rules/14-decisions-and-career.md](docs/rules/14-decisions-and-career.md) | 關鍵抉擇卡、對手研究與秘密武器、經理生涯（開除與挖角） |
 | [docs/data-modules.md](docs/data-modules.md) | 資料模組格式（真實／虛構／自訂資料庫） |
 | [docs/roadmap.md](docs/roadmap.md) | 開發路線圖 |
 

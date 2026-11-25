@@ -25,7 +25,11 @@ var minute: int = 0
 var units: Dictionary = {}        ## side -> Array[Dictionary]（依 Attr.ROLES 排序）
 var comp: Dictionary = {}         ## side -> 陣容分析
 var counter: Dictionary = {}      ## side -> 對對手的原型剋制值
-var style_edge: Dictionary = {"blue": 0.0, "red": 0.0}  ## 打法互剋（StyleMatchup）帶來的戰力修正
+var style_edge: Dictionary = {"blue": 0.0, "red": 0.0}
+## 關鍵抉擇（MatchDecisions）：manual_side 由玩家即時決定，其他由指揮自動決定
+var manual_side: String = ""
+var decided: Dictionary = {}
+var decision_log: Array = []  ## 打法互剋（StyleMatchup）帶來的戰力修正
 var stance: Dictionary = {"blue": "control", "red": "control"}
 var focus: Dictionary = {"blue": "", "red": ""}   ## 玩家指定的目標（物件或兵線）
 var _prep: Dictionary = {"blue": 0.0, "red": 0.0}  ## 針對指定物件提前布置（視野、集結）帶來的團戰加成
@@ -167,6 +171,14 @@ func _setup() -> void:
 		structures[side] = {"top": 0, "mid": 0, "bot": 0, "nexus_towers": 0}
 		siege[side] = {"top": 0.0, "mid": 0.0, "bot": 0.0}
 		stance[side] = _initial_stance(side)
+	# 秘密武器：沒在正式賽亮過的拿手英雄，對手沒有準備（狀態 +4%）
+	for side in SIDES:
+		for u in units[side]:
+			var c: Champion = u["champ"]
+			if c and u["mastery"] >= 0.7 and team(side).exposure(c.id) < 0.2 and not team(side).pick_history.is_empty():
+				u["form"] = float(u["form"]) + 0.04
+				u["surprise"] = true
+				_event("surprise", "秘密武器：%s 拿出從未在正式賽亮相的%s" % [_h(u), c.name], [side], ["對手沒有研究過這隻英雄", "熟練度 %d" % int(u["mastery"] * 100)])
 	for side in SIDES:
 		counter[side] = CompAnalyzer.counter_score(comp[side], comp[other(side)])
 		style_edge[side] = StyleMatchup.edge(str(draft["plan"].get(side, "")), str(draft["plan"].get(other(side), "")))
@@ -705,6 +717,8 @@ func _shotcall() -> void:
 				why.append("陣容擅長抓單")
 			_event("adapt", "%s 調整戰術：%s → %s" % [t.short_name, _stance_name(old), _stance_name(best)], [side], why if why.size() > 0 else ["指揮判斷"])
 
+	MatchDecisions.ai_turn(self)
+
 
 func _macro() -> void:
 	# 1) 分推
@@ -1224,7 +1238,7 @@ func _build_result() -> Dictionary:
 		"gold": {"blue": int(_team_gold("blue")), "red": int(_team_gold("red"))},
 		"dragons": dragons.duplicate(), "barons": barons.duplicate(),
 		"towers_destroyed": {"blue": _structures_lost("red"), "red": _structures_lost("blue")},
-		"stances": stance.duplicate(), "style_edge": style_edge.duplicate(), "comp_counter": counter.duplicate(), "events": events, "players": stats, "mvp": mvp,
+		"stances": stance.duplicate(), "style_edge": style_edge.duplicate(), "decisions": decision_log.duplicate(), "comp_counter": counter.duplicate(), "events": events, "players": stats, "mvp": mvp,
 		"frames": frames, "champs": _champ_ids(), "gold_curve": gold_curve,
 		"draft": {"bans": draft["bans"], "picks": draft["picks"], "log": draft["log"] if detail else [], "plan": draft["plan"],
 			"primary": {"blue": comp["blue"]["primary"], "red": comp["red"]["primary"]}},

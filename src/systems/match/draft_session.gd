@@ -215,7 +215,11 @@ func _rank_bans(side: String, r: SimRng) -> Array:
 		for role in enemy_open:
 			if not (role in c.roles):
 				continue
-			var t = _mastery(enemy, role, c.id) * 0.6 + patch.meta(c.id) / 2.0 * 0.3
+			# 分析師只看得到對手「亮過」的英雄池：正式賽用得多的拿手英雄最容易被禁，
+			# 沒在正式賽用過的秘密武器只能靠分析師的推測（BP 品質）
+			var seen = enemy.exposure(c.id)
+			var known = 0.4 + 0.6 * maxf(seen, q * 0.5)
+			var t = _mastery(enemy, role, c.id) * 0.6 * known + patch.meta(c.id) / 2.0 * 0.3 + seen * 0.15
 			if t > threat:
 				threat = t
 				target_role = role
@@ -238,6 +242,8 @@ func _rank_bans(side: String, r: SimRng) -> Array:
 	for e in out.slice(0, REASONED):
 		var p: Player = enemy.players.get(e["target_role"])
 		var reason = "針對 %s 的拿手英雄" % (p.handle if p else e["target_role"])
+		if enemy.exposure(e["champion"]) >= 0.6:
+			reason = "%s 最近正式賽常用" % (p.handle if p else e["target_role"])
 		if bias.get(e["champion"], 0.0) > 0.0:
 			reason = "上一局對手的關鍵英雄"
 		elif e["anti"] > 0.05:

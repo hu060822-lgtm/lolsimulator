@@ -167,7 +167,28 @@ func start_live_game(ds: DraftSession) -> Dictionary:
 	var s: SeriesState = pending["series"]
 	live = s.begin_game(ds)
 	live_side = s.side_of(world.human_club_id)
+	live.manual_side = live_side
 	return _live_pause()
+
+
+## 即時指揮：在暫停點做出關鍵抉擇（MatchDecisions）。回傳 {ok, success, text, snap}，不推進時間。
+func live_decide(decision_id: String, option: String) -> Dictionary:
+	if live == null:
+		return {"ok": false, "text": "目前沒有進行中的比賽"}
+	var r = MatchDecisions.resolve(live, live_side, decision_id, option)
+	if live.is_over():
+		var s: SeriesState = pending["series"]
+		var g = s.finish_game(live)
+		live = null
+		r["snap"] = {"done": true, "game": g}
+		return r
+	var snap = live.snapshot()
+	snap["next_call"] = live.next_shotcall()
+	snap["side"] = live_side
+	snap["done"] = false
+	snap["decisions"] = MatchDecisions.available(live, live_side)
+	r["snap"] = snap
+	return r
 
 
 ## 下達接下來這段時間的指示（"" = 交給指揮自行判斷），推進到下一個調整點。
@@ -213,6 +234,7 @@ func _live_pause() -> Dictionary:
 	snap["next_call"] = at
 	snap["side"] = live_side
 	snap["done"] = false
+	snap["decisions"] = MatchDecisions.available(live, live_side)
 	return snap
 
 
@@ -302,6 +324,11 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 		return PressConference.answer(world, msg, option.trim_prefix("press:"))
 	if option.begins_with("duo:") or option.begins_with("bond:") or option.begins_with("mentor:"):
 		return TeammateTalks.resolve(world, msg, option)
+	if option.begins_with("job:"):
+		var jr = ManagerCareer.respond(world, msg, option)
+		if jr.get("switched", false):
+			pending = {}
+		return jr
 	if option.begins_with("ev:"):
 		return RandomEvents.resolve(world, msg, option)
 	if option.begins_with("crisis:"):

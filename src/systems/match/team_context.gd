@@ -13,6 +13,7 @@ var players: Dictionary = {}   ## role -> Player
 var coach: Staff = null
 var plan: String = "flexible"  ## 戰術方向（Tactics）
 var is_human: bool = false
+var pick_history: Dictionary = {}  ## 近期正式賽用過的英雄（對手看得到的情報）
 var aggression: float = 0.5    ## 0..1
 var chemistry: float = 50.0
 var draft_familiarity: float = 40.0
@@ -41,6 +42,7 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 		t.staff_ratings[k] = StaffSystem.rating(w, club, k)
 	t.plan = club.tactics.get("plan", "flexible")
 	t.is_human = club.is_human
+	t.pick_history = club.pick_history
 	t.aggression = float(club.tactics.get("aggression", 0.5))
 	t.chemistry = club.chemistry
 	t.relation_bonus = Relationships.team_average(w, club, club.lineup.values()) * 0.15
@@ -80,3 +82,8 @@ func shotcall_quality() -> float:
 ## 執行力 0..1：默契、溝通、團隊合作、教練戰術能力。
 func execution() -> float:
 	return ((chemistry + relation_bonus) * 0.35 + avg_trait("communication") * 0.2 + avg_trait("teamwork") * 0.2 + coach_stat("tactical") * 0.25) / 100.0
+
+
+## 對手對這隻英雄的了解程度 0..1：最近正式賽用得越多越清楚。
+func exposure(champ_id: String) -> float:
+	return clampf(float(pick_history.get(champ_id, 0.0)) / 2.5, 0.0, 1.0)
