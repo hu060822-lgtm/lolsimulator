@@ -224,3 +224,174 @@ static func along(path: PackedVector2Array, u: float) -> Vector2:
 			return path[i - 1].lerp(path[i], d / maxf(seg, 0.000001))
 		d -= seg
 	return path[-1]
+
+
+# ---------------------------------------------------------------- 有戰術意識的移動
+
+## 防禦塔攻擊範圍（地圖寬度比例，約 775 單位 / 14870）。
+const TOWER_RANGE := 0.052
+## 走進敵方存活防禦塔範圍時，這段路的代價倍率：不是不能走，而是沒有理由就不會走。
+const TOWER_PENALTY := 7.0
+## 回城（讀秒 + 出門）的代價，換算成「走了多遠的路」。走路比回城再出門還遠時就回城。
+const RECALL_COST := 0.30
+
+static var _edge_cost_cache: Dictionary = {}
+static var _plan_cache: Dictionary = {}
+
+
+## side 方眼中仍存活的敵方防禦塔（外塔／二塔／高地塔與主堡雙塔；兵營不會攻擊）。
+## st = 比賽紀錄每格的 "st"：{"blue": {"top": 被拆數, ..., "nexus_towers": n}, "red": {...}}
+static func enemy_towers(side: String, st: Dictionary) -> Array:
+	var enemy := "red" if side == "blue" else "blue"
+	var es: Dictionary = st.get(enemy, {})
+	var out: Array = []
+	for lane in ["top", "mid", "bot"]:
+		var lost := int(es.get(lane, 0))
+		for i in range(lost, 3):
+			out.append(tower_point(enemy, lane, i))
+	var nt := int(es.get("nexus_towers", 0))
+	for i in range(nt, 2):
+		out.append(NEXUS_TOWERS[enemy][i])
+	return out
+
+
+## 一段路落在塔的攻擊範圍內的長度（取樣估算）。
+static func _exposure(a: Vector2, b: Vector2, towers: Array) -> float:
+	if towers.is_empty():
+		return 0.0
+	var seg := a.distance_to(b)
+	var n := maxi(2, int(ceil(seg / 0.01)))
+	var inside := 0
+	for s in range(n):
+		var p := a.lerp(b, (s + 0.5) / float(n))
+		for tp in towers:
+			if p.distance_to(tp) < TOWER_RANGE:
+				inside += 1
+				break
+	return seg * float(inside) / float(n)
+
+
+## 某一路段的危險成本：完整長度 + 在塔下的那段再乘上倍率。
+static func _seg_cost(a: Vector2, b: Vector2, towers: Array) -> float:
+	return a.distance_to(b) + _exposure(a, b, towers) * (TOWER_PENALTY - 1.0)
+
+
+## 依塔的狀態算出每條路網邊的代價（同一種塔況只算一次）。
+static func _edge_costs(towers: Array) -> Dictionary:
+	var key := str(towers)
+	if _edge_cost_cache.has(key):
+		return _edge_cost_cache[key]
+	if _nav_adj.is_empty():
+		_build_nav()
+	var costs := {}
+	for k in range(0, NAV_EDGES.size(), 2):
+		var a: int = NAV_EDGES[k]
+		var b: int = NAV_EDGES[k + 1]
+		var c := _seg_cost(NAV_NODES[a], NAV_NODES[b], towers)
+		costs[a * 1000 + b] = c
+		costs[b * 1000 + a] = c
+	if _edge_cost_cache.size() > 256:
+		_edge_cost_cache.clear()
+	_edge_cost_cache[key] = costs
+	return costs
+
+
+## 多起點／多終點的 Dijkstra：起點候選帶著「走到該節點的代價」，終點候選同理。
+## 回傳 {"nodes": [索引...], "cost": float}。
+static func _route(starts: Dictionary, goals: Dictionary, costs: Dictionary) -> Dictionary:
+	var n = NAV_NODES.size()
+	var dist: Array = []
+	var prev: Array = []
+	var done: Array = []
+	dist.resize(n)
+	prev.resize(n)
+	done.resize(n)
+	dist.fill(INF)
+	prev.fill(-1)
+	done.fill(false)
+	for s in starts:
+		dist[s] = starts[s]
+	var best := INF
+	var best_goal := -1
+	for _step in n:
+		var u := -1
+		var ud := INF
+		for i in n:
+			if not done[i] and dist[i] < ud:
+				ud = dist[i]
+				u = i
+		if u == -1 or ud >= best:
+			break
+		done[u] = true
+		if goals.has(u) and ud + goals[u] < best:
+			best = ud + goals[u]
+			best_goal = u
+		for v in _nav_adj[u]:
+			var nd = ud + costs[u * 1000 + v]
+			if nd < dist[v]:
+				dist[v] = nd
+				prev[v] = u
+	var nodes: Array = []
+	var cur := best_goal
+	while cur != -1:
+		nodes.push_front(cur)
+		cur = prev[cur]
+	return {"nodes": nodes, "cost": best}
+
+
+## 離 p 最近的幾個路網節點（附上走過去的危險成本），讓起點可以選「往目的地方向」的那個節點，
+## 不必先倒退回最近的節點。
+static func _entry_nodes(p: Vector2, towers: Array, count: int = 3) -> Dictionary:
+	var order: Array = []
+	for i in NAV_NODES.size():
+		order.append([p.distance_squared_to(NAV_NODES[i]), i])
+	order.sort_custom(func(x, y): return x[0] < y[0])
+	var out := {}
+	for j in mini(count, order.size()):
+		var i: int = order[j][1]
+		# 太遠的候選（例如隔著牆的另一條路）不算
+		if j > 0 and sqrt(order[j][0]) > sqrt(order[0][0]) * 2.2 + 0.03:
+			continue
+		out[i] = _seg_cost(p, NAV_NODES[i], towers)
+	return out
+
+
+## 實際的走法：{"path": 折線, "recall": 是否先回城, "cost": 危險加權後的長度}。
+## side = 移動的一方；st = 當下的建築狀態。目的地本身在敵塔下（推塔、越塔）時，那座塔不算懲罰——
+## 有目的才走進塔下，沒目的就繞路。路太遠時改成回城再從泉水出門。
+static func plan_move(a: Vector2, b: Vector2, side: String, st: Dictionary, allow_recall: bool = true) -> Dictionary:
+	var key := "%s|%s|%s|%s|%s" % [side, str(a), str(b), str(st), str(allow_recall)]
+	if _plan_cache.has(key):
+		return _plan_cache[key]
+	if _nav_adj.is_empty():
+		_build_nav()
+	var towers: Array = []
+	for tp in enemy_towers(side, st):
+		# 起點或終點就在這座塔下：是在推塔／越塔／撤退中，不避開它
+		if (tp as Vector2).distance_to(b) < TOWER_RANGE + 0.02 or (tp as Vector2).distance_to(a) < TOWER_RANGE + 0.02:
+			continue
+		towers.append(tp)
+	var walk := _walk(a, b, towers)
+	var plan := {"path": walk["path"], "recall": false, "cost": walk["cost"]}
+	if allow_recall and side in FOUNTAIN and a.distance_to(FOUNTAIN[side]) > 0.25:
+		var home: Vector2 = FOUNTAIN[side]
+		var out := _walk(home, b, towers)
+		if out["cost"] + RECALL_COST < walk["cost"] * 0.92:
+			plan = {"path": out["path"], "recall": true, "cost": out["cost"] + RECALL_COST}
+	if _plan_cache.size() > 4096:
+		_plan_cache.clear()
+	_plan_cache[key] = plan
+	return plan
+
+
+static func _walk(a: Vector2, b: Vector2, towers: Array) -> Dictionary:
+	var direct := _seg_cost(a, b, towers)
+	if a.distance_to(b) < 0.06:
+		return {"path": PackedVector2Array([a, b]), "cost": direct}
+	var costs := _edge_costs(towers)
+	var r := _route(_entry_nodes(a, towers), _entry_nodes(b, towers), costs)
+	var out := PackedVector2Array([a])
+	for i in r["nodes"]:
+		out.append(NAV_NODES[i])
+	out.append(b)
+	return {"path": out, "cost": r["cost"]}

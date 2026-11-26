@@ -24,6 +24,10 @@ var _paths: Dictionary = {}       ## "格:方:人" -> 沿路網的折線（快�
 var _last_minute: int = -1
 ## 每格的前 ARRIVE 段用來移動，之後停在定位；事件標記與文字在抵達時出現，避免棋子「慢半拍」。
 const ARRIVE := 0.6
+## 回城讀秒佔這一格的比例，之後從泉水出門。
+const RECALL_T := 0.3
+## 倒下後在原地停留的時間（看得到被擊殺），之後回泉水。
+const DEATH_HOLD := 0.12
 
 const MAP_IMAGE := "res://assets/maps/summoners_rift.jpg"
 static var _bg: Texture2D = null
@@ -157,6 +161,8 @@ func _draw() -> void:
 		for k in f0["pos"][side].size():
 			var e: Array = tp[side + str(k)]
 			var cid: String = champs.get(side, [])[k] if k < champs.get(side, []).size() else ""
+			if e.size() > 2 and float(e[2]) >= 0.0:
+				_draw_recall(_pt(r, e[0]), s * 0.033, col, float(e[2]))
 			ChampToken.draw(self, _pt(r, e[0]), s * 0.033, champ_db.get(cid), col, e[1], font)
 
 
@@ -180,27 +186,53 @@ func token_positions() -> Dictionary:
 			var is_alive := int(b[2]) == 1
 			var pos: Vector2
 			var alive_now: bool
+			var recalling := -1.0
 			if i1 == i0:
-				pos = Vector2(float(a[0]), float(a[1]))
+				pos = Vector2(float(a[0]), float(a[1])) if was_alive else _fountain_spot(side, k)
 				alive_now = was_alive
+			elif was_alive and is_alive:
+				# 存活：依當下塔況規劃路線（沒理由不進敵塔範圍，太遠就回城再出門）
+				var plan := _plan(i0, side, k, a, b, f0)
+				var path: PackedVector2Array = plan["path"]
+				if plan["recall"]:
+					if t < RECALL_T:
+						pos = Vector2(float(a[0]), float(a[1]))
+						recalling = clampf(t / RECALL_T, 0.0, 1.0)
+					else:
+						pos = RiftGeometry.along(path, _ease(_travel((t - RECALL_T) / (1.0 - RECALL_T), path)))
+				else:
+					pos = RiftGeometry.along(path, _ease(_travel(t, path)))
+				alive_now = true
 			elif was_alive:
-				# 存活或在這一分鐘陣亡：都先走到下一格的位置（陣亡者的位置是倒下的地點）
-				var path := _path(i0, side, k, a, b)
-				pos = RiftGeometry.along(path, _ease(_travel(t, path)))
-				alive_now = is_alive or t < ARRIVE
+				# 這一分鐘陣亡：走到倒下的地點，倒下後屍體不留在原地，直接回到泉水
+				if t < ARRIVE + DEATH_HOLD:
+					var plan2 := _plan(i0, side, k, a, b, f0, false)
+					var path2: PackedVector2Array = plan2["path"]
+					pos = RiftGeometry.along(path2, _ease(clampf(t / ARRIVE, 0.0, 1.0)))  # 在擊殺標記出現前抵達
+					alive_now = t < ARRIVE
+				else:
+					pos = _fountain_spot(side, k)
+					alive_now = false
 			elif is_alive:
-				# 復活：從泉水（不是倒下的地點）沿路走到下一個位置
-				var fq: Vector2 = RiftGeometry.FOUNTAIN[side]
-				var path := _path(i0, side, k, [fq.x, fq.y, 0], b)
-				pos = RiftGeometry.along(path, _ease(_travel(t, path)))
+				# 復活：從泉水沿路走到下一個位置
+				var fq: Vector2 = _fountain_spot(side, k)
+				var plan3 := _plan(i0, side, k, [fq.x, fq.y, 0], b, f0, false)
+				var path3: PackedVector2Array = plan3["path"]
+				pos = RiftGeometry.along(path3, _ease(_travel(t, path3)))
 				alive_now = true
 			else:
-				# 持續陣亡：倒下的地點 → 泉水，不畫移動過程
-				var q: Array = b if t >= 0.5 else a
-				pos = Vector2(float(q[0]), float(q[1]))
+				# 持續陣亡：待在泉水
+				pos = _fountain_spot(side, k)
 				alive_now = false
-			out[side + str(k)] = [pos, alive_now]
+			out[side + str(k)] = [pos, alive_now, recalling]
 	return out
+
+
+## 回城讀秒：棋子外圍一圈逐漸填滿的光環。
+func _draw_recall(p: Vector2, radius: float, col: Color, progress: float) -> void:
+	var rr := radius + 6.0
+	draw_circle(p, rr + 2.0, Color(0.55, 0.75, 1.0, 0.18))
+	draw_arc(p, rr, -PI / 2.0, -PI / 2.0 + TAU * progress, 32, Color(0.7, 0.85, 1.0, 0.95), 3.0, true)
 
 
 func _draw_procedural(r: Rect2) -> void:
@@ -231,12 +263,18 @@ func _draw_procedural(r: Rect2) -> void:
 	draw_circle(_pt(r, RiftGeometry.BARON_PIT), s * 0.045, Color("2c1f3a"))
 
 
-## 兩格之間沿路網走的路徑；同一段路只計算一次。
-func _path(i0: int, side: String, k: int, a: Array, b: Array) -> PackedVector2Array:
-	var key = "%d:%s:%d" % [i0, side, k]
+## 兩格之間的走法（RiftGeometry.plan_move）；同一段路只計算一次。
+func _plan(i0: int, side: String, k: int, a: Array, b: Array, f0: Dictionary, allow_recall: bool = true) -> Dictionary:
+	var key = "%d:%s:%d:%s" % [i0, side, k, str(allow_recall)]
 	if not _paths.has(key):
-		_paths[key] = RiftGeometry.nav_path(Vector2(float(a[0]), float(a[1])), Vector2(float(b[0]), float(b[1])))
+		var st: Dictionary = f0.get("st", {})
+		_paths[key] = RiftGeometry.plan_move(Vector2(float(a[0]), float(a[1])), Vector2(float(b[0]), float(b[1])), side, st, allow_recall)
 	return _paths[key]
+
+
+## 陣亡者在泉水裡的位置（五人散開，不疊在一起）。
+func _fountain_spot(side: String, k: int) -> Vector2:
+	return RiftGeometry.FOUNTAIN[side] + RiftGeometry.spread(k, 5, 0.02)
 
 
 ## 這一格內的移動進度：短距離（交戰中走位）在前 ARRIVE 段完成；長距離換線則用掉整格，
