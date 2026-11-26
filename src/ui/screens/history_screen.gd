@@ -37,6 +37,22 @@ func refresh() -> void:
 		var lname = ww.leagues[h["league_id"]].name if ww.leagues.has(h.get("league_id", "")) else ""
 		var mr = {"champion": "　MSI 冠軍", "final": "　MSI 亞軍", "semis": "　MSI 四強", "groups": "　MSI 小組賽"}.get(h.get("msi", ""), "")
 		add_child(UIKit.label("%d　%s 第 %d 名%s%s%s" % [int(h["year"]), lname, int(h["position"]), "　🏆" if h.get("champion", false) else "", mr, wr], 14))
+	add_child(UIKit.label("名人堂", 17))
+	var hof: Array = Legacy.hall_of_fame(ww)
+	if hof.is_empty():
+		add_child(UIKit.muted("還沒有選手入選。冠軍、MVP、出賽場次與知名度夠高的選手退役後會入選。"))
+	else:
+		var ht := UIKit.table(["入選年", "選手", "位置", "代表隊伍", "冠軍", "MVP", "出賽"], 40 + 30 * mini(hof.size(), 8))
+		for e in hof:
+			UIKit.add_row(ht, [int(e["year"]), e["handle"], UIKit.ROLE_SHORT.get(e.get("role", ""), ""), ww.clubs[e["club_id"]].short_name if ww.clubs.has(e.get("club_id", "")) else "-", int(e["titles"]), int(e["mvps"]), int(e["games"])])
+		add_child(ht)
+	if not c.legends.is_empty():
+		add_child(UIKit.label("%s 俱樂部傳奇" % c.short_name, 17))
+		var lg_row := HFlowContainer.new()
+		lg_row.add_theme_constant_override("h_separation", 6)
+		for e in c.legends:
+			lg_row.add_child(UIKit.pill("%s（%d 退休）" % [e["handle"], int(e["year"])], UIKit.GOLD))
+		add_child(lg_row)
 	add_child(UIKit.label("最近退役", 17))
 	for r in ww.history["retirements"].slice(-10):
 		add_child(UIKit.muted("%d　%s（%d 歲，冠軍 %d）" % [int(r["year"]), r["handle"], int(r["age"]), int(r["titles"])]))

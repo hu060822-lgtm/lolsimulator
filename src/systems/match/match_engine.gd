@@ -26,6 +26,7 @@ var units: Dictionary = {}        ## side -> Array[Dictionary]（依 Attr.ROLES 
 var comp: Dictionary = {}         ## side -> 陣容分析
 var counter: Dictionary = {}      ## side -> 對對手的原型剋制值
 var style_edge: Dictionary = {"blue": 0.0, "red": 0.0}
+var meta_edge: Dictionary = {"blue": 0.0, "red": 0.0}  ## 版本理解（MetaRace）
 ## 關鍵抉擇（MatchDecisions）：manual_side 由玩家即時決定，其他由指揮自動決定
 var manual_side: String = ""
 var decided: Dictionary = {}
@@ -182,6 +183,7 @@ func _setup() -> void:
 	for side in SIDES:
 		counter[side] = CompAnalyzer.counter_score(comp[side], comp[other(side)])
 		style_edge[side] = StyleMatchup.edge(str(draft["plan"].get(side, "")), str(draft["plan"].get(other(side), "")))
+		meta_edge[side] = MetaRace.bonus(team(side).meta_research, str(draft["plan"].get(side, "")), team(side).meta_plan)
 	_update_vision()
 
 
@@ -198,6 +200,7 @@ func _day_form(p: Player) -> float:
 	var experience = 1.0 - minf(float(p.career.get("big_games", 0)) / 60.0, 0.5)  # 大賽經驗最多抵銷一半壓力
 	f -= maxf(p.stress - 40.0, 0.0) / 100.0 * 0.08 * stakes * (1.2 - p.trait_value("composure") / 100.0) * experience
 	f -= float(tilt.get(p.id, 0.0))
+	f += p.hot * FormStreak.HOT_WEIGHT  # 手感：最近幾場的表現延續
 	return clampf(f, -0.3, 0.25)
 
 
@@ -251,6 +254,7 @@ func _side_multiplier(side: String) -> float:
 	var m: float = 1.0 + float(_prep[side])
 	m *= 1.0 + Tuning.f("comp_counter_weight") * counter[side] * 3.0
 	m *= 1.0 + float(style_edge[side]) * (1.0 if minute < 26 else 0.5)
+	m *= 1.0 + float(meta_edge[side])
 	m *= 1.0 + Tuning.f("comp_fit_weight") * (comp[side]["fit"] - 1.0)
 	m *= 1.0 + Tuning.f("execution_spread") * (t.execution() - 0.5)
 	m *= 1.0 + 0.015 * dragons[side]

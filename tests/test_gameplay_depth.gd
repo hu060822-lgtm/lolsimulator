@@ -44,6 +44,7 @@ func test_behind_and_tilt_cards() -> void:
 		return
 	for u in e.units["blue"]:
 		u["gold"] = 3000.0
+		u["dead_until"] = 0  # 這個測試只關心經濟落後，不受當下團戰陣亡影響
 	for u in e.units["red"]:
 		u["gold"] = 6000.0
 	e.units["blue"][2]["deaths"] = 6

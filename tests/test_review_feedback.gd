@@ -71,7 +71,7 @@ func test_briefing_and_quick_sim() -> void:
 	var b = s.match_briefing()
 	check(not b.is_empty(), "briefing exists on match day")
 	check(b["win_series"] > 0.0 and b["win_series"] < 1.0, "win probability in range: %.2f" % b["win_series"])
-	check_eq(b["factors"].size(), 5, "five factors")
+	check_eq(b["factors"].size(), 6, "six factors (incl. patch knowledge)")
 	check(b["recommended"] in StyleMatchup.counters_of(b["opp_plan"]), "recommended plan counters the opponent")
 	# 改打建議打法後，打法因素變成優勢
 	s.set_tactics(b["recommended"], 0.5)

@@ -85,7 +85,10 @@ func finish_game(eng: MatchEngine) -> Dictionary:
 	var loser_ctx = a if l == a.club_id else b
 	var winner_ctx = b if l == a.club_id else a
 	# 心態：輸掉上一局，抗壓性低的選手下一局狀態下滑；贏的一方消除下滑
+	# 氣勢：贏下一局的一方帶著手感進下一局（小幅加成）；連贏不會無限疊加
 	winner_ctx.tilt.clear()
+	for p in winner_ctx.players.values():
+		winner_ctx.tilt[p.id] = -FormStreak.MOMENTUM
 	for p in loser_ctx.players.values():
 		loser_ctx.tilt[p.id] = (1.0 - p.trait_value("composure") / 100.0) * 0.06
 	if not loser_ctx.is_human and rng.chance(loser_ctx.coach_stat("adaptability") / 100.0 * 0.6):

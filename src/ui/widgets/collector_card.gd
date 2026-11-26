@@ -115,6 +115,11 @@ func _draw() -> void:
 		var r := Rect2(Vector2(w - tw - 16 * k, 8 * k), Vector2(tw + 10 * k, 18 * k))
 		draw_rect(r, tag_color)
 		draw_string(bf, r.position + Vector2(5 * k, 13.5 * k), tag_text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, UIKit.INK)
+	# 手感
+	var hl := FormStreak.label(player) if known else ""
+	if hl != "":
+		var hc := UIKit.GOOD if player.hot > 0.0 else UIKit.BAD
+		draw_string(cf, Vector2(13 * k, 110 * k), ("▲ " if player.hot > 0.0 else "▼ ") + hl, HORIZONTAL_ALIGNMENT_LEFT, -1, int(11 * k), hc)
 	# ID
 	var name_y := 158 * k
 	var nfs := int(26 * k)

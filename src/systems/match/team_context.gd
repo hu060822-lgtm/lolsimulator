@@ -26,6 +26,9 @@ var orders: Dictionary = {}
 var focus: Dictionary = {}
 ## 換線：前 14 分鐘下路雙人組與上路互換（避開不利對線）
 var lane_swap: bool = false
+## 版本研究（MetaRace）
+var meta_research: float = 0.0
+var meta_plan: String = ""
 
 
 static func from_club(w: WorldState, club: Club) -> TeamContext:
@@ -47,6 +50,8 @@ static func from_club(w: WorldState, club: Club) -> TeamContext:
 	t.chemistry = club.chemistry
 	t.relation_bonus = Relationships.team_average(w, club, club.lineup.values()) * 0.15
 	t.draft_familiarity = club.draft_familiarity
+	t.meta_research = club.meta_research
+	t.meta_plan = w.patch.meta_plan if w.patch else ""
 	return t
 
 

@@ -103,6 +103,14 @@ func _scouting(opp: Club, b: Dictionary) -> PanelContainer:
 			tok.tooltip_text = ww.champions[cid].name if ww.champions.has(cid) else cid
 			sr.add_child(tok)
 		v.add_child(sr)
+	var hr := UIKit.hbox(6)
+	hr.add_child(UIKit.label("手感", 13, UIKit.MUTED))
+	for role in Attr.ROLES:
+		var op: Player = ww.players.get(opp.lineup.get(role, ""))
+		if op and FormStreak.label(op) != "":
+			hr.add_child(UIKit.pill("%s %s" % [op.handle, FormStreak.label(op)], UIKit.BAD if op.hot > 0.0 else UIKit.GOOD))
+	if hr.get_child_count() > 1:
+		v.add_child(hr)
 	var cr = UIKit.hbox(6)
 	cr.add_child(UIKit.label("拿手英雄", 13, UIKit.MUTED))
 	for e in b["opp_champs"]:
@@ -153,6 +161,30 @@ func _advice(b: Dictionary) -> PanelContainer:
 			pr.add_child(tok2)
 		pr.add_child(UIKit.label("沒在正式賽亮過的拿手英雄，拿出來時狀態 +4%", 12, UIKit.MUTED))
 		v.add_child(pr)
+	# 版本答案
+	var mp: String = ww.patch.meta_plan
+	if mp != "":
+		var mr := UIKit.hbox(8)
+		mr.add_child(UIKit.label("版本 %s" % ww.patch.version, 13, UIKit.MUTED))
+		mr.add_child(UIKit.pill("答案：" + MetaRace.plan_label(mp), UIKit.GOLD))
+		mr.add_child(UIKit.label("研究 %d%%" % roundi(session.club().meta_research), 13, UIKit.TEXT))
+		if b["my_plan_set"] != mp:
+			mr.add_child(UIKit.button("改打版本答案", _set_plan.bind(mp)))
+		else:
+			mr.add_child(UIKit.label("正在打版本答案，研究越深加成越大", 12, UIKit.GOOD))
+		v.add_child(mr)
+	# 手感
+	var hot_row := UIKit.hbox(6)
+	hot_row.add_child(UIKit.label("我方手感", 13, UIKit.MUTED))
+	var any := false
+	for role in Attr.ROLES:
+		var sp: Player = ww.players.get(session.club().lineup.get(role, ""))
+		if sp and FormStreak.label(sp) != "":
+			hot_row.add_child(UIKit.pill("%s %s" % [sp.handle, FormStreak.label(sp)], UIKit.GOOD if sp.hot > 0.0 else UIKit.BAD))
+			any = true
+	if any:
+		hot_row.add_child(UIKit.label("低迷的先發可以考慮換人", 12, UIKit.MUTED))
+		v.add_child(hot_row)
 	var avoid: Array = b["avoid"].map(func(p): return UIKit.PLAN_NAMES.get(p, p))
 	if not avoid.is_empty():
 		v.add_child(UIKit.muted("避免：%s（會被對手的打法剋制）。" % "、".join(avoid)))

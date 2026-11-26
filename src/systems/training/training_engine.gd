@@ -11,6 +11,7 @@ const TYPES := {
 	"tactical_review": {"skills": ["decision_making", "wave_management", "resource_trading"], "load": 0.6},
 	"vod_review": {"skills": ["map_awareness", "vision", "adaptability"], "load": 0.5},
 	"draft_practice": {"skills": ["draft_iq"], "load": 0.4},
+	"meta_study": {"skills": ["adaptability"], "load": 0.4},
 	"team_building": {"skills": [], "load": 0.3},
 	"mental_coaching": {"skills": ["consistency", "clutch"], "load": 0.2},
 	"physical": {"skills": [], "load": 0.4},
