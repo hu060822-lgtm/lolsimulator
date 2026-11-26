@@ -27,6 +27,7 @@ var ovr: float = 0.0
 var known: bool = true
 var stats: Array = []          ## [[名稱, 數值], …]
 var club_color: Color = UIKit.MUTED
+var face_traits: Dictionary = {}
 var tag_text: String = ""      ## 右上角小標籤（先發、要求離隊…）
 var tag_color: Color = UIKit.GOLD
 var morale: float = -1.0       ## >= 0 時在卡底畫士氣格
@@ -42,6 +43,7 @@ static func make(session: GameSession, p: Player, w: int = 168, r: String = "") 
 	c.player = p
 	c.role = r if r != "" else p.primary_role
 	c.known = p.club_id == ww.human_club_id
+	c.face_traits = PlayerPortrait.traits(p)
 	c.ovr = p.current_ability(c.role)
 	var club: Club = ww.clubs.get(p.club_id)
 	c.club_color = Badge.club_color(club.id) if club else UIKit.MUTED
@@ -91,15 +93,8 @@ func _draw() -> void:
 	var inner := PackedVector2Array([Vector2(m, m), Vector2(w - m, m), Vector2(w - m, h - 16 * k - m * 0.4), Vector2(w - 16 * k - m * 0.4, h - m), Vector2(m, h - m)])
 	var face_top := face.lightened(0.06 if is_hovered() else 0.0)
 	draw_polygon(inner, PackedColorArray([face_top, face_top, face.darkened(0.35), face.darkened(0.4), face.darkened(0.35)]))
-	# 剪影（俱樂部代表色淡淡打底）
-	var sil_c := Color(club_color.lerp(Color("4a4f5c"), 0.55), 0.95)
-	var cx := w * 0.66
-	draw_circle(Vector2(cx, 66 * k), 22 * k, sil_c)
-	var body := PackedVector2Array()
-	for i in 17:
-		var a := PI + PI * i / 16.0
-		body.append(Vector2(cx + cos(a) * 48 * k, 132 * k + sin(a) * 42 * k))
-	draw_colored_polygon(body, sil_c)
+	# 面譜（球衣是俱樂部代表色），下緣切齊分隔線
+	PlayerPortrait.draw(self, Rect2(Vector2(w * 0.3, 8 * k), Vector2(w * 0.7 - m, 128 * k)), face_traits, club_color)
 	draw_rect(Rect2(Vector2(m, 132 * k), Vector2(w - 2 * m, 4 * k)), Color(face.darkened(0.2), 1.0))
 	# 能力值與位置
 	var nf := UIKit.num_font()
