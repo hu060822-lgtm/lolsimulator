@@ -35,41 +35,23 @@ func build() -> void:
 ## 系列賽計分列：雙方隊徽、名稱與大比分；下方一行小字是局數與狀態。
 var score_label: Label
 
-func _build_header() -> PanelContainer:
-	var p := PanelContainer.new()
-	var sb := UIKit._card(Color(UIKit.BG_2, 0.92), 10)
-	sb.border_color = Color(UIKit.GOLD_DIM, 0.8)
-	sb.border_width_bottom = 2
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 10
-	p.add_theme_stylebox_override("panel", sb)
-	var v := UIKit.vbox(2)
-	p.add_child(v)
-	var row := UIKit.hbox(14)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_child(row)
-	var na := UIKit.label(series.a.name, 20, UIKit.BLUE_SIDE.lightened(0.25))
-	na.add_theme_font_override("font", UIKit.head_font())
-	na.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	na.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	na.clip_text = true
-	row.add_child(na)
-	row.add_child(Badge.club(session.world.clubs.get(series.a.club_id), 46))
-	score_label = UIKit.label("0 : 0", 30, UIKit.GOLD_LIGHT)
-	score_label.add_theme_font_override("font", UIKit.head_font())
-	score_label.custom_minimum_size = Vector2(110, 0)
-	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	row.add_child(score_label)
-	row.add_child(Badge.club(session.world.clubs.get(series.b.club_id), 46))
-	var nb := UIKit.label(series.b.name, 20, UIKit.RED_SIDE.lightened(0.25))
-	nb.add_theme_font_override("font", UIKit.head_font())
-	nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nb.clip_text = true
-	row.add_child(nb)
-	header = UIKit.label("", 13, UIKit.GOLD)
+var banner: MatchBanner
+
+func _build_header() -> Control:
+	var v := UIKit.vbox(6)
+	var ca: Club = session.world.clubs.get(series.a.club_id)
+	var cb: Club = session.world.clubs.get(series.b.club_id)
+	banner = MatchBanner.make(ca, cb, "", "", 92)
+	banner.center_text = "0 : 0"
+	v.add_child(banner)
+	# 比分也保留一個 Label（測試與無障礙），不顯示
+	score_label = UIKit.label("0 : 0", 13)
+	score_label.visible = false
+	v.add_child(score_label)
+	header = UIKit.bold("", 14, UIKit.GOLD)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(header)
-	return p
+	return v
 
 
 ## hide_last：本局已模擬完但還在播放時，不把這一局算進大比分，避免開場就看到結果。
@@ -83,6 +65,9 @@ func _set_header(game_no: int, state: String, hide_last: bool = false) -> void:
 		elif last_winner == series.b.club_id:
 			wb -= 1
 	score_label.text = "%d : %d" % [wa, wb]
+	if banner:
+		banner.center_text = score_label.text
+		banner.queue_redraw()
 	header.text = "第 %d 局・%s・%s" % [game_no, UIKit.bo_text(series.best_of), state]
 
 

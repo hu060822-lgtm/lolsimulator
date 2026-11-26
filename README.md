@@ -76,3 +76,7 @@ tools         校準與長期模擬工具
 範例資料中的俱樂部、選手、聯賽皆為虛構；英雄使用英雄聯盟的實際英雄名稱（台服中文，資料中附英文名 `name_en`），強度標籤為本模擬自行設定，非官方數據。
 
 本專案為非官方愛好者作品，與 Riot Games 無關，亦未獲其背書。League of Legends 及相關名稱、峽谷地圖與英雄頭像為 Riot Games, Inc. 的商標或著作。依 Riot 的愛好者作品政策，請勿以付費方式散布；若要商業化，需取得授權或改回虛構英雄。
+
+## 字型
+
+介面使用 [Noto Sans TC](https://fonts.google.com/noto/specimen/Noto+Sans+TC) 與 [Barlow Condensed](https://fonts.google.com/specimen/Barlow+Condensed)，兩者皆為 SIL Open Font License 1.1（`assets/fonts/OFL.txt`）。Noto Sans TC 以 `tools/subset_fonts.py` 縮成常用字與專案內用到的字。

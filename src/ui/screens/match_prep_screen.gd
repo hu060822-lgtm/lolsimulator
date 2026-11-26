@@ -47,37 +47,17 @@ func refresh() -> void:
 	body.add_child(actions)
 
 
-func _versus(me: Club, opp: Club, b: Dictionary) -> PanelContainer:
-	var row = UIKit.hbox(16)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	var a = UIKit.label(me.name, 20, UIKit.BLUE_SIDE.lightened(0.25))
-	a.add_theme_font_override("font", UIKit.head_font())
-	a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	a.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(a)
-	row.add_child(Badge.club(me, 52))
-	var mid = UIKit.vbox(0)
-	var pct = float(b["win_series"]) * 100.0
-	var big = UIKit.label("%d%%" % clampi(roundi(pct), 1, 99), 34, UIKit.GOOD if pct >= 55 else (UIKit.BAD if pct <= 45 else UIKit.GOLD_LIGHT))
-	big.add_theme_font_override("font", UIKit.head_font())
-	big.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mid.add_child(big)
-	var cap = UIKit.label("預估勝率", 12, UIKit.MUTED)
-	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mid.add_child(cap)
-	mid.custom_minimum_size = Vector2(130, 0)
-	row.add_child(mid)
-	row.add_child(Badge.club(opp, 52))
-	var o = UIKit.label(opp.name, 20, UIKit.RED_SIDE.lightened(0.25))
-	o.add_theme_font_override("font", UIKit.head_font())
-	o.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(o)
-	return UIKit.panel(row)
+func _versus(me: Club, opp: Club, b: Dictionary) -> Control:
+	var pct := clampi(roundi(float(b["win_series"]) * 100.0), 1, 99)
+	var m := MatchBanner.make(me, opp, me.name, opp.name, 170)
+	m.center_text = "%d%%" % pct
+	m.center_caption = "預估勝率"
+	return m
 
 
 func _factors(b: Dictionary) -> PanelContainer:
 	var v = UIKit.vbox(6)
-	v.add_child(UIKit.label("勝率因素", 16, UIKit.GOLD))
+	v.add_child(UIKit.bold("勝率因素", 18))
 	v.add_child(UIKit.muted("正值對我方有利。實力以外的因素都能靠準備改變。"))
 	for f in b["factors"]:
 		var pts = float(f["points"])
@@ -93,7 +73,7 @@ func _factors(b: Dictionary) -> PanelContainer:
 func _scouting(opp: Club, b: Dictionary) -> PanelContainer:
 	var ww = w()
 	var v = UIKit.vbox(6)
-	v.add_child(UIKit.label("對手情報：%s" % opp.short_name, 16, UIKit.GOLD))
+	v.add_child(UIKit.bold("對手情報：%s" % opp.short_name, 18))
 	var style = UIKit.hbox(6)
 	style.add_child(UIKit.label("招牌打法", 13, UIKit.MUTED))
 	style.add_child(UIKit.pill(UIKit.PLAN_NAMES.get(b["opp_plan"], b["opp_plan"]).split("（")[0], UIKit.RED_SIDE))
@@ -133,7 +113,7 @@ func _scouting(opp: Club, b: Dictionary) -> PanelContainer:
 
 func _advice(b: Dictionary) -> PanelContainer:
 	var v = UIKit.vbox(6)
-	v.add_child(UIKit.label("戰術準備", 16, UIKit.GOLD))
+	v.add_child(UIKit.bold("戰術準備", 18))
 	var cur = UIKit.hbox(6)
 	cur.add_child(UIKit.label("目前打法", 13, UIKit.MUTED))
 	var name: String = UIKit.PLAN_NAMES.get(b["my_plan"], b["my_plan"]).split("（")[0]

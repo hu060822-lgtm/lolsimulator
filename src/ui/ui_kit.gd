@@ -3,24 +3,26 @@
 class_name UIKit
 extends RefCounted
 
-const BG := Color("070c15")
-const BG_2 := Color("0c1627")
-const PANEL := Color("0e1622")
-const PANEL_2 := Color("15202f")
-const PANEL_3 := Color("1b2a3d")
-const BORDER := Color("263447")
-const GOLD := Color("c8aa6e")
-const GOLD_DIM := Color("785a28")
-const GOLD_LIGHT := Color("f0e6d2")
-const HEX := Color("0ac8b9")
-const TEXT := Color("ece6d8")
-const MUTED := Color("8c95a4")
-const ACCENT := Color("c8aa6e")
-const GOOD := Color("3fd69a")
-const BAD := Color("ff5a6a")
-const WARN := Color("f2b24a")
+const BG := Color("10132b")          ## 夜幕藍：全畫面底色
+const BG_2 := Color("0b0e22")        ## 上方狀態列、側欄
+const PANEL := Color("1a1f45")       ## 面板
+const PANEL_2 := Color("222858")     ## 按鈕、表頭
+const PANEL_3 := Color("2c3470")     ## 滑過
+const BORDER := Color("2c3470")      ## 分隔線
+const GOLD := Color("ffd23f")        ## 訊號黃：唯一的強調色（主要按鈕、選取、重點數字）
+const GOLD_DIM := Color("8a7424")
+const GOLD_LIGHT := Color("f4f5ff")  ## 標題白
+const HEX := Color("19b8a6")
+const TEXT := Color("e6e8fa")
+const MUTED := Color("9aa0c8")
+const ACCENT := Color("ffd23f")
+const INK := Color("14163a")         ## 黃底上的深色字
+const GOOD := Color("58e0a8")
+const BAD := Color("ff4d5e")
+const WARN := Color("ffb547")
 const BLUE_SIDE := Color("3d9bff")
-const RED_SIDE := Color("ff5a6a")
+const RED_SIDE := Color("ff4d5e")
+const SKEW := 0.22                   ## 斜切按鈕的傾斜量（轉播風格）
 
 const CLASS_NAMES := {"tank": "坦克", "fighter": "戰士", "assassin": "刺客", "mage": "法師", "marksman": "射手", "enchanter": "輔助"}
 const TAG_NAMES := {"engage": "開戰", "disengage": "反開", "poke": "消耗", "pick": "抓單", "splitpush": "分推", "teamfight": "團戰", "peel": "保護", "frontline": "前排", "burst": "爆發", "dps": "持續輸出", "waveclear": "清線", "mobility": "機動", "siege": "攻城"}
@@ -39,24 +41,27 @@ static func make_theme() -> Theme:
 	var t := Theme.new()
 	t.default_font_size = 15
 	t.default_font = body_font()
-	var panel = _card(Color(PANEL, 0.9), 8)
+	var panel = _card(PANEL, 0)
 	t.set_stylebox("panel", "PanelContainer", panel)
 	t.set_stylebox("panel", "Panel", panel)
 	t.set_color("font_color", "Label", TEXT)
 	t.set_color("default_color", "RichTextLabel", TEXT)
 	# 按鈕：深色底、細描邊，滑過時金色描邊，按下時金色底
 	var states := {
-		"normal": [PANEL_2, BORDER],
-		"hover": [PANEL_3, GOLD_DIM.lightened(0.2)],
-		"pressed": [GOLD_DIM.darkened(0.25), GOLD],
-		"hover_pressed": [GOLD_DIM.darkened(0.1), GOLD],
-		"focus": [PANEL_2, GOLD_DIM],
-		"disabled": [Color("0c121c"), Color("1a2230")],
+		"normal": [PANEL_2, Color(0, 0, 0, 0)],
+		"hover": [PANEL_3, GOLD],
+		"pressed": [GOLD, GOLD],
+		"hover_pressed": [GOLD, GOLD],
+		"focus": [PANEL_2, GOLD],
+		"disabled": [Color("151935"), Color(0, 0, 0, 0)],
 	}
 	for state in states:
-		var sb = _box(states[state][0], states[state][1], 6)
-		sb.content_margin_left = 14
-		sb.content_margin_right = 14
+		var sb = _box(states[state][0], states[state][1], 0)
+		sb.set_border_width_all(0)
+		sb.border_width_bottom = 2
+		sb.skew = Vector2(SKEW, 0)
+		sb.content_margin_left = 18
+		sb.content_margin_right = 18
 		sb.content_margin_top = 7
 		sb.content_margin_bottom = 7
 		if state == "focus":
@@ -65,14 +70,15 @@ static func make_theme() -> Theme:
 		t.set_stylebox(state, "OptionButton", sb)
 	t.set_color("font_color", "Button", TEXT)
 	t.set_color("font_hover_color", "Button", GOLD_LIGHT)
-	t.set_color("font_pressed_color", "Button", GOLD_LIGHT)
-	t.set_color("font_hover_pressed_color", "Button", GOLD_LIGHT)
+	t.set_color("font_pressed_color", "Button", INK)
+	t.set_color("font_hover_pressed_color", "Button", INK)
+	t.set_font("font", "Button", head_font())
 	t.set_color("font_disabled_color", "Button", MUTED.darkened(0.3))
 	t.set_color("font_color", "OptionButton", TEXT)
-	var le = _box(Color("0a111c"), BORDER, 6)
+	var le = _box(Color("12163a"), BORDER, 6)
 	le.content_margin_left = 12
 	t.set_stylebox("normal", "LineEdit", le)
-	var lef = _box(Color("0a111c"), GOLD, 6)
+	var lef = _box(Color("12163a"), GOLD, 6)
 	lef.content_margin_left = 12
 	t.set_stylebox("focus", "LineEdit", lef)
 	t.set_color("font_color", "LineEdit", TEXT)
@@ -80,25 +86,31 @@ static func make_theme() -> Theme:
 	t.set_color("caret_color", "LineEdit", GOLD)
 	t.set_stylebox("normal", "SpinBox", le)
 	# 表格
-	t.set_stylebox("panel", "Tree", _box(Color("0a111c"), BORDER, 8))
+	t.set_stylebox("panel", "Tree", _box(PANEL, PANEL, 0))
 	t.set_stylebox("focus", "Tree", StyleBoxEmpty.new())
 	t.set_color("font_color", "Tree", TEXT)
 	t.set_color("font_selected_color", "Tree", GOLD_LIGHT)
-	t.set_color("title_button_color", "Tree", GOLD)
-	var th = _box(PANEL_2, BORDER, 0)
+	t.set_color("title_button_color", "Tree", MUTED)
+	t.set_font("title_button_font", "Tree", head_font())
+	var th = _box(BG_2, BORDER, 0)
+	th.set_border_width_all(0)
+	th.border_width_bottom = 2
 	th.content_margin_top = 8
 	th.content_margin_bottom = 8
 	t.set_stylebox("title_button_normal", "Tree", th)
 	t.set_stylebox("title_button_hover", "Tree", th)
 	t.set_stylebox("title_button_pressed", "Tree", th)
-	var sel = _box(Color(GOLD, 0.16), Color(GOLD, 0.7), 4)
+	var sel = _box(Color(GOLD, 0.14), Color(0, 0, 0, 0), 0)
+	sel.set_border_width_all(0)
+	sel.border_width_left = 4
+	sel.border_color = GOLD
 	t.set_stylebox("selected", "Tree", sel)
 	t.set_stylebox("selected_focus", "Tree", sel)
 	t.set_stylebox("hovered", "Tree", _box(Color(1, 1, 1, 0.04), Color(0, 0, 0, 0), 4))
 	t.set_color("guide_color", "Tree", Color(1, 1, 1, 0.04))
 	t.set_constant("v_separation", "Tree", 8)
 	t.set_constant("h_separation", "Tree", 10)
-	t.set_stylebox("panel", "ItemList", _box(Color("0a111c"), BORDER, 6))
+	t.set_stylebox("panel", "ItemList", _box(Color("12163a"), BORDER, 6))
 	t.set_stylebox("normal", "RichTextLabel", StyleBoxEmpty.new())
 	# 卷軸：細、圓角、金色
 	for sb_name in ["VScrollBar", "HScrollBar"]:
@@ -117,14 +129,14 @@ static func make_theme() -> Theme:
 		t.set_stylebox("grabber_highlight", sb_name, grab_h)
 		t.set_stylebox("grabber_pressed", sb_name, grab_h)
 	# 下拉選單與提示
-	var pop = _box(Color("0c1420"), GOLD_DIM, 6)
+	var pop = _box(Color("12163a"), GOLD_DIM, 6)
 	pop.shadow_color = Color(0, 0, 0, 0.5)
 	pop.shadow_size = 10
 	t.set_stylebox("panel", "PopupMenu", pop)
 	t.set_stylebox("hover", "PopupMenu", _box(Color(GOLD, 0.18), Color(0, 0, 0, 0), 4))
 	t.set_color("font_color", "PopupMenu", TEXT)
 	t.set_color("font_hover_color", "PopupMenu", GOLD_LIGHT)
-	var tip = _box(Color("0c1420"), GOLD_DIM, 6)
+	var tip = _box(Color("12163a"), GOLD_DIM, 6)
 	t.set_stylebox("panel", "TooltipPanel", tip)
 	t.set_color("font_color", "TooltipLabel", TEXT)
 	t.set_stylebox("separator", "HSeparator", _line(Color(GOLD, 0.25)))
@@ -173,7 +185,7 @@ static func _check_icon(on: bool) -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 
-## 文字字型：優先使用系統的繁中字型（Windows 微軟正黑、macOS 蘋方、Linux Noto），找不到時用內建字型。
+## 字型：內建 Noto Sans TC（400／700／900）與 Barlow Condensed，缺字時退回系統繁中字型。
 static var _body_font: Font = null
 static var _head_font: Font = null
 
@@ -181,9 +193,9 @@ static var _head_font: Font = null
 ## 全畫面背景：上方偏藍、往下與四周變暗的漸層。
 static func backdrop() -> TextureRect:
 	var g := Gradient.new()
-	g.set_color(0, Color("13233a"))
+	g.set_color(0, Color("1a1f4a"))
 	g.set_color(1, BG)
-	g.add_point(0.55, Color("0a1322"))
+	g.add_point(0.55, Color("12153a"))
 	var t := GradientTexture2D.new()
 	t.gradient = g
 	t.fill = GradientTexture2D.FILL_RADIAL
@@ -202,36 +214,68 @@ static func backdrop() -> TextureRect:
 
 static func body_font() -> Font:
 	if _body_font == null:
-		var f := SystemFont.new()
-		f.font_names = PackedStringArray(["Microsoft JhengHei UI", "Microsoft JhengHei", "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC", "Source Han Sans TC", "Noto Sans CJK JP", "sans-serif"])
-		f.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
-		f.hinting = TextServer.HINTING_LIGHT
-		f.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_AUTO
-		_body_font = f
+		_body_font = _bundled("NotoSansTC-400.ttf")
 	return _body_font
 
 
-## 標題字型：加粗、字距略寬。
+## 粗體（標題、按鈕、名稱）。
 static func head_font() -> Font:
 	if _head_font == null:
-		var v := FontVariation.new()
-		v.base_font = body_font()
-		v.variation_embolden = 0.7
-		v.spacing_glyph = 1
-		_head_font = v
+		_head_font = _bundled("NotoSansTC-700.ttf")
 	return _head_font
+
+
+## 特粗（大標題、對戰橫幅）。
+static var _display_font: Font = null
+static func display_font() -> Font:
+	if _display_font == null:
+		_display_font = _bundled("NotoSansTC-900.ttf")
+	return _display_font
+
+
+## 數字與英文代號：窄體粗斜（能力值、比分、隊伍縮寫）。中文字會落到 Noto Sans TC 特粗。
+static var _num_font: Font = null
+static func num_font() -> Font:
+	if _num_font == null:
+		_num_font = _bundled("BarlowCondensed-800i.ttf", display_font())
+	return _num_font
+
+
+## 窄體（位置代號、小標籤裡的英文）。
+static var _cond_font: Font = null
+static func cond_font() -> Font:
+	if _cond_font == null:
+		_cond_font = _bundled("BarlowCondensed-600.ttf", head_font())
+	return _cond_font
+
+
+## 載入內建字型（assets/fonts，SIL OFL）。缺字時依序退回指定字型與系統繁中字型。
+static func _bundled(file: String, fallback: Font = null) -> Font:
+	var path := "res://assets/fonts/" + file
+	var f: FontFile = load(path) if ResourceLoader.exists(path) else null
+	var sys := SystemFont.new()
+	sys.font_names = PackedStringArray(["Microsoft JhengHei UI", "Microsoft JhengHei", "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC", "Source Han Sans TC", "Noto Sans CJK JP", "sans-serif"])
+	if f == null:
+		return sys
+	f.antialiasing = TextServer.FONT_ANTIALIASING_GRAY
+	f.hinting = TextServer.HINTING_LIGHT
+	f.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_AUTO
+	var fb: Array[Font] = []
+	if fallback:
+		fb.append(fallback)
+	fb.append(sys)
+	f.fallbacks = fb
+	return f
 
 
 ## 卡片：深色底、細描邊、柔和陰影。
 static func _card(bg: Color, radius: int) -> StyleBoxFlat:
-	var sb = _box(bg, Color(BORDER, 0.9), radius)
-	sb.shadow_color = Color(0, 0, 0, 0.35)
-	sb.shadow_size = 6
-	sb.shadow_offset = Vector2(0, 2)
-	sb.content_margin_left = 14
-	sb.content_margin_right = 14
-	sb.content_margin_top = 12
-	sb.content_margin_bottom = 12
+	var sb = _box(bg, Color(0, 0, 0, 0), radius)
+	sb.set_border_width_all(0)
+	sb.content_margin_left = 16
+	sb.content_margin_right = 16
+	sb.content_margin_top = 14
+	sb.content_margin_bottom = 14
 	return sb
 
 
@@ -247,7 +291,7 @@ static func _box(bg: Color, border: Color, radius: int) -> StyleBoxFlat:
 	sb.bg_color = bg
 	sb.border_color = border
 	sb.set_border_width_all(1)
-	sb.set_corner_radius_all(radius)
+	sb.set_corner_radius_all(mini(radius, 2))
 	sb.content_margin_left = 10
 	sb.content_margin_right = 10
 	sb.content_margin_top = 8
@@ -265,20 +309,20 @@ static func label(text: String, size: int = 15, color: Color = TEXT) -> Label:
 
 
 static func title(text: String) -> Label:
-	var l = label(text, 22, GOLD_LIGHT)
-	l.add_theme_font_override("font", head_font())
+	var l = label(text, 28, GOLD_LIGHT)
+	l.add_theme_font_override("font", display_font())
 	return l
 
 
 ## 區塊標題：金色小字 + 細線。
 static func section(text: String) -> VBoxContainer:
-	var v := vbox(4)
-	var l = label(text, 14, GOLD)
-	l.add_theme_font_override("font", head_font())
+	var v := vbox(6)
+	var l = label(text, 18, GOLD_LIGHT)
+	l.add_theme_font_override("font", display_font())
 	v.add_child(l)
 	var line := ColorRect.new()
-	line.color = Color(GOLD, 0.25)
-	line.custom_minimum_size = Vector2(0, 1)
+	line.color = BORDER
+	line.custom_minimum_size = Vector2(0, 2)
 	v.add_child(line)
 	return v
 
@@ -294,27 +338,31 @@ static func button(text: String, cb: Callable) -> Button:
 	return b
 
 
-## 主要動作按鈕：海克斯青色描邊、深青底，滑過時發亮。
+## 主要動作按鈕：訊號黃實心、斜切、深色粗字。整個畫面通常只有一個。
 static func primary(text: String, cb: Callable) -> Button:
 	var b = button(text, cb)
-	var sb = _box(Color("0b3b43"), HEX, 6)
-	sb.content_margin_left = 20
-	sb.content_margin_right = 20
+	var sb = _box(GOLD, GOLD, 0)
+	sb.set_border_width_all(0)
+	sb.skew = Vector2(SKEW, 0)
+	sb.content_margin_left = 26
+	sb.content_margin_right = 26
 	sb.content_margin_top = 8
 	sb.content_margin_bottom = 8
-	sb.shadow_color = Color(HEX, 0.25)
-	sb.shadow_size = 6
 	var hv = sb.duplicate()
-	hv.bg_color = Color("0f5560")
-	hv.shadow_color = Color(HEX, 0.45)
-	hv.shadow_size = 10
+	hv.bg_color = GOLD.lightened(0.25)
+	var dis = sb.duplicate()
+	dis.bg_color = Color(GOLD, 0.3)
 	b.add_theme_stylebox_override("normal", sb)
 	b.add_theme_stylebox_override("hover", hv)
 	b.add_theme_stylebox_override("pressed", hv)
+	b.add_theme_stylebox_override("hover_pressed", hv)
+	b.add_theme_stylebox_override("disabled", dis)
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	b.add_theme_color_override("font_color", Color("cdfaf6"))
-	b.add_theme_color_override("font_hover_color", Color.WHITE)
-	b.add_theme_font_override("font", head_font())
+	for k in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(k, INK)
+	b.add_theme_color_override("font_disabled_color", Color(INK, 0.6))
+	b.add_theme_font_override("font", display_font())
+	b.add_theme_font_size_override("font_size", 17)
 	return b
 
 
@@ -328,11 +376,9 @@ static func panel(child: Control = null) -> PanelContainer:
 ## 帶左側色條的卡片（待處理事項、提醒）。
 static func accent_panel(child: Control, color: Color = GOLD) -> PanelContainer:
 	var p := panel(child)
-	var sb = _card(Color(PANEL, 0.92), 8)
-	sb.border_width_left = 3
-	sb.border_color = Color(color, 0.85)
-	sb.corner_radius_top_left = 3
-	sb.corner_radius_bottom_left = 3
+	var sb = _card(PANEL, 0)
+	sb.border_width_left = 4
+	sb.border_color = color
 	p.add_theme_stylebox_override("panel", sb)
 	return p
 
@@ -465,37 +511,36 @@ static func champion_info(c: Champion) -> String:
 		"、".join(c.roles.map(func(r): return ROLE_NAMES.get(r, r))), int(c.early), int(c.mid), int(c.late), int(c.lane), int(c.difficulty), "、".join(parts)]
 
 
-## 切換式小按鈕（篩選、速度、分頁）。
+## 切換式小按鈕（篩選、速度、分頁）：斜切，選取時黃底深字。
 static func chip(text: String, cb: Callable) -> Button:
 	var b := button(text, cb)
 	b.toggle_mode = true
 	b.add_theme_font_size_override("font_size", 13)
-	var on = _box(Color(GOLD, 0.2), GOLD, 14)
-	var off = _box(PANEL_2, BORDER, 14)
-	for sb in [on, off]:
-		sb.content_margin_left = 10
-		sb.content_margin_right = 10
+	var off = _box(PANEL_2, Color(0, 0, 0, 0), 0)
+	var hv = _box(PANEL_3, Color(0, 0, 0, 0), 0)
+	var on = _box(GOLD, Color(0, 0, 0, 0), 0)
+	for sb in [on, off, hv]:
+		sb.set_border_width_all(0)
+		sb.skew = Vector2(SKEW, 0)
+		sb.content_margin_left = 12
+		sb.content_margin_right = 12
 		sb.content_margin_top = 3
 		sb.content_margin_bottom = 3
 	b.add_theme_stylebox_override("normal", off)
-	var hv = _box(PANEL_3, GOLD_DIM, 14)
-	for sb in [hv]:
-		sb.content_margin_left = 10
-		sb.content_margin_right = 10
-		sb.content_margin_top = 3
-		sb.content_margin_bottom = 3
 	b.add_theme_stylebox_override("hover", hv)
 	b.add_theme_stylebox_override("pressed", on)
 	b.add_theme_stylebox_override("hover_pressed", on)
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	b.add_theme_color_override("font_pressed_color", GOLD_LIGHT)
+	b.add_theme_color_override("font_pressed_color", INK)
+	b.add_theme_color_override("font_hover_pressed_color", INK)
 	return b
 
 
 ## 圓角標籤（狀態、分類、提示）。
 static func pill(text: String, color: Color = ACCENT) -> PanelContainer:
 	var p := PanelContainer.new()
-	var sb = _box(Color(color, 0.16), Color(color, 0.55), 10)
+	var sb = _box(Color(color, 0.16), Color(0, 0, 0, 0), 0)
+	sb.set_border_width_all(0)
 	sb.content_margin_left = 10
 	sb.content_margin_right = 10
 	sb.content_margin_top = 3
@@ -511,18 +556,13 @@ static func tile(code: String, name: String, desc: String, cb: Callable, color: 
 	b.custom_minimum_size = Vector2(width, 78)
 	b.pressed.connect(cb)
 	b.tooltip_text = desc
-	var n = _box(PANEL_2, BORDER, 8)
-	n.border_width_top = 2
-	n.border_color = Color(color, 0.55)
+	var n = _box(PANEL_2, color, 0)
+	n.set_border_width_all(0)
+	n.border_width_top = 3
 	var h = n.duplicate()
 	h.bg_color = PANEL_3
-	h.border_color = color
-	h.shadow_color = Color(color, 0.25)
-	h.shadow_size = 8
 	var pr = h.duplicate()
-	pr.bg_color = Color(color, 0.18)
-	pr.set_border_width_all(1)
-	pr.border_width_top = 2
+	pr.bg_color = Color(color, 0.22)
 	b.add_theme_stylebox_override("normal", n)
 	b.add_theme_stylebox_override("hover", h)
 	b.add_theme_stylebox_override("pressed", pr)
@@ -532,9 +572,11 @@ static func tile(code: String, name: String, desc: String, cb: Callable, color: 
 	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 8)
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
-	var code_l = label(code, 11, color)
-	code_l.add_theme_font_override("font", head_font())
-	for l in [code_l, label(name, 16), label(desc, 12, MUTED)]:
+	var code_l = label(code, 13, color)
+	code_l.add_theme_font_override("font", num_font())
+	var name_l = label(name, 16, GOLD_LIGHT)
+	name_l.add_theme_font_override("font", head_font())
+	for l in [code_l, name_l, label(desc, 12, MUTED)]:
 		l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		l.clip_text = true
@@ -556,8 +598,10 @@ static func stat_bar(name: String, v: float, max_v: float = 100.0, width: int = 
 	pb.custom_minimum_size = Vector2(width, 7)
 	pb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var c = color if color.a > 0 else skill_color(v / max_v * 100.0)
-	var bg = _box(Color(1, 1, 1, 0.06), Color(0, 0, 0, 0), 4)
-	var fill = _box(c, c.lightened(0.15), 4)
+	var bg = _box(Color("262d63"), Color(0, 0, 0, 0), 0)
+	var fill = _box(c, c, 0)
+	bg.set_border_width_all(0)
+	fill.set_border_width_all(0)
 	for sb in [bg, fill]:
 		sb.content_margin_top = 0
 		sb.content_margin_bottom = 0
@@ -570,19 +614,47 @@ static func stat_bar(name: String, v: float, max_v: float = 100.0, width: int = 
 	return h
 
 
-## 資訊卡：小標題 + 大數字 + 一行補充。
+## 資訊卡：小標題 + 大數字（窄體粗斜）+ 一行補充。上方色條代表類別。
 static func stat_card(title_text: String, big: String, small: String = "", color: Color = TEXT) -> PanelContainer:
-	var v := vbox(2)
-	v.add_child(label(title_text.to_upper(), 12, MUTED))
-	var bl = label(big, 24, color if color != TEXT else GOLD_LIGHT)
-	bl.add_theme_font_override("font", head_font())
+	var v := vbox(0)
+	v.add_child(label(title_text, 13, MUTED))
+	var bl = label(big, 40, color if color != TEXT else GOLD_LIGHT)
+	bl.add_theme_font_override("font", num_font())
 	v.add_child(bl)
 	if small != "":
-		v.add_child(label(small, 12, MUTED))
+		v.add_child(label(small, 13, MUTED))
 	var p := panel(v)
-	var sb = _card(PANEL, 8)
-	sb.border_width_left = 3
-	sb.border_color = Color(color if color != TEXT else GOLD, 0.8)
+	var sb = _card(PANEL, 0)
+	sb.border_width_top = 3
+	sb.border_color = color if color != TEXT else GOLD
 	p.add_theme_stylebox_override("panel", sb)
 	p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return p
+
+
+## 大數字標籤（能力值、比分）。
+static func big_num(text: String, size: int = 40, color: Color = GOLD) -> Label:
+	var l := label(text, size, color)
+	l.add_theme_font_override("font", num_font())
+	return l
+
+
+## 粗體標籤。
+static func bold(text: String, size: int = 15, color: Color = GOLD_LIGHT) -> Label:
+	var l := label(text, size, color)
+	l.add_theme_font_override("font", head_font())
+	return l
+
+
+## 大型按鈕（卡片式選項）不斜切：平面底色，滑過變亮、選取時下方黃線。
+static func flat(b: Button) -> Button:
+	var states := {"normal": [PANEL_2, Color(0, 0, 0, 0)], "hover": [PANEL_3, Color(0, 0, 0, 0)], "pressed": [PANEL_3, GOLD], "hover_pressed": [PANEL_3, GOLD], "disabled": [Color("151935"), Color(0, 0, 0, 0)]}
+	for st in states:
+		var sb = _box(states[st][0], states[st][1], 0)
+		sb.set_border_width_all(0)
+		sb.border_width_bottom = 3
+		b.add_theme_stylebox_override(st, sb)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	for k in ["font_pressed_color", "font_hover_pressed_color"]:
+		b.add_theme_color_override(k, GOLD_LIGHT)
+	return b

@@ -75,11 +75,11 @@ func _scoreboard() -> PanelContainer:
 	h.alignment = BoxContainer.ALIGNMENT_CENTER
 	for side in ["blue", "red"]:
 		var col = UIKit.BLUE_SIDE if side == "blue" else UIKit.RED_SIDE
-		var team := UIKit.label("", 20, col)
-		var kills := UIKit.label("0", 30, Color.WHITE)
+		var team := UIKit.big_num("", 26, col)
+		var kills := UIKit.big_num("0", 44, Color.WHITE)
 		var stats := UIKit.label("", 14, UIKit.MUTED)
 		score[side] = {"team": team, "kills": kills, "stats": stats}
-	var clock := UIKit.label("00:00", 22, UIKit.WARN)
+	var clock := UIKit.big_num("00:00", 28, UIKit.GOLD)
 	score["clock"] = clock
 	h.add_child(score["blue"]["stats"])
 	h.add_child(score["blue"]["team"])
@@ -89,16 +89,18 @@ func _scoreboard() -> PanelContainer:
 	clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mid.add_child(clock)
 	gold_bar = ProgressBar.new()
-	gold_bar.custom_minimum_size = Vector2(180, 8)
+	gold_bar.custom_minimum_size = Vector2(220, 10)
 	gold_bar.show_percentage = false
 	gold_bar.min_value = 0
 	gold_bar.max_value = 100
 	gold_bar.value = 50
-	var bg = UIKit._box(UIKit.RED_SIDE.darkened(0.2), UIKit.BORDER, 3)
+	var bg = UIKit._box(UIKit.RED_SIDE.darkened(0.2), UIKit.RED_SIDE.darkened(0.2), 0)
 	bg.content_margin_top = 0
 	bg.content_margin_bottom = 0
 	gold_bar.add_theme_stylebox_override("background", bg)
-	var fill = UIKit._box(UIKit.BLUE_SIDE, UIKit.BLUE_SIDE, 3)
+	var fill = UIKit._box(UIKit.BLUE_SIDE, UIKit.BLUE_SIDE, 0)
+	fill.content_margin_top = 0
+	fill.content_margin_bottom = 0
 	gold_bar.add_theme_stylebox_override("fill", fill)
 	gold_bar.tooltip_text = "經濟比例（藍 / 紅）"
 	mid.add_child(gold_bar)
