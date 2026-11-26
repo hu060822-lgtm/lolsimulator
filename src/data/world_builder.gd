@@ -20,6 +20,7 @@ static func build(module: DataModule, world_seed: int, human_club_id: String = "
 		var ch = Champion.from_dict(c)
 		w.champions[ch.id] = ch
 	w.patch = generate_patch(w, w.rng, "%d.1" % (w.year % 100))
+	w.patch.meta_plan = StyleMatchup.CYCLE[w.rng.range_i(0, StyleMatchup.CYCLE.size() - 1)]
 	for l in module.leagues:
 		var lg = League.from_dict(l)
 		if lg.tier == 0:

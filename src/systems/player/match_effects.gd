@@ -38,6 +38,8 @@ static func apply_series(w: WorldState, series: Dictionary, stakes: float) -> vo
 			Scouting.observe(w, pid, 0.12)
 		if g["mvp"] != "":
 			w.players[g["mvp"]].reputation += 0.3
+	FormStreak.after_series(w, series)
+	Legacy.check_milestones(w, series)
 	# 出場機會：所有隊內選手都記錄「隊伍出賽」，只有上場者記錄「先發」——供選手自主行為判斷
 	for cid in [series["winner"], series["loser"]]:
 		var club: Club = w.clubs[cid]

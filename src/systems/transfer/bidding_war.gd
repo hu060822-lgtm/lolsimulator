@@ -40,19 +40,21 @@ static func maybe_start(w: WorldState, buyer: Club, p: Player, fee: int, salary:
 	var theirs: float = TransferMarket.contract_utility(w, p, rival, rival_salary, "starter")["utility"]
 	if theirs <= ours:
 		return {}
-	var raise := raise_salary(w, p, buyer, role_promise, theirs, salary)
+	var rz := raise_terms(w, p, buyer, role_promise, theirs, salary)
+	var raise := int(rz.get("salary", 0))
+	var raise_role := str(rz.get("role_promise", role_promise))
 	var hold := hold_chance(ours, theirs)
 	var labels := {"bid:withdraw": "放手"}
 	var opts: Array = []
 	if raise > 0:
 		opts.append("bid:raise")
-		labels["bid:raise"] = "加價到 $%dK 簽下" % (raise / 1000)
+		labels["bid:raise"] = ("加價到 $%dK 簽下" % (raise / 1000)) + ("（並保證先發）" if raise_role != role_promise else "")
 	opts.append("bid:hold")
 	labels["bid:hold"] = "堅持原條件（%d%% 機會）" % roundi(hold * 100.0)
 	opts.append("bid:withdraw")
 	var msg := {"id": w.new_id("msg"), "day": w.day, "kind": "bidding", "player_id": p.id, "from_club": p.club_id,
 		"rival_id": rival.id, "rival_salary": rival_salary, "fee": fee, "salary": salary, "years": years, "role_promise": role_promise,
-		"raise_salary": raise, "hold_chance": hold,
+		"raise_salary": raise, "raise_role": raise_role, "hold_chance": hold,
 		"text": "搶人大戰！%s 也看上了 %s，開出年薪 $%dK 並保證先發。選手的經紀人說：「條件最好的那邊，我們就簽。」" % [rival.name, p.handle, rival_salary / 1000],
 		"resolved": false, "options": opts, "option_labels": labels}
 	w.inbox.append(msg)
@@ -65,13 +67,17 @@ static func hold_chance(ours: float, theirs: float) -> float:
 	return clampf(0.5 + (ours - theirs) * 1.5, 0.1, 0.45)
 
 
-## 剛好贏過對手的最低年薪（找不到回傳 0）。
-static func raise_salary(w: WorldState, p: Player, buyer: Club, role_promise: String, target_u: float, from_salary: int) -> int:
-	for i in range(1, 41):
-		var sal := int(from_salary * (1.0 + 0.04 * i) / 1000.0) * 1000
-		if TransferMarket.contract_utility(w, p, buyer, sal, role_promise)["utility"] > target_u + 0.01:
-			return sal
-	return 0
+## 剛好贏過對手的最低條件：先只加薪，不夠再加上先發保證。回傳 {salary, role_promise}，找不到回傳 {}。
+static func raise_terms(w: WorldState, p: Player, buyer: Club, role_promise: String, target_u: float, from_salary: int) -> Dictionary:
+	var roles: Array = [role_promise]
+	if role_promise != "starter":
+		roles.append("starter")
+	for role in roles:
+		for i in range(1, 41):
+			var sal := int(from_salary * (1.0 + 0.04 * i) / 1000.0) * 1000
+			if TransferMarket.contract_utility(w, p, buyer, sal, role)["utility"] > target_u + 0.01:
+				return {"salary": sal, "role_promise": role}
+	return {}
 
 
 static func _would_accept(w: WorldState, buyer: Club, p: Player, fee: int, salary: int, role_promise: String) -> bool:
@@ -130,7 +136,8 @@ static func resolve(w: WorldState, msg: Dictionary, option: String) -> Dictionar
 		"hold":
 			won = w.rng.chance(float(msg.get("hold_chance", 0.25)))
 	if won:
-		var r := _sign(w, me, p, int(msg["fee"]), salary, int(msg["years"]), str(msg["role_promise"]))
+		var role := str(msg.get("raise_role", msg["role_promise"])) if choice == "raise" else str(msg["role_promise"])
+		var r := _sign(w, me, p, int(msg["fee"]), salary, int(msg["years"]), role)
 		if r.get("accepted", false):
 			Media.post(w, "transfer", "%s 在搶人大戰中勝出，簽下 %s" % [me.short_name, p.handle], [p.id, me.id], 0.4)
 			return {"note": "成功簽下 %s（年薪 $%dK）" % [p.handle, salary / 1000], "signed": true}

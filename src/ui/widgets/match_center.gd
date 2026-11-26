@@ -66,7 +66,7 @@ func setup(s: GameSession, ally_side: String) -> MatchCenter:
 		speed_btns[k] = b
 		ctl.add_child(b)
 	right.add_child(ctl)
-	_set_speed("1x")
+	_set_speed(str(session.club().settings.get("match_speed", "1x")) if session and session.club() else "1x")
 	return self
 
 
@@ -136,6 +136,10 @@ func _team_rows(side: String) -> PanelContainer:
 
 
 func _set_speed(k: String) -> void:
+	if not SPEEDS.has(k):
+		k = "1x"
+	if session and session.club():
+		session.club().settings["match_speed"] = k
 	for b in speed_btns:
 		speed_btns[b].button_pressed = b == k
 	if map:

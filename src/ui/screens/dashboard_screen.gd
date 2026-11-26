@@ -121,6 +121,41 @@ func refresh() -> void:
 	var rc := _rival_card()
 	rc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row3.add_child(rc)
+	var mc := _meta_card()
+	mc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row3.add_child(mc)
+
+
+## 版本：版本答案打法、我方研究進度、強勢英雄。
+func _meta_card() -> PanelContainer:
+	var ww = w()
+	var c: Club = session.club()
+	var v := UIKit.vbox(6)
+	v.add_child(UIKit.label("版本 %s" % ww.patch.version, 14, UIKit.MUTED))
+	var mp: String = ww.patch.meta_plan
+	var plan_now: String = str(c.tactics.get("plan", "flexible"))
+	var h := UIKit.hbox(8)
+	h.add_child(UIKit.bold("答案：%s" % MetaRace.plan_label(mp), 17, UIKit.GOLD))
+	if plan_now == mp:
+		h.add_child(UIKit.label("正在打", 13, UIKit.GOOD))
+	v.add_child(h)
+	v.add_child(UIKit.stat_bar("研究", c.meta_research, 100.0, 150, UIKit.GOLD, 40))
+	var strong := UIKit.hbox(4)
+	for cid in ww.patch.strong().slice(0, 5):
+		var tok = ChampToken.make(ww.champions.get(cid), UIKit.GOLD, 26)
+		tok.tooltip_text = "版本強勢：%s" % ww.champions[cid].name if ww.champions.has(cid) else cid
+		strong.add_child(tok)
+	v.add_child(strong)
+	var left := maxi(0, MetaRace.PATCH_WEEKS - MetaRace.weeks_into_patch(ww))
+	var tip := UIKit.label("約 %d 週後改版・訓練排「版本研究」可加速" % left if ww.phase in ["preseason", "regular"] else "休賽季會推出大改版", 13, UIKit.MUTED)
+	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(tip)
+	var p := UIKit.panel(v)
+	var sb := UIKit._card(UIKit.PANEL, 0)
+	sb.border_width_top = 3
+	sb.border_color = UIKit.HEX
+	p.add_theme_stylebox_override("panel", sb)
+	return p
 
 
 ## 董事會開的本季目標：每項一行，右側是進度。

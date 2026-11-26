@@ -66,6 +66,7 @@ static func weekly(w: WorldState) -> void:
 		for pid in club.roster:
 			var p: Player = w.players[pid]
 			Development.weekly(w, p, focus.get(pid, {}), coach)
+			FormStreak.weekly(p)
 			if in_season:
 				CareerAgent.weekly(w, p)
 		if in_season:
@@ -78,6 +79,7 @@ static func weekly(w: WorldState) -> void:
 			ClubAI.weekly(w, club)
 		_finance_week(w, club)
 	Scouting.weekly(w)
+	MetaRace.weekly(w)
 	Poaching.weekly(w)
 	for pid in w.free_agents:
 		var p: Player = w.players[pid]
@@ -304,6 +306,7 @@ static func _offseason_day(w: WorldState, d: int) -> void:
 		_retirements(w)
 		_new_patch(w)
 		_youth_intake(w)
+		YouthAcademy.tryouts(w)
 		StaffSystem.offseason(w)
 		for c in clubs:
 			Finance.offseason_sponsors(w, c)
@@ -353,12 +356,11 @@ static func _retirements(w: WorldState) -> void:
 			p.contract = null
 			w.history["retirements"].append({"year": w.year, "player_id": p.id, "handle": p.handle, "age": p.age(w.year), "titles": p.career.get("titles", 0)})
 			w.log.add("retirement", w.day, [p.id, club_id], {"age": p.age(w.year)}, [])
+			Legacy.on_retire(w, p, club_id)
 
 
 static func _new_patch(w: WorldState) -> void:
-	w.patch = WorldBuilder.generate_patch(w, w.rng, "%d.1" % ((w.year + 1) % 100))
-	for p in w.active_players():
-		Development.adapt_to_patch(w, p, w.rng)
+	MetaRace.new_patch(w, "%d.1" % ((w.year + 1) % 100))
 
 
 static func _youth_intake(w: WorldState) -> void:

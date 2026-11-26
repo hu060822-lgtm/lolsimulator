@@ -31,8 +31,12 @@ func _run() -> void:
 	await _shot("01_new_game")
 	app.session.new_game("res://data/modules/lol_world", 2026, "ctbc_flying_oystar")
 	app.start_game()
-	await _shot("02_dashboard")
 	var sh: Shell = app.current
+	await _shot("02_guide")
+	if is_instance_valid(sh.guide):
+		sh.guide.close()
+	await _frames(2)
+	await _shot("02_dashboard")
 	var dsc: ScrollContainer = sh.content.get_parent()
 	await _frames(2)
 	dsc.scroll_vertical = int(dsc.get_v_scroll_bar().max_value)
@@ -121,8 +125,11 @@ func _run() -> void:
 		for c in ww.clubs.values():
 			c.wage_budget += 5000000
 		BiddingWar.maybe_start(ww, app.session.club(), fa, 0, TransferMarket.wage_demand(ww, fa), 2, "rotation", true)
+	YouthAcademy.tryouts(ww)
 	sh.open("inbox")
 	await _shot("12_inbox")
+	sh.open("saves")
+	await _shot("14_settings")
 	# 推進到世界賽與賽季結束
 	app.session.manual_draft = false
 	var w: WorldState = app.session.world

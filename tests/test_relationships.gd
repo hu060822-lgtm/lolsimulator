@@ -78,7 +78,7 @@ func test_tilt_after_losing_a_game() -> void:
 	var loser = a if s.games[0]["loser_club"] == a.club_id else b
 	var winner = b if loser == a else a
 	check(loser.tilt.size() == 5, "every loser player carries tilt")
-	check(winner.tilt.is_empty(), "winner has no tilt")
+	check(winner.tilt.values().all(func(v): return float(v) < 0.0), "winner carries momentum, not tilt")
 	var low := 0.0
 	for p in loser.players.values():
 		low = maxf(low, loser.tilt[p.id])

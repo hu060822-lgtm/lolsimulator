@@ -44,6 +44,7 @@ Football Manager 式的英雄聯盟電競俱樂部經營模擬器（Godot 4.3）
 | [docs/rules/13-match-prep-and-depth.md](docs/rules/13-match-prep-and-depth.md) | 賽前情報、打法互剋、快速模擬、談判回價、挖角、委派 |
 | [docs/rules/14-decisions-and-career.md](docs/rules/14-decisions-and-career.md) | 關鍵抉擇卡、對手研究與秘密武器、經理生涯（開除與挖角） |
 | [docs/rules/15-season-depth.md](docs/rules/15-season-depth.md) | 年度宿敵、本季目標、搶人大戰、選手風格標籤 |
+| [docs/rules/16-meta-form-legacy.md](docs/rules/16-meta-form-legacy.md) | 版本 Meta 競賽、選手手感、青訓試訓、故事線與傳承、易用性 |
 | [docs/data-modules.md](docs/data-modules.md) | 資料模組格式（真實／虛構／自訂資料庫） |
 | [docs/roadmap.md](docs/roadmap.md) | 開發路線圖 |
 

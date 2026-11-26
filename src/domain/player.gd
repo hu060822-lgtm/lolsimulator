@@ -50,6 +50,7 @@ var career: Dictionary = {"games": 0, "wins": 0, "kills": 0, "deaths": 0, "assis
 var history: Array = []               ## [{year, club_id, games, wins, avg_rating}]
 var loan: Dictionary = {}             ## 租借中：{from, to, until, wage_share, fee}
 var reputation: float = 20.0          ## 知名度 0..100
+var hot: float = 0.0                  ## 手感 -1..1（連續好表現變熱、連續低迷變冷，見 FormStreak）
 
 
 func age(current_year: int) -> int:
@@ -116,7 +117,7 @@ func to_dict() -> Dictionary:
 		"weeks_unhappy": weeks_unhappy, "transfer_requested": transfer_requested,
 		"refuses_renewal": refuses_renewal, "promises": promises, "retired": retired,
 		"retired_year": retired_year, "season_stats": season_stats, "career": career,
-		"history": history, "reputation": reputation, "loan": loan,
+		"history": history, "reputation": reputation, "loan": loan, "hot": hot,
 	}
 
 

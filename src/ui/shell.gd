@@ -4,7 +4,7 @@ extends VBoxContainer
 
 const PAGES := [
 	["dashboard", "總覽"], ["roster", "名單"], ["tactics", "戰術與陣容"], ["training", "訓練"],
-	["transfers", "轉會中心"], ["staff", "教練團"], ["finance", "財務"], ["competition", "賽事"], ["news", "媒體"], ["inbox", "收件匣"], ["history", "歷史"], ["saves", "存檔"],
+	["transfers", "轉會中心"], ["staff", "教練團"], ["finance", "財務"], ["competition", "賽事"], ["news", "媒體"], ["inbox", "收件匣"], ["history", "歷史"], ["saves", "存檔與設定"],
 ]
 ## 側欄分組：[標題, [頁面 id…]]
 const GROUPS := [
@@ -68,6 +68,10 @@ func setup(s: GameSession, a: Node) -> Shell:
 	toast_label.clip_text = true
 	bar.add_child(toast_label)
 	var acts := UIKit.hbox(0)
+	var help := UIKit.button("?", show_help)
+	help.tooltip_text = "說明與快捷鍵（F1）"
+	help.custom_minimum_size = Vector2(54, 54)
+	acts.add_child(help)
 	var wk := UIKit.button("推進一週", _on_week)
 	wk.custom_minimum_size = Vector2(130, 54)
 	acts.add_child(wk)
@@ -148,7 +152,50 @@ func setup(s: GameSession, a: Node) -> Shell:
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_child(content)
 	open("dashboard")
+	var c0: Club = session.club()
+	if c0 and not bool(c0.settings.get("seen_guide", false)):
+		c0.settings["seen_guide"] = true
+		guide = GuideOverlay.open(self, "dashboard", true)
 	return self
+
+
+var guide: GuideOverlay
+
+
+func show_help() -> void:
+	if is_instance_valid(guide):
+		guide.close()
+		return
+	guide = GuideOverlay.open(self, page_id, false)
+
+
+## 快捷鍵：空白鍵／Enter 繼續、W 推進一週、1～9 切換頁面、F1／? 說明、Esc 關閉說明。
+func _unhandled_key_input(event: InputEvent) -> void:
+	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	var k: int = event.keycode
+	if k == KEY_ESCAPE and is_instance_valid(guide):
+		guide.close()
+	elif k == KEY_F1 or k == KEY_QUESTION or (k == KEY_SLASH and event.shift_pressed):
+		show_help()
+	elif is_instance_valid(guide):
+		return
+	elif k == KEY_SPACE or k == KEY_ENTER or k == KEY_KP_ENTER:
+		if page_id not in ["draft"]:
+			_on_continue()
+	elif k == KEY_W:
+		if page_id not in ["draft"]:
+			_on_week()
+	elif k >= KEY_1 and k <= KEY_9:
+		var order: Array = []
+		for g in GROUPS:
+			order.append_array(g[1])
+		var i := k - KEY_1
+		if i < order.size():
+			open(order[i])
+	else:
+		return
+	get_viewport().set_input_as_handled()
 
 
 ## 狀態列上的小資訊塊：上方灰色小標、下方數值。回傳數值 Label。
@@ -230,18 +277,32 @@ func _on_continue() -> void:
 	toast("")
 	if session.has_match_ready():
 		open_prep()
+		if bool(session.club().settings.get("auto_sim", false)) and page is MatchPrepScreen:
+			page._quick_sim()
 		return
 	session.advance_to_next_match()
+	_autosave()
 	if session.has_match_ready():
+		if bool(session.club().settings.get("auto_sim", false)):
+			open_prep()
+			if page is MatchPrepScreen:
+				page._quick_sim()
+			return
 		toast("明天有比賽，準備 BP")
 	if page:
 		page.refresh()
 	refresh_status()
 
 
+func _autosave() -> void:
+	if session.maybe_autosave():
+		toast("已自動存檔")
+
+
 func _on_week() -> void:
 	toast("")
 	var n = session.advance_days(7)
+	_autosave()
 	if n < 7 and session.has_match_ready():
 		toast("比賽日到了，請先完成比賽")
 	if page:

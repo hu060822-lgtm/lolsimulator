@@ -68,6 +68,10 @@ static func factor_breakdown(w: WorldState, ta: TeamContext, tb: TeamContext, my
 	var rel = StyleMatchup.relation(my_plan, opp_plan)
 	out.append({"id": "style", "label": "打法相剋", "points": StyleMatchup.EDGE * rel * 0.8 * base * 1.6,
 		"detail": StyleMatchup.reason(my_plan, opp_plan) if rel != 0 else "雙方打法沒有明顯相剋"})
+	var ma := MetaRace.bonus(ta.meta_research, my_plan, ta.meta_plan)
+	var mb := MetaRace.bonus(tb.meta_research, opp_plan, tb.meta_plan)
+	out.append({"id": "meta", "label": "版本理解", "points": (ma - mb) * base * 1.6,
+		"detail": "研究 %d%% vs %d%%%s" % [roundi(ta.meta_research), roundi(tb.meta_research), "（我方打版本答案）" if my_plan == ta.meta_plan else ""]})
 	return out
 
 
@@ -85,6 +89,7 @@ static func avg_form(w: WorldState, t: TeamContext) -> float:
 	for p in t.players.values():
 		var f: float = (p.confidence - 50.0) / 100.0 * 0.06 + (p.morale - 50.0) / 100.0 * 0.03 + (p.motivation - 60.0) / 100.0 * 0.05 - p.fatigue / 100.0 * 0.07
 		f -= maxf(p.stress - 40.0, 0.0) / 100.0 * 0.08 * (1.2 - p.trait_value("composure") / 100.0)
+		f += p.hot * FormStreak.HOT_WEIGHT
 		vals.append(f)
 	return MathX.mean(vals) if not vals.is_empty() else 0.0
 

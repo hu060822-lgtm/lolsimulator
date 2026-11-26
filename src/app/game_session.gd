@@ -329,6 +329,10 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 		if jr.get("switched", false):
 			pending = {}
 		return jr
+	if option.begins_with("fw:"):
+		return Legacy.resolve(world, msg, option)
+	if option.begins_with("try:"):
+		return YouthAcademy.resolve(world, msg, option)
 	if option.begins_with("bid:"):
 		return BiddingWar.resolve(world, msg, option)
 	if option.begins_with("ev:"):
@@ -539,6 +543,21 @@ func load_game(path: String) -> bool:
 	world = w
 	pending = {}
 	return true
+
+
+const AUTOSAVE_SLOT := 0
+
+
+## 每週自動存檔到 0 號槽（設定 autosave，預設開啟）。回傳是否存檔。
+func maybe_autosave(force: bool = false) -> bool:
+	var c := club()
+	if c == null or not bool(c.settings.get("autosave", true)):
+		return false
+	var last := int(c.settings.get("autosave_day", -999))
+	if not force and world.day - last < 7 and world.day >= last:
+		return false
+	c.settings["autosave_day"] = world.day
+	return save_slot(AUTOSAVE_SLOT) == OK
 
 
 static func slot_path(slot: int) -> String:
