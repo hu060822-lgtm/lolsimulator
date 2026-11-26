@@ -73,9 +73,23 @@ func refresh() -> void:
 	hint.size_flags_vertical = Control.SIZE_SHRINK_END
 	sh.add_child(hint)
 	body.add_child(sh)
-	var starters := UIKit.hbox(10)
+	var starters := UIKit.hbox(14)
 	for role in Attr.ROLES:
-		starters.add_child(_starter_card(ww.players.get(c.lineup.get(role, "")), role))
+		var sp: Player = ww.players.get(c.lineup.get(role, ""))
+		if sp == null:
+			starters.add_child(_starter_card(null, role))
+			continue
+		var cc := CollectorCard.make(session, sp, 176, role)
+		cc.morale = sp.morale
+		if sp.fatigue > 70:
+			cc.tag_text = "疲勞 %d" % int(sp.fatigue)
+			cc.tag_color = UIKit.WARN
+		elif sp.stress > 60:
+			cc.tag_text = "壓力 %d" % int(sp.stress)
+			cc.tag_color = UIKit.WARN
+		cc.tooltip_text = "士氣 %d・自信 %d・疲勞 %d・壓力 %d・滿意度 %+.2f" % [int(sp.morale), int(sp.confidence), int(sp.fatigue), int(sp.stress), sp.happiness]
+		cc.pressed.connect(_open_player.bind(sp.id))
+		starters.add_child(cc)
 	body.add_child(starters)
 	# 動態：收件匣、媒體、最近戰績
 	var row2 := UIKit.hbox(10)
@@ -94,6 +108,12 @@ func refresh() -> void:
 	row2.add_child(_recent_card(c))
 	for ch in row2.get_children():
 		ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+
+func _open_player(pid: String) -> void:
+	shell.open("roster")
+	if shell.page is RosterScreen:
+		shell.page._pick(pid)
 
 
 func _stage(f: Dictionary) -> String:

@@ -618,7 +618,7 @@ static func stat_bar(name: String, v: float, max_v: float = 100.0, width: int = 
 static func stat_card(title_text: String, big: String, small: String = "", color: Color = TEXT) -> PanelContainer:
 	var v := vbox(0)
 	v.add_child(label(title_text, 13, MUTED))
-	var bl = label(big, 40, color if color != TEXT else GOLD_LIGHT)
+	var bl = label(big, 32, color if color != TEXT else GOLD_LIGHT)
 	bl.add_theme_font_override("font", num_font())
 	v.add_child(bl)
 	if small != "":
