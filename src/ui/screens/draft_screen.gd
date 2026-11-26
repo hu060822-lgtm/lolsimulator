@@ -35,41 +35,23 @@ func build() -> void:
 ## 系列賽計分列：雙方隊徽、名稱與大比分；下方一行小字是局數與狀態。
 var score_label: Label
 
-func _build_header() -> PanelContainer:
-	var p := PanelContainer.new()
-	var sb := UIKit._card(Color(UIKit.BG_2, 0.92), 10)
-	sb.border_color = Color(UIKit.GOLD_DIM, 0.8)
-	sb.border_width_bottom = 2
-	sb.content_margin_top = 10
-	sb.content_margin_bottom = 10
-	p.add_theme_stylebox_override("panel", sb)
-	var v := UIKit.vbox(2)
-	p.add_child(v)
-	var row := UIKit.hbox(14)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_child(row)
-	var na := UIKit.label(series.a.name, 20, UIKit.BLUE_SIDE.lightened(0.25))
-	na.add_theme_font_override("font", UIKit.head_font())
-	na.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	na.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	na.clip_text = true
-	row.add_child(na)
-	row.add_child(Badge.club(session.world.clubs.get(series.a.club_id), 46))
-	score_label = UIKit.label("0 : 0", 30, UIKit.GOLD_LIGHT)
-	score_label.add_theme_font_override("font", UIKit.head_font())
-	score_label.custom_minimum_size = Vector2(110, 0)
-	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	row.add_child(score_label)
-	row.add_child(Badge.club(session.world.clubs.get(series.b.club_id), 46))
-	var nb := UIKit.label(series.b.name, 20, UIKit.RED_SIDE.lightened(0.25))
-	nb.add_theme_font_override("font", UIKit.head_font())
-	nb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nb.clip_text = true
-	row.add_child(nb)
-	header = UIKit.label("", 13, UIKit.GOLD)
+var banner: MatchBanner
+
+func _build_header() -> Control:
+	var v := UIKit.vbox(6)
+	var ca: Club = session.world.clubs.get(series.a.club_id)
+	var cb: Club = session.world.clubs.get(series.b.club_id)
+	banner = MatchBanner.make(ca, cb, "", "", 92)
+	banner.center_text = "0 : 0"
+	v.add_child(banner)
+	# 比分也保留一個 Label（測試與無障礙），不顯示
+	score_label = UIKit.label("0 : 0", 13)
+	score_label.visible = false
+	v.add_child(score_label)
+	header = UIKit.bold("", 14, UIKit.GOLD)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(header)
-	return p
+	return v
 
 
 ## hide_last：本局已模擬完但還在播放時，不把這一局算進大比分，避免開場就看到結果。
@@ -83,6 +65,9 @@ func _set_header(game_no: int, state: String, hide_last: bool = false) -> void:
 		elif last_winner == series.b.club_id:
 			wb -= 1
 	score_label.text = "%d : %d" % [wa, wb]
+	if banner:
+		banner.center_text = score_label.text
+		banner.queue_redraw()
 	header.text = "第 %d 局・%s・%s" % [game_no, UIKit.bo_text(series.best_of), state]
 
 
@@ -239,7 +224,11 @@ func _champ_info(c: Champion, act: String) -> String:
 		var p: Player = team.players.get(r)
 		if p:
 			best = maxf(best, p.mastery(c.id))
-	return "%s %d %s" % ["熟" if act == "pick" else "敵", int(best), arrow]
+	var seen = team.exposure(c.id)
+	if act != "pick" and seen < 0.2 and not team.pick_history.is_empty():
+		return "敵 ? %s" % arrow  # 對手沒在正式賽用過：情報只能推測
+	var star = "★" if act == "pick" and best >= 70.0 and seen < 0.2 else ""
+	return "%s %d%s %s" % ["熟" if act == "pick" else "敵", int(best), star, arrow]
 
 
 func _team_col(col: VBoxContainer, side: String) -> void:
@@ -442,6 +431,7 @@ func _play_live() -> void:
 func _live_order(order: String) -> void:
 	var f = live_focus
 	live_focus = "__keep"
+	last_decision = {}
 	_apply_live(session.live_continue(order, f))
 
 
@@ -452,6 +442,7 @@ func _set_focus(f: String, btns: Array) -> void:
 
 
 func _live_skip() -> void:
+	last_decision = {}
 	_apply_live(session.live_finish())
 
 
@@ -492,6 +483,14 @@ func _show_orders() -> void:
 	tags.add_child(UIKit.pill("目前：" + ORDER_INFO.get(snap["stances"][side], ["", snap["stances"][side]])[1], UIKit.ACCENT))
 	tags.add_child(UIKit.pill("分析師：" + _advice(gd, late_edge), UIKit.GOOD))
 	box.add_child(tags)
+	if not last_decision.is_empty():
+		var ok: bool = last_decision.get("success", false)
+		var res := UIKit.label(("✔ " if ok else "✘ ") + str(last_decision.get("text", "")), 16, UIKit.GOOD if ok else UIKit.BAD)
+		res.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		box.add_child(UIKit.accent_panel(res, UIKit.GOOD if ok else UIKit.BAD))
+	var decs: Array = snap.get("decisions", [])
+	if not decs.is_empty():
+		box.add_child(_decision_card(decs[0]))
 	# 指定目標：選好後再點下方的打法
 	var cur_focus: String = str(snap.get("focus", {}).get(side, ""))
 	live_focus = "__keep"
@@ -522,6 +521,48 @@ func _show_orders() -> void:
 	fin.custom_minimum_size.y = 62
 	grid.add_child(fin)
 	box.add_child(grid)
+
+
+## 關鍵抉擇卡：標題、情境、2～3 個選項（成功率與風險）。
+func _decision_card(d: Dictionary) -> PanelContainer:
+	var v := UIKit.vbox(6)
+	var head := UIKit.hbox(8)
+	head.add_child(UIKit.pill("關鍵抉擇", UIKit.WARN))
+	head.add_child(UIKit.label(d["title"], 17, UIKit.GOLD_LIGHT))
+	v.add_child(head)
+	v.add_child(UIKit.label(d["text"], 13, UIKit.MUTED))
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 6)
+	for o in d["options"]:
+		var c: float = o["chance"]
+		var risk: String = o["risk"]
+		var col: Color = UIKit.BAD if risk == "high" else (UIKit.WARN if risk == "mid" else UIKit.GOOD)
+		var code := ("成功率 %d%%" % roundi(c * 100.0)) if c >= 0.0 else "確定"
+		var b := UIKit.tile(code, o["label"], o["desc"], _decide.bind(d["id"], o["id"]), col, 260)
+		b.custom_minimum_size.y = 70
+		b.name = "Decide_" + o["id"]
+		row.add_child(b)
+	v.add_child(row)
+	return UIKit.accent_panel(v, UIKit.WARN)
+
+
+var last_decision: Dictionary = {}
+
+
+func _decide(decision_id: String, option: String) -> void:
+	var r: Dictionary = session.live_decide(decision_id, option)
+	toast(str(r.get("text", "")))
+	last_decision = r
+	var snap: Dictionary = r.get("snap", {})
+	if snap.is_empty():
+		return
+	if snap.get("done", false):
+		_apply_live(snap)
+		return
+	live_snap = snap
+	mc.load(snap)
+	_show_orders()
 
 
 static func _advice(gd: int, late_edge: float) -> String:

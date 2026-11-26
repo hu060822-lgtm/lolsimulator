@@ -36,29 +36,23 @@ func setup(s: GameSession, a: Node) -> Shell:
 	add_theme_constant_override("separation", 0)
 	# 上方狀態列
 	var top := PanelContainer.new()
-	var tsb := UIKit._box(Color(UIKit.BG_2, 0.92), UIKit.GOLD_DIM, 0)
-	tsb.border_width_left = 0
-	tsb.border_width_right = 0
-	tsb.border_width_top = 0
-	tsb.border_width_bottom = 1
-	tsb.content_margin_left = 18
-	tsb.content_margin_right = 14
-	tsb.content_margin_top = 8
-	tsb.content_margin_bottom = 8
+	var tsb := UIKit._box(UIKit.BG_2, UIKit.BORDER, 0)
+	tsb.set_border_width_all(0)
+	tsb.border_width_bottom = 2
+	tsb.content_margin_left = 24
+	tsb.content_margin_right = 0
+	tsb.content_margin_top = 0
+	tsb.content_margin_bottom = 0
 	top.add_theme_stylebox_override("panel", tsb)
-	var bar := UIKit.hbox(12)
+	var bar := UIKit.hbox(26)
+	bar.custom_minimum_size = Vector2(0, 54)
 	bar.alignment = BoxContainer.ALIGNMENT_BEGIN
 	top.add_child(bar)
 	add_child(top)
-	var logo := UIKit.vbox(0)
-	var l1 := UIKit.label("ESPORT", 11, UIKit.GOLD)
-	l1.add_theme_font_override("font", UIKit.head_font())
-	logo.add_child(l1)
-	var l2 := UIKit.label("LOL SIMULATOR", 15, UIKit.GOLD_LIGHT)
-	l2.add_theme_font_override("font", UIKit.head_font())
-	logo.add_child(l2)
+	var logo := UIKit.hbox(6)
+	logo.add_child(UIKit.big_num("LOL", 26, UIKit.GOLD_LIGHT))
+	logo.add_child(UIKit.big_num("SIMULATOR", 26, UIKit.GOLD))
 	bar.add_child(logo)
-	bar.add_child(_vsep())
 	date_pill = _stat_chip(bar, "日期")
 	phase_pill = _stat_chip(bar, "階段")
 	cash_label = _stat_chip(bar, "資金")
@@ -73,56 +67,66 @@ func setup(s: GameSession, a: Node) -> Shell:
 	toast_label = UIKit.label("", 14, UIKit.WARN)
 	toast_label.clip_text = true
 	bar.add_child(toast_label)
+	var acts := UIKit.hbox(0)
 	var wk := UIKit.button("推進一週", _on_week)
-	wk.custom_minimum_size = Vector2(0, 40)
-	bar.add_child(wk)
+	wk.custom_minimum_size = Vector2(130, 54)
+	acts.add_child(wk)
 	continue_btn = UIKit.primary("繼續 ▶", _on_continue)
-	continue_btn.custom_minimum_size = Vector2(150, 40)
-	bar.add_child(continue_btn)
+	continue_btn.custom_minimum_size = Vector2(200, 54)
+	continue_btn.add_theme_font_size_override("font_size", 19)
+	acts.add_child(continue_btn)
+	bar.add_child(acts)
 	# 主體
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", 0)
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(body)
 	var side := PanelContainer.new()
-	var ssb := UIKit._box(Color(UIKit.PANEL, 0.94), UIKit.BORDER, 0)
-	ssb.border_width_left = 0
-	ssb.border_width_top = 0
-	ssb.border_width_bottom = 0
-	ssb.content_margin_left = 10
-	ssb.content_margin_right = 10
-	ssb.content_margin_top = 14
+	var ssb := UIKit._box(Color("0d1028"), Color(0, 0, 0, 0), 0)
+	ssb.set_border_width_all(0)
+	ssb.content_margin_left = 0
+	ssb.content_margin_right = 0
+	ssb.content_margin_top = 20
 	side.add_theme_stylebox_override("panel", ssb)
-	side.custom_minimum_size = Vector2(196, 0)
+	side.custom_minimum_size = Vector2(208, 0)
 	var nv := UIKit.vbox(2)
 	side.add_child(nv)
 	body.add_child(side)
 	# 俱樂部名片
-	var card := UIKit.hbox(10)
+	var card := UIKit.hbox(12)
+	var cardm := MarginContainer.new()
+	cardm.add_theme_constant_override("margin_left", 20)
+	cardm.add_theme_constant_override("margin_right", 12)
+	cardm.add_child(card)
 	crest_box = CenterContainer.new()
 	card.add_child(crest_box)
-	club_name = UIKit.label("", 14, UIKit.GOLD_LIGHT)
+	club_name = UIKit.label("", 15, UIKit.GOLD_LIGHT)
 	club_name.add_theme_font_override("font", UIKit.head_font())
 	club_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	club_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	club_name.custom_minimum_size = Vector2(110, 0)
 	card.add_child(club_name)
-	nv.add_child(card)
+	nv.add_child(cardm)
 	var gap0 := Control.new()
-	gap0.custom_minimum_size = Vector2(0, 8)
+	gap0.custom_minimum_size = Vector2(0, 14)
 	nv.add_child(gap0)
 	var names := {}
 	for p in PAGES:
 		names[p[0]] = p[1]
-	for g in GROUPS:
-		var gh := UIKit.hbox(6)
-		var gl := UIKit.label(g[0], 11, UIKit.GOLD_DIM.lightened(0.25))
-		gh.add_child(gl)
-		var ln := HSeparator.new()
-		ln.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		ln.modulate = Color(1, 1, 1, 0.45)
-		gh.add_child(ln)
-		nv.add_child(gh)
+	for gi in GROUPS.size():
+		var g: Array = GROUPS[gi]
+		if gi > 0:
+			# 分組之間只用一條細線，不放標題
+			var lm := MarginContainer.new()
+			lm.add_theme_constant_override("margin_left", 22)
+			lm.add_theme_constant_override("margin_right", 22)
+			lm.add_theme_constant_override("margin_top", 6)
+			lm.add_theme_constant_override("margin_bottom", 6)
+			var ln := ColorRect.new()
+			ln.color = Color("20264f")
+			ln.custom_minimum_size = Vector2(0, 1)
+			lm.add_child(ln)
+			nv.add_child(lm)
 		for id in g[1]:
 			var b := UIKit.button(names[id], open.bind(id))
 			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -130,9 +134,6 @@ func setup(s: GameSession, a: Node) -> Shell:
 			_style_nav(b)
 			nv.add_child(b)
 			nav[id] = b
-		var gap := Control.new()
-		gap.custom_minimum_size = Vector2(0, 8)
-		nv.add_child(gap)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -140,9 +141,9 @@ func setup(s: GameSession, a: Node) -> Shell:
 	body.add_child(scroll)
 	content = MarginContainer.new()
 	for m in ["left", "right"]:
-		content.add_theme_constant_override("margin_" + m, 24)
+		content.add_theme_constant_override("margin_" + m, 34)
 	for m in ["top", "bottom"]:
-		content.add_theme_constant_override("margin_" + m, 20)
+		content.add_theme_constant_override("margin_" + m, 26)
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.add_child(content)
@@ -152,9 +153,10 @@ func setup(s: GameSession, a: Node) -> Shell:
 
 ## 狀態列上的小資訊塊：上方灰色小標、下方數值。回傳數值 Label。
 func _stat_chip(parent: Control, cap: String) -> Label:
-	var v := UIKit.vbox(0)
-	v.add_child(UIKit.label(cap, 10, UIKit.MUTED))
-	var val := UIKit.label("", 14, UIKit.TEXT)
+	var v := UIKit.hbox(6)
+	var c := UIKit.label(cap, 14, UIKit.MUTED)
+	v.add_child(c)
+	var val := UIKit.bold("", 15)
 	v.add_child(val)
 	parent.add_child(v)
 	return val
@@ -208,7 +210,7 @@ func refresh_status() -> void:
 	var unread = session.open_messages().size()
 	var phase: String = UIKit.PHASE_NAMES.get(w.phase, w.phase)
 	status.text = "%s　｜　%d 年　第 %d 天　%s　｜　資金 %s　｜　收件匣 %d" % [c.short_name if c else "", w.year, w.day, phase, UIKit.money(c.cash) if c else "", unread]
-	date_pill.text = "%d 年 · 第 %d 天" % [w.year, w.day]
+	date_pill.text = "%d 年 第 %d 天" % [w.year, w.day]
 	phase_pill.text = phase
 	cash_label.text = UIKit.money(c.cash) if c else "-"
 	cash_label.add_theme_color_override("font_color", UIKit.GOOD if c == null or c.cash >= 0 else UIKit.BAD)
@@ -217,7 +219,7 @@ func refresh_status() -> void:
 		UIKit.clear(crest_box)
 		crest_box.add_child(Badge.club(c, 44))
 	nav["inbox"].text = "收件匣　%d" % unread if unread > 0 else "收件匣"
-	continue_btn.text = "進入 BP ▶" if session.has_match_ready() else "繼續 ▶"
+	continue_btn.text = "賽前情報 ▶" if session.has_match_ready() else "繼續 ▶"
 
 
 func toast(text: String) -> void:
@@ -227,7 +229,7 @@ func toast(text: String) -> void:
 func _on_continue() -> void:
 	toast("")
 	if session.has_match_ready():
-		open_match()
+		open_prep()
 		return
 	session.advance_to_next_match()
 	if session.has_match_ready():
@@ -247,6 +249,11 @@ func _on_week() -> void:
 	refresh_status()
 
 
+## 比賽日：先看賽前情報（對手、勝率因素、克制建議），再選擇親自 BP 或快速模擬。
+func open_prep() -> void:
+	open_screen(MatchPrepScreen.new(), "prep")
+
+
 func open_match() -> void:
 	open_screen(DraftScreen.new(), "draft")
 
@@ -255,28 +262,23 @@ func after_match() -> void:
 	open("competition")
 
 
-## 側欄按鈕：未選取時透明，滑過時淡底，選取時左側金色亮條 + 金色漸層底。
+## 側欄按鈕：未選取時灰字透明底；選取時左側俱樂部代表色粗條、深藍底、白色粗字。
 func _style_nav(b: Button) -> void:
+	var cc: Color = Badge.club_color(session.club().id) if session and session.club() else UIKit.GOLD
 	var off := StyleBoxFlat.new()
 	off.bg_color = Color(0, 0, 0, 0)
-	off.content_margin_left = 14
-	off.content_margin_top = 8
-	off.content_margin_bottom = 8
-	off.set_corner_radius_all(4)
+	off.content_margin_left = 24
+	off.content_margin_top = 9
+	off.content_margin_bottom = 9
 	var hover = off.duplicate()
-	hover.bg_color = Color(UIKit.PANEL_3, 0.8)
+	hover.bg_color = Color("161a3d")
 	var on := StyleBoxFlat.new()
-	on.bg_color = Color(UIKit.GOLD, 0.14)
-	on.border_color = UIKit.GOLD
-	on.border_width_left = 3
-	on.set_corner_radius_all(4)
-	on.corner_radius_top_left = 0
-	on.corner_radius_bottom_left = 0
-	on.content_margin_left = 11
-	on.content_margin_top = 8
-	on.content_margin_bottom = 8
-	on.shadow_color = Color(UIKit.GOLD, 0.12)
-	on.shadow_size = 6
+	on.bg_color = Color("1c2150")
+	on.border_color = cc
+	on.border_width_left = 5
+	on.content_margin_left = 19
+	on.content_margin_top = 9
+	on.content_margin_bottom = 9
 	b.add_theme_stylebox_override("normal", off)
 	b.add_theme_stylebox_override("hover", hover)
 	b.add_theme_stylebox_override("pressed", on)
@@ -285,5 +287,6 @@ func _style_nav(b: Button) -> void:
 	b.add_theme_color_override("font_pressed_color", UIKit.GOLD_LIGHT)
 	b.add_theme_color_override("font_hover_pressed_color", UIKit.GOLD_LIGHT)
 	b.add_theme_color_override("font_hover_color", UIKit.TEXT)
-	b.add_theme_color_override("font_color", UIKit.TEXT.darkened(0.25))
-	b.add_theme_font_size_override("font_size", 15)
+	b.add_theme_color_override("font_color", UIKit.MUTED)
+	b.add_theme_font_override("font", UIKit.body_font())
+	b.add_theme_font_size_override("font_size", 16)

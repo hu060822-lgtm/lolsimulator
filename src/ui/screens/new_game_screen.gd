@@ -35,18 +35,12 @@ func build() -> void:
 	var root := UIKit.vbox(12)
 	margin.add_child(root)
 	var title_row := UIKit.hbox(16)
-	var tv := UIKit.vbox(0)
-	var t1 := UIKit.label("ESPORT", 14, UIKit.GOLD)
-	t1.add_theme_font_override("font", UIKit.head_font())
-	tv.add_child(t1)
-	var t2 := UIKit.label("LOL SIMULATOR", 36, UIKit.GOLD_LIGHT)
-	t2.add_theme_font_override("font", UIKit.head_font())
-	t2.add_theme_color_override("font_shadow_color", Color(UIKit.GOLD, 0.35))
-	t2.add_theme_constant_override("shadow_offset_y", 2)
-	tv.add_child(t2)
+	var tv := UIKit.hbox(10)
+	tv.add_child(UIKit.big_num("LOL", 64, UIKit.GOLD_LIGHT))
+	tv.add_child(UIKit.big_num("SIMULATOR", 64, UIKit.GOLD))
 	title_row.add_child(tv)
-	var tag := UIKit.label("Build a Legacy. Not Just a Team.", 15, UIKit.MUTED)
-	tag.size_flags_vertical = Control.SIZE_SHRINK_END
+	var tag := UIKit.label("接手一支戰隊，帶他們打上世界賽。", 17, UIKit.MUTED)
+	tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	title_row.add_child(tag)
 	root.add_child(title_row)
 	# 資料庫選擇
@@ -162,7 +156,7 @@ func _filter_league(league_id: String) -> void:
 	for c in clubs:
 		if c["league_id"] != league_id:
 			continue
-		var b := Button.new()
+		var b := UIKit.flat(Button.new())
 		b.toggle_mode = true
 		b.custom_minimum_size = Vector2(150, 118)
 		b.button_pressed = c["id"] == selected_club

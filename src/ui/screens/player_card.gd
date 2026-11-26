@@ -11,11 +11,11 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 	var v := UIKit.vbox(10)
 	var club: Club = ww.clubs.get(p.club_id)
 	# 標題：能力徽章 + 名稱 + 標籤
-	var head := UIKit.hbox(12)
-	var ca = p.current_ability()
-	var ovr := Badge.make(str(int(ca)) if own else "?", UIKit.skill_color(ca) if own else UIKit.MUTED, 60)
-	ovr.tooltip_text = "目前能力" if own else "能力需要球探評估"
-	head.add_child(ovr)
+	var head := UIKit.hbox(20)
+	var card := CollectorCard.make(session, p, 150)
+	card.tooltip_text = "目前能力" if own else "能力需要球探評估；卡面數字是球探估計"
+	card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	head.add_child(card)
 	var hv := UIKit.vbox(4)
 	hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hv.add_child(UIKit.title(p.handle + ("（已退役）" if p.retired else "")))
@@ -23,6 +23,11 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 	tags.add_theme_constant_override("h_separation", 6)
 	tags.add_child(UIKit.pill(UIKit.ROLE_SHORT.get(p.primary_role, p.primary_role) + "".join(p.secondary_roles.map(func(r): return " / " + UIKit.ROLE_SHORT[r])), UIKit.ACCENT))
 	tags.add_child(UIKit.pill("%d 歲" % p.age(ww.year), UIKit.MUTED))
+	if p.club_id == ww.human_club_id or Scouting.knowledge(ww, p) > 0.5:
+		var arch := PlayerArchetype.of(p)
+		var ap0 := UIKit.pill(arch["name"], UIKit.GOLD)
+		ap0.tooltip_text = arch["desc"]
+		tags.add_child(ap0)
 	tags.add_child(UIKit.pill(p.nationality, UIKit.MUTED))
 	tags.add_child(UIKit.pill(club.short_name if club else "自由球員", Badge.club_color(club.id) if club else UIKit.MUTED))
 	if p.transfer_requested:
@@ -39,7 +44,7 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 	head.add_child(hv)
 	v.add_child(head)
 	var cols := UIKit.hbox(18)
-	v.add_child(cols)
+	hv.add_child(cols)
 	# 能力
 	var skills := UIKit.vbox(3)
 	skills.size_flags_horizontal = Control.SIZE_EXPAND_FILL

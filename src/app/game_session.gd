@@ -49,6 +49,8 @@ func advance_day() -> bool:
 		return false
 	var before = world.inbox.size()
 	var results = WorldSimulator.advance_day(world)
+	if Delegation.enabled(club()):
+		delegate_routine(1)
 	for r in results:
 		if r["series"]["winner"] == world.human_club_id or r["series"]["loser"] == world.human_club_id:
 			last_result = r
@@ -165,7 +167,28 @@ func start_live_game(ds: DraftSession) -> Dictionary:
 	var s: SeriesState = pending["series"]
 	live = s.begin_game(ds)
 	live_side = s.side_of(world.human_club_id)
+	live.manual_side = live_side
 	return _live_pause()
+
+
+## 即時指揮：在暫停點做出關鍵抉擇（MatchDecisions）。回傳 {ok, success, text, snap}，不推進時間。
+func live_decide(decision_id: String, option: String) -> Dictionary:
+	if live == null:
+		return {"ok": false, "text": "目前沒有進行中的比賽"}
+	var r = MatchDecisions.resolve(live, live_side, decision_id, option)
+	if live.is_over():
+		var s: SeriesState = pending["series"]
+		var g = s.finish_game(live)
+		live = null
+		r["snap"] = {"done": true, "game": g}
+		return r
+	var snap = live.snapshot()
+	snap["next_call"] = live.next_shotcall()
+	snap["side"] = live_side
+	snap["done"] = false
+	snap["decisions"] = MatchDecisions.available(live, live_side)
+	r["snap"] = snap
+	return r
 
 
 ## 下達接下來這段時間的指示（"" = 交給指揮自行判斷），推進到下一個調整點。
@@ -211,6 +234,7 @@ func _live_pause() -> Dictionary:
 	snap["next_call"] = at
 	snap["side"] = live_side
 	snap["done"] = false
+	snap["decisions"] = MatchDecisions.available(live, live_side)
 	return snap
 
 
@@ -225,6 +249,16 @@ func finish_match() -> Dictionary:
 	last_result = r
 	match_played.emit(r)
 	return r
+
+
+## 賽前情報（明天的比賽）：對手打法、近況、勝率因素。沒有比賽時回傳空字典。
+func match_briefing() -> Dictionary:
+	var found = LeagueEngine.find_fixture(world, world.human_club_id, world.day + 1)
+	if found.is_empty():
+		return {}
+	var b = MatchBriefing.build(world, found["fixture"], world.human_club_id)
+	b["competition"] = found["league"].name
+	return b
 
 
 ## 不手動 BP，直接由教練團處理整場系列賽。
@@ -290,6 +324,13 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 		return PressConference.answer(world, msg, option.trim_prefix("press:"))
 	if option.begins_with("duo:") or option.begins_with("bond:") or option.begins_with("mentor:"):
 		return TeammateTalks.resolve(world, msg, option)
+	if option.begins_with("job:"):
+		var jr = ManagerCareer.respond(world, msg, option)
+		if jr.get("switched", false):
+			pending = {}
+		return jr
+	if option.begins_with("bid:"):
+		return BiddingWar.resolve(world, msg, option)
 	if option.begins_with("ev:"):
 		return RandomEvents.resolve(world, msg, option)
 	if option.begins_with("crisis:"):
@@ -298,6 +339,20 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 	var r = respond_to_player(msg["player_id"], option)
 	msg["resolved"] = true
 	return r
+
+
+## 例行事項交給助理處理。回傳處理了幾則。
+func delegate_routine(min_age: int = 0) -> int:
+	var n = 0
+	for m in Delegation.pending(world, min_age):
+		respond_to_message(m["id"], Delegation.choice(world, m))
+		m["delegated"] = true
+		n += 1
+	return n
+
+
+func set_delegate(on: bool) -> void:
+	club().settings["delegate"] = on
 
 
 func find_message(msg_id: String) -> Dictionary:
@@ -316,6 +371,10 @@ func offer_contract(player_id: String, salary: int, years: int, role_promise: St
 	if p.club_id == "" or p.club_id == world.human_club_id:
 		if p.club_id == "" and not transfer_window_open():
 			return {"accepted": false, "reason": "轉會窗口未開放（休賽季才能簽自由球員）"}
+		if p.club_id == "":
+			var bw := BiddingWar.maybe_start(world, club(), p, 0, salary, years, role_promise)
+			if not bw.is_empty():
+				return bw
 		var r = TransferMarket.offer_contract(world, club(), p, salary, years, role_promise)
 		if r["accepted"] and p.club_id == "":
 			TransferMarket._move(world, p, null, club(), 0)
@@ -326,6 +385,9 @@ func offer_contract(player_id: String, salary: int, years: int, role_promise: St
 func bid(player_id: String, fee: int, salary: int, years: int, role_promise: String) -> Dictionary:
 	if not transfer_window_open():
 		return {"accepted": false, "reason": "轉會窗口未開放（休賽季才能轉會）"}
+	var bw := BiddingWar.maybe_start(world, club(), world.players[player_id], fee, salary, years, role_promise)
+	if not bw.is_empty():
+		return bw
 	return TransferMarket.make_transfer_offer(world, club(), world.players[player_id], fee, salary, years, role_promise)
 
 

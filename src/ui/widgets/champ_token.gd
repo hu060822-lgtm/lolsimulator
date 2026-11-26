@@ -54,7 +54,7 @@ static func draw(ci: CanvasItem, pos: Vector2, radius: float, c: Champion, ring_
 
 ## BP 用英雄卡：頭像 + 名稱 + 一行補充（熟練度、版本強弱）。
 static func card(c: Champion, sub: String, ring_color: Color, cb: Callable, disabled: bool = false, w: int = 86) -> Button:
-	var b := Button.new()
+	var b := UIKit.flat(Button.new())
 	b.custom_minimum_size = Vector2(w, 96)
 	b.disabled = disabled
 	b.pressed.connect(cb)

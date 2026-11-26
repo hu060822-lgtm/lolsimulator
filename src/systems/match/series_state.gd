@@ -88,8 +88,11 @@ func finish_game(eng: MatchEngine) -> Dictionary:
 	winner_ctx.tilt.clear()
 	for p in loser_ctx.players.values():
 		loser_ctx.tilt[p.id] = (1.0 - p.trait_value("composure") / 100.0) * 0.06
-	if rng.chance(loser_ctx.coach_stat("adaptability") / 100.0 * 0.6):
-		loser_ctx.plan = "flexible"  # 放下既定方向，改為依陣容與對手調整
+	if not loser_ctx.is_human and rng.chance(loser_ctx.coach_stat("adaptability") / 100.0 * 0.6):
+		# 放下既定方向：改打剋制勝方打法的方向（看懂了對手），否則依陣容調整
+		var won_plan: String = str(res.get("draft", {}).get("plan", {}).get(res["winner"], ""))
+		var ctr = StyleMatchup.best_counter(won_plan)
+		loser_ctx.plan = ctr if ctr != "" and rng.chance(0.5 + loser_ctx.coach_stat("tactical") / 200.0) else "flexible"
 	# 敗方選邊（選藍方）
 	if l == a.club_id:
 		blue = a

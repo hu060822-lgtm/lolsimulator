@@ -3,12 +3,32 @@ class_name RosterScreen
 extends UIScreen
 
 var table: Tree
+var cards: HFlowContainer
+var card_nodes: Dictionary = {}
+var view: String = "cards"
+var view_chips: Array = []
 var detail: VBoxContainer
 var selected_id: String = ""
 
 
 func build() -> void:
-	add_child(UIKit.title("名單"))
+	var head := UIKit.hbox(14)
+	head.add_child(UIKit.title("名單"))
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(sp)
+	for vm in [["cards", "卡片"], ["table", "表格"]]:
+		var ch := UIKit.chip(vm[1], _set_view.bind(vm[0]))
+		ch.set_meta("view", vm[0])
+		ch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		view_chips.append(ch)
+		head.add_child(ch)
+	add_child(head)
+	# 卡片牆：先發在前，依位置排列
+	cards = HFlowContainer.new()
+	cards.add_theme_constant_override("h_separation", 14)
+	cards.add_theme_constant_override("v_separation", 14)
+	add_child(cards)
 	table = UIKit.table(["選手", "位置", "年齡", "身份", "能力", "潛力評估", "士氣", "疲勞", "滿意度", "年薪", "合約到期"], 300)
 	table.item_selected.connect(_on_select)
 	add_child(table)
@@ -18,10 +38,23 @@ func build() -> void:
 
 func refresh() -> void:
 	UIKit.clear_table(table)
+	UIKit.clear(cards)
+	card_nodes = {}
 	var ww = w()
 	var c = session.club()
 	var players: Array = c.roster.map(func(pid): return ww.players[pid])
 	players.sort_custom(func(a, b): return Attr.ROLES.find(a.primary_role) * 1000 - a.current_ability() < Attr.ROLES.find(b.primary_role) * 1000 - b.current_ability())
+	var starters: Array = []
+	for role in Attr.ROLES:
+		var sp: Player = ww.players.get(c.lineup.get(role, ""))
+		if sp:
+			starters.append(sp)
+			_add_card(sp, role, "先發", UIKit.GOLD)
+	for p in players:
+		if p in starters:
+			continue
+		var st: String = {"prospect": "新秀", "backup": "替補", "rotation": "輪替"}.get(p.squad_status, "")
+		_add_card(p, p.primary_role, st, UIKit.MUTED.lightened(0.2))
 	for p in players:
 		var status: String = "先發" if c.lineup.values().has(p.id) else {"prospect": "新秀", "backup": "替補", "rotation": "輪替"}.get(p.squad_status, p.squad_status)
 		var pot = _potential_word(p)
@@ -32,7 +65,44 @@ func refresh() -> void:
 			it.set_custom_color(0, UIKit.BAD)
 		if p.contract and p.contract.end_year <= ww.year:
 			it.set_custom_color(10, UIKit.WARN)
+	_apply_view()
 	_show_detail()
+
+
+func _add_card(p: Player, role: String, tag: String, col: Color) -> void:
+	var cc := CollectorCard.make(session, p, 168, role)
+	cc.tag_text = tag
+	cc.tag_color = col
+	if p.transfer_requested:
+		cc.tag_text = "要求離隊"
+		cc.tag_color = UIKit.BAD
+	elif p.contract and p.contract.end_year <= w().year:
+		cc.tag_text = ("先發・" if tag == "先發" else "") + "合約到期"
+		cc.tag_color = UIKit.WARN
+	cc.morale = p.morale
+	cc.selected = p.id == selected_id
+	cc.pressed.connect(_pick.bind(p.id))
+	card_nodes[p.id] = cc
+	cards.add_child(cc)
+
+
+func _pick(pid: String) -> void:
+	selected_id = pid
+	for k in card_nodes:
+		card_nodes[k].selected = k == pid
+	_show_detail()
+
+
+func _set_view(v: String) -> void:
+	view = v
+	_apply_view()
+
+
+func _apply_view() -> void:
+	cards.visible = view == "cards"
+	table.visible = view == "table"
+	for ch in view_chips:
+		ch.set_pressed_no_signal(ch.get_meta("view") == view)
 
 
 ## 教練團對潛力的評估（不是真實潛力值）
@@ -53,8 +123,7 @@ func _potential_word(p: Player) -> String:
 func _on_select() -> void:
 	var it = table.get_selected()
 	if it:
-		selected_id = it.get_metadata(0)
-		_show_detail()
+		_pick(it.get_metadata(0))
 
 
 func _show_detail() -> void:
