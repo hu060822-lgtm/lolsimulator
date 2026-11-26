@@ -33,6 +33,11 @@ func _run() -> void:
 	app.start_game()
 	await _shot("02_dashboard")
 	var sh: Shell = app.current
+	var dsc: ScrollContainer = sh.content.get_parent()
+	await _frames(2)
+	dsc.scroll_vertical = int(dsc.get_v_scroll_bar().max_value)
+	await _shot("02_dashboard_goals")
+	dsc.scroll_vertical = 0
 	# 先推進到第一場比賽前
 	sh._on_continue()
 	for id in ["roster", "tactics", "training", "transfers", "staff", "finance", "competition", "news", "inbox"]:
@@ -106,6 +111,16 @@ func _run() -> void:
 		sc.scroll_vertical = 0
 		await _shot("06_quick_sim")
 	# 收件匣（需決策／例行、交給助理）
+	# 搶人大戰：讓一名自由球員變強，強制觸發競標
+	var ww: WorldState = app.session.world
+	if not ww.free_agents.is_empty():
+		var fa: Player = ww.players[ww.free_agents[0]]
+		for sk in Attr.SKILLS:
+			fa.skills[sk] = 80.0
+		fa.home_region = app.session.club().region
+		for c in ww.clubs.values():
+			c.wage_budget += 5000000
+		BiddingWar.maybe_start(ww, app.session.club(), fa, 0, TransferMarket.wage_demand(ww, fa), 2, "rotation", true)
 	sh.open("inbox")
 	await _shot("12_inbox")
 	# 推進到世界賽與賽季結束

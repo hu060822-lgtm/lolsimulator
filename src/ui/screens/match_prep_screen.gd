@@ -52,6 +52,9 @@ func _versus(me: Club, opp: Club, b: Dictionary) -> Control:
 	var m := MatchBanner.make(me, opp, me.name, opp.name, 170)
 	m.center_text = "%d%%" % pct
 	m.center_caption = "預估勝率"
+	if Rivalry.is_rival(session.world, opp.id):
+		m.center_caption = "宿敵戰・預估勝率"
+		m.right_sub = opp.name + "・勝負影響加倍"
 	return m
 
 

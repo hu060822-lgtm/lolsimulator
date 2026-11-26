@@ -23,6 +23,11 @@ static func build(session: GameSession, p: Player) -> VBoxContainer:
 	tags.add_theme_constant_override("h_separation", 6)
 	tags.add_child(UIKit.pill(UIKit.ROLE_SHORT.get(p.primary_role, p.primary_role) + "".join(p.secondary_roles.map(func(r): return " / " + UIKit.ROLE_SHORT[r])), UIKit.ACCENT))
 	tags.add_child(UIKit.pill("%d 歲" % p.age(ww.year), UIKit.MUTED))
+	if p.club_id == ww.human_club_id or Scouting.knowledge(ww, p) > 0.5:
+		var arch := PlayerArchetype.of(p)
+		var ap0 := UIKit.pill(arch["name"], UIKit.GOLD)
+		ap0.tooltip_text = arch["desc"]
+		tags.add_child(ap0)
 	tags.add_child(UIKit.pill(p.nationality, UIKit.MUTED))
 	tags.add_child(UIKit.pill(club.short_name if club else "自由球員", Badge.club_color(club.id) if club else UIKit.MUTED))
 	if p.transfer_requested:

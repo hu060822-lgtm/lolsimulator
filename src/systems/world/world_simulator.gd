@@ -142,6 +142,7 @@ static func end_season(w: WorldState) -> void:
 		if g > 0 or p.club_id != "":
 			p.history.append({"year": w.year, "club_id": p.club_id, "games": g, "wins": p.season_stats.get("wins", 0), "avg_rating": snappedf(p.avg_season_rating(), 0.01)})
 	if w.human_club_id != "":
+		SeasonGoals.evaluate(w)
 		ManagerCareer.season_review(w)
 	_promotion_relegation(w, season)
 	w.history["seasons"].append(season)
@@ -411,6 +412,9 @@ static func _new_season(w: WorldState) -> void:
 	for club in w.clubs.values():
 		LineupSelector.pick(w, club)
 	LeagueEngine.start_season(w)
+	if w.human_club() != null:
+		Rivalry.pick(w)
+		SeasonGoals.generate(w)
 	w.log.add("season_start", w.day, [], {"year": w.year}, [])
 
 

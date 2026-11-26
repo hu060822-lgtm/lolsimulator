@@ -32,7 +32,10 @@ func refresh() -> void:
 		var form := MatchBriefing.recent_form(ww, opp.id, 3)
 		var form_txt := "".join(form.map(func(x): return "▲" if x == "W" else "▼"))
 		var opp_sub := ("聯賽第 %d" % opos) + (("・近況 " + form_txt) if form_txt != "" else "")
-		body.add_child(MatchBanner.make(c, opp, my_sub, opp_sub))
+		var mb := MatchBanner.make(c, opp, my_sub, opp_sub)
+		if Rivalry.is_rival(ww, opp.id):
+			mb.center_caption = "宿敵戰"
+		body.add_child(mb)
 		var strip := UIKit.hbox(8)
 		var left := UIKit.hbox(6)
 		left.add_child(UIKit.bold("下一場", 16))
@@ -108,6 +111,78 @@ func refresh() -> void:
 	row2.add_child(_recent_card(c))
 	for ch in row2.get_children():
 		ch.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# 本季目標與宿敵
+	var row3 := UIKit.hbox(10)
+	body.add_child(row3)
+	var gc := _goals_card()
+	gc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gc.size_flags_stretch_ratio = 2.0
+	row3.add_child(gc)
+	var rc := _rival_card()
+	rc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row3.add_child(rc)
+
+
+## 董事會開的本季目標：每項一行，右側是進度。
+func _goals_card() -> PanelContainer:
+	var ww = w()
+	var v := UIKit.vbox(8)
+	var head := UIKit.hbox(10)
+	head.add_child(UIKit.bold("本季目標", 18))
+	var hint := UIKit.label("每達成一項董事會信心 +%d，失敗 -%d" % [int(SeasonGoals.BOARD_PER_GOAL), int(SeasonGoals.BOARD_PER_GOAL)], 13, UIKit.MUTED)
+	hint.size_flags_vertical = Control.SIZE_SHRINK_END
+	head.add_child(hint)
+	v.add_child(head)
+	var g := SeasonGoals.current(ww)
+	for goal in g.get("list", []):
+		var pr := SeasonGoals.progress(ww, goal)
+		var line := UIKit.hbox(10)
+		var done = pr["done"]
+		var mark := UIKit.big_num("✓" if done == true else "•", 18, UIKit.GOOD if done == true else UIKit.GOLD)
+		mark.custom_minimum_size = Vector2(18, 0)
+		line.add_child(mark)
+		var t := UIKit.bold(str(goal["text"]), 16)
+		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		line.add_child(t)
+		line.add_child(UIKit.label(str(pr["progress"]), 15, UIKit.MUTED))
+		v.add_child(line)
+	var p := UIKit.panel(v)
+	var sb := UIKit._card(UIKit.PANEL, 0)
+	sb.border_width_top = 3
+	sb.border_color = UIKit.GOLD
+	p.add_theme_stylebox_override("panel", sb)
+	return p
+
+
+## 本季宿敵：隊徽、為什麼是他、本季對戰紀錄。
+func _rival_card() -> PanelContainer:
+	var ww = w()
+	var v := UIKit.vbox(6)
+	v.add_child(UIKit.label("本季宿敵", 14, UIKit.MUTED))
+	var r := Rivalry.current(ww)
+	var rc: Club = ww.clubs.get(r.get("club_id", "")) if not r.is_empty() else null
+	var col := UIKit.BAD
+	if rc == null:
+		v.add_child(UIKit.bold("尚未決定", 16))
+	else:
+		col = Badge.club_color(rc.id)
+		var h := UIKit.hbox(10)
+		h.add_child(Badge.club(rc, 44))
+		var nv := UIKit.vbox(0)
+		nv.add_child(UIKit.big_num(rc.short_name, 30, UIKit.GOLD_LIGHT))
+		nv.add_child(UIKit.label(str(r.get("reason", "")), 13, UIKit.MUTED))
+		h.add_child(nv)
+		v.add_child(h)
+		v.add_child(UIKit.bold("本季對戰 %d 勝 %d 敗" % [int(r.get("w", 0)), int(r.get("l", 0))], 16))
+		var tip := UIKit.label("宿敵戰勝負影響加倍：士氣、粉絲、品牌、董事會", 13, UIKit.MUTED)
+		tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		v.add_child(tip)
+	var p := UIKit.panel(v)
+	var sb := UIKit._card(UIKit.PANEL, 0)
+	sb.border_width_top = 3
+	sb.border_color = col
+	p.add_theme_stylebox_override("panel", sb)
+	return p
 
 
 func _open_player(pid: String) -> void:

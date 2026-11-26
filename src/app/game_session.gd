@@ -329,6 +329,8 @@ func respond_to_message(msg_id: String, option: String) -> Dictionary:
 		if jr.get("switched", false):
 			pending = {}
 		return jr
+	if option.begins_with("bid:"):
+		return BiddingWar.resolve(world, msg, option)
 	if option.begins_with("ev:"):
 		return RandomEvents.resolve(world, msg, option)
 	if option.begins_with("crisis:"):
@@ -369,6 +371,10 @@ func offer_contract(player_id: String, salary: int, years: int, role_promise: St
 	if p.club_id == "" or p.club_id == world.human_club_id:
 		if p.club_id == "" and not transfer_window_open():
 			return {"accepted": false, "reason": "轉會窗口未開放（休賽季才能簽自由球員）"}
+		if p.club_id == "":
+			var bw := BiddingWar.maybe_start(world, club(), p, 0, salary, years, role_promise)
+			if not bw.is_empty():
+				return bw
 		var r = TransferMarket.offer_contract(world, club(), p, salary, years, role_promise)
 		if r["accepted"] and p.club_id == "":
 			TransferMarket._move(world, p, null, club(), 0)
@@ -379,6 +385,9 @@ func offer_contract(player_id: String, salary: int, years: int, role_promise: St
 func bid(player_id: String, fee: int, salary: int, years: int, role_promise: String) -> Dictionary:
 	if not transfer_window_open():
 		return {"accepted": false, "reason": "轉會窗口未開放（休賽季才能轉會）"}
+	var bw := BiddingWar.maybe_start(world, club(), world.players[player_id], fee, salary, years, role_promise)
+	if not bw.is_empty():
+		return bw
 	return TransferMarket.make_transfer_offer(world, club(), world.players[player_id], fee, salary, years, role_promise)
 
 

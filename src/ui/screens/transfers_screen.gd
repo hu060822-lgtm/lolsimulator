@@ -142,7 +142,18 @@ func _show_counter(r: Dictionary) -> void:
 	var old = detail.get_node_or_null("Counter")
 	if old:
 		old.queue_free()
-	if r.has("counter_fee"):
+	if r.get("bidding", false):
+		var msg := session.find_message(str(r.get("message_id", "")))
+		if msg.is_empty():
+			for m in session.open_messages():
+				if m.get("kind") == "bidding" and m.get("player_id") == selected_id:
+					msg = m
+		if not msg.is_empty():
+			result.text = str(msg["text"])
+			result.add_theme_color_override("font_color", UIKit.WARN)
+			for opt in msg["options"]:
+				box.add_child(UIKit.button(msg["option_labels"].get(opt, opt), _resolve_bid.bind(msg["id"], opt)))
+	elif r.has("counter_fee"):
 		box.add_child(UIKit.label("賣方回價：轉會費 %s" % UIKit.money(int(r["counter_fee"])), 14, UIKit.GOLD_LIGHT))
 		box.add_child(UIKit.button("接受回價並重新報價", func(): fee.value = int(r["counter_fee"]); _offer()))
 	elif r.has("counter"):
@@ -155,6 +166,15 @@ func _show_counter(r: Dictionary) -> void:
 			box.add_child(UIKit.button("接受回價", func(): salary.value = int(c["salary"]); promise.select(role_i); _offer()))
 	if box.get_child_count() > 0:
 		detail.add_child(box)
+
+
+func _resolve_bid(msg_id: String, opt: String) -> void:
+	var r := session.respond_to_message(msg_id, opt)
+	result.text = str(r.get("note", "已處理"))
+	result.add_theme_color_override("font_color", UIKit.GOOD if r.get("signed", false) else UIKit.MUTED)
+	selected_id = ""
+	refresh()
+	shell.refresh_status()
 
 
 func _loan_in() -> void:

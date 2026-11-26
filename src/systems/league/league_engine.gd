@@ -339,6 +339,8 @@ static func complete_fixture(w: WorldState, lg: League, fx: Dictionary, series: 
 		_record(lg, series)
 	Media.on_match(w, lg, fx, series)
 	if detail:
+		Rivalry.on_series(w, home, away, series)
+	if detail:
 		PressConference.after_series(w, lg, fx, series)
 	var winner: Club = w.clubs[series["winner"]]
 	w.log.add("match", w.day, [home.id, away.id], {"fixture": fx["id"], "winner": winner.id,

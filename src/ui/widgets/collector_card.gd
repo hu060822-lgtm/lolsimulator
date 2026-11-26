@@ -28,6 +28,7 @@ var known: bool = true
 var stats: Array = []          ## [[名稱, 數值], …]
 var club_color: Color = UIKit.MUTED
 var face_traits: Dictionary = {}
+var archetype: Dictionary = {}
 var tag_text: String = ""      ## 右上角小標籤（先發、要求離隊…）
 var tag_color: Color = UIKit.GOLD
 var morale: float = -1.0       ## >= 0 時在卡底畫士氣格
@@ -60,7 +61,10 @@ static func make(session: GameSession, p: Player, w: int = 168, r: String = "") 
 		c.ovr = lo / c.stats.size()
 	c.custom_minimum_size = Vector2(w, roundi(w * 1.4))
 	c.focus_mode = Control.FOCUS_NONE
+	c.archetype = PlayerArchetype.of(p)
 	c.tooltip_text = "%s・%s・%d 歲" % [p.handle, UIKit.ROLE_NAMES.get(c.role, c.role), p.age(ww.year)]
+	if c.known:
+		c.tooltip_text += "\n%s卡・%s：%s" % [tier_of(c.ovr)[1], c.archetype["name"], c.archetype["desc"]]
 	for st in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
 		c.add_theme_stylebox_override(st, StyleBoxEmpty.new())
 	c.mouse_entered.connect(c.queue_redraw)
@@ -102,7 +106,7 @@ func _draw() -> void:
 	draw_string(nf, Vector2(12 * k, 50 * k), str(int(round(ovr))) if known else "?", HORIZONTAL_ALIGNMENT_LEFT, -1, big, UIKit.GOLD_LIGHT)
 	var cf := UIKit.cond_font()
 	draw_string(cf, Vector2(13 * k, 72 * k), UIKit.ROLE_SHORT.get(role, role), HORIZONTAL_ALIGNMENT_LEFT, -1, int(17 * k), hi)
-	draw_string(cf, Vector2(13 * k, 90 * k), t[1] if known else "未知", HORIZONTAL_ALIGNMENT_LEFT, -1, int(12 * k), Color(hi, 0.75))
+	draw_string(cf, Vector2(13 * k, 90 * k), str(archetype.get("name", t[1])) if known else "未知", HORIZONTAL_ALIGNMENT_LEFT, -1, int(12 * k), Color(hi, 0.75))
 	# 右上小標籤
 	if tag_text != "":
 		var bf := UIKit.head_font()
